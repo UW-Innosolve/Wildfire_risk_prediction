@@ -8,13 +8,13 @@ import requests
 # Initialize the CDS API client
 client = cdsapi.Client(url='https://cds.climate.copernicus.eu/api', key='734d2638-ef39-4dc1-bc54-4842b788fff6')
 
-# Load wildfire data
-wildfire_data = pd.read_excel("scripts/data_collection/fp-historical-wildfire-data-2006-2023 (1).xlsx")
+# Load wildfire data (ie. wildfire incidence data)
+wildfire_data = pd.read_excel("scripts/data_collection/fp-historical-wildfire-data-2006-2023.xlsx")
 
 # Convert 'fire_start_date' to datetime format and extract only the date part
 wildfire_data['fire_start_date'] = pd.to_datetime(wildfire_data['fire_start_date'], errors='coerce')
 
-# Filter the fire dates data to only include the relevant columns
+# Filter the fire dates data to only include the relevant columns and remove rows with missing values
 fire_dates = wildfire_data[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']].dropna()
 
 # Create a DataFrame that contains every 4th day from 2006 to 2023
@@ -28,10 +28,12 @@ all_dates = all_dates[(all_dates >= pd.Timestamp("2006-01-01")) & (all_dates <= 
 all_dates_df = pd.DataFrame({'date': all_dates})
 
 # Grid of lat/long for Alberta
-grid_resolution = 0.5
+grid_resolution = 0.5 # 0.5 degree resolution, approximately 55km x 55km
 area = [60, -120, 49, -110]
 
 # Function to fetch weather data
+#   Only fetches data for the specified variables and date range
+#   See complete list of variables at: https://cds.climate.copernicus.eu/datasets/derived-era5-land-daily-statistics?tab=overview
 def fetch_weather_data(start_date, end_date, variables, target_file):
     request = {
         'format': 'grib',
@@ -50,8 +52,28 @@ def fetch_weather_data(start_date, end_date, variables, target_file):
         return
 
 # Variables to request from CDS API
-variables = ['2m_temperature', '10m_u_component_of_wind', '10m_v_component_of_wind',
-             '2m_dewpoint_temperature', 'surface_pressure', 'total_precipitation']
+variables = [
+            # Temperature and pressure
+            '2m_temperature', 
+            'surface_pressure',
+            # Wind
+            '10m_u_component_of_wind', 
+            '10m_v_component_of_wind',
+            # Water variables
+            '2m_dewpoint_temperature', 
+            'total_precipitation',
+            'total_evaporation',
+            # Leaf area index (vegetation)
+            'leaf_area_index_low_vegetation',
+            'leaf_area_index_high_vegetation',
+            # Heat variables (NOTE: needs review and/or reduction)
+            'surface_sensible_heat_flux',
+            'surface_latent_heat_flux',
+            'surface_solar_radiation_downwards',
+            'surface_thermal_radiation_downwards',
+            'surface_net_solar_radiation',
+            'surface_net_thermal_radiation',
+             ]
 
 # Function to convert GRIB to CSV
 def read_grib_to_dataframe(grib_file):
