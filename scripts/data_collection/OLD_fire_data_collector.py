@@ -37,7 +37,7 @@ area = [60, -120, 49, -110]
 def fetch_weather_data(start_date, end_date, variables, target_file):
     request = {
         'format': 'grib',
-        'variable': variables,
+        'variable': variables, 
         'year': list(set([str(date.year) for date in pd.date_range(start=start_date, end=end_date)])),
         'month': list(set([str(date.month).zfill(2) for date in pd.date_range(start=start_date, end=end_date)])),
         'day': list(set([str(date.day).zfill(2) for date in pd.date_range(start=start_date, end=end_date)])),
