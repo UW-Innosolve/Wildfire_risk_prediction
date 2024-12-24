@@ -4,6 +4,11 @@ import numpy as np
 import xarray as xr  # Import xarray for working with GRIB files
 from datetime import timedelta
 import requests
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize the CDS API client
 client = cdsapi.Client(url='https://cds.climate.copernicus.eu/api', key='734d2638-ef39-4dc1-bc54-4842b788fff6')
@@ -16,6 +21,7 @@ wildfire_data['fire_start_date'] = pd.to_datetime(wildfire_data['fire_start_date
 
 # Filter the fire dates data to only include the relevant columns and remove rows with missing values
 fire_dates = wildfire_data[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']].dropna()
+logger.info(f"Number of wildfire incidents loaded: {len(fire_dates)}")
 
 # Create a DataFrame that contains every 4th day from 2006 to 2023
 all_dates = pd.date_range(start="2006-01-01", end="2023-12-31", freq='4D').normalize()
@@ -26,6 +32,7 @@ all_dates = all_dates[(all_dates >= pd.Timestamp("2006-01-01")) & (all_dates <= 
 
 # Create DataFrame for all dates without fire day labels (labeling will be done later)
 all_dates_df = pd.DataFrame({'date': all_dates})
+logger.info(f"Number resampled dates: {len(all_dates_df)}")
 
 # Grid of lat/long for Alberta
 grid_resolution = 0.5 # 0.5 degree resolution, approximately 55km x 55km
@@ -48,7 +55,7 @@ def fetch_weather_data(start_date, end_date, variables, target_file):
     try:
         client.retrieve('reanalysis-era5-land', request, target_file)
     except requests.exceptions.HTTPError as e:
-        print(f"HTTP Error: {e}")
+        logger.error(f"HTTP Error: {e}")
         return
 
 # Variables to request from CDS API
@@ -110,8 +117,8 @@ for period, batch in grouped:
     # Convert weather_df 'date' to datetime.date type for matching purposes
     weather_df['date'] = weather_df['date'].dt.date
 
-    # Debug: Print out the weather_df shape
-    print(f"Processing weather data from {start_date} to {end_date}, Data shape: {weather_df.shape}")
+    # Logging out the weather_df shape
+    logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {weather_df.shape}")
 
     # Label fire days for the current batch by matching both date and location with a proximity check
     def is_fire_day(row):
@@ -124,9 +131,9 @@ for period, batch in grouped:
         ]
         
         if matching_fires.empty:
-            print(f"No fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
+            logger.debug(f"No fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
         else:
-            print(f"Fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
+            logger.debug(f"Fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
 
         return int(not matching_fires.empty)
 
@@ -135,7 +142,7 @@ for period, batch in grouped:
 
     # Check how many fire days were found
     num_fire_days = weather_df['is_fire_day'].sum()
-    print(f"Number of fire days found in this batch: {num_fire_days}")
+    logger.info(f"Number of fire days found in this batch: {num_fire_days}")
 
     # Save the DataFrame to a CSV file, labeled by month
     csv_output_file = f"weather_data_{period.strftime('%Y%m')}.csv"
