@@ -36,40 +36,11 @@ class AlbertaWildfireIncidenceLoader:
             logger.error(f"Missing required columns in wildfire data: {missing_columns}")
             self.ab_fire_incidents = pd.DataFrame(columns=required_columns)
         else:
-            self.ab_fire_incidents = self.ab_wildfire_data_raw[
-                required_columns
-            ].dropna()
+            self.ab_fire_incidents = self.ab_wildfire_data_raw[required_columns].dropna()
             logger.info("Filtered wildfire incidents to required columns and dropped missing values.")
-            logger.info(f"Number of wildfire incidents loaded: {len(self.ab_fire_incidents)}")
+            logger.info(f"Number of wildfire (filtered) incidents loaded: {len(self.ab_fire_incidents)}")
 
-    ## wildfire_incidence_data_resample
-    ##      - resample the wildfire incidence data to include EVERY FIRE DAY with the NON-FIRE DAYS resampled to the specified interval
-    ##      - input: start_date, end_date, interval (e.g., '4D' is every 4th day), fire_incident_data
-    ##      - output: fire_incident_data_resampled (pandas DataFrame)
-    ##      - (NOTE: fire_incident_data would typically be self.ab_fire_incidents which was set at class initialization)
-    def wildfire_incidence_data_resample(self, start_date, end_date, interval, fire_incident_data):
-        """Resample the wildfire incidence data to include every fire day with the non-fire days resampled to the specified interval"""
-        try:
-            # Create a DataFrame with resampled dates
-            resampled_date_range = pd.date_range(start=start_date, end=end_date, freq=interval).normalize()
-            resampled_dates_df = pd.DataFrame({'fire_start_date': resampled_date_range})
-            
-            # Merge with fire_incident_data to get location data for fire dates
-            fire_dates_df = fire_incident_data[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']]
-            resampled_fire_incidents = resampled_dates_df.merge(fire_dates_df, on='fire_start_date', how='left')
-            
-            # Ensure all dates are within the specified range
-            resampled_fire_incidents = resampled_fire_incidents[
-                (resampled_fire_incidents['fire_start_date'] >= pd.Timestamp(start_date)) &
-                (resampled_fire_incidents['fire_start_date'] <= pd.Timestamp(end_date))
-            ]
-            
-            logger.info("Resampled wildfire incidence data successfully.")
-            logger.info(f"Total resampled dates: {len(resampled_fire_incidents)}")
-            return resampled_fire_incidents
-        except Exception as e:
-            logger.error(f"Error during resampling wildfire incidence data: {e}")
-            return pd.DataFrame(columns=['fire_start_date', 'fire_location_latitude', 'fire_location_longitude'])
+
 
     ## pull_additional_attr_from_raw
     ##      - add other attributes to the dataset, after the data has been temporally resampled (i.e., by wildfire_incidence_data_resample)
