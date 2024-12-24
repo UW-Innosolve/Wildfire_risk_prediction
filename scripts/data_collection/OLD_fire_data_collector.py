@@ -32,7 +32,7 @@ all_dates = all_dates[(all_dates >= pd.Timestamp("2006-01-01")) & (all_dates <= 
 
 # Create DataFrame for all dates without fire day labels (labeling will be done later)
 all_dates_df = pd.DataFrame({'date': all_dates})
-logger.info(f"Number resampled dates: {len(all_dates_df)}")
+logger.info(f"All dates count (constructed from fire_dates + every fourth day: {len(all_dates_df)}")
 
 # Grid of lat/long for Alberta
 grid_resolution = 0.5 # 0.5 degree resolution, approximately 55km x 55km
@@ -92,6 +92,7 @@ def read_grib_to_dataframe(grib_file):
 
 # Processing and grouping by month
 grouped = all_dates_df.groupby(all_dates_df['date'].dt.to_period('M'))  # Group by month
+logger.info(f"Sample grouped data:\n{grouped.head()}")
 
 # Adjust the tolerance for latitude and longitude proximity
 latitude_tolerance = 1.0  # Increased tolerance to 1 degree
@@ -99,6 +100,7 @@ longitude_tolerance = 1.0
 
 # Ensure fire_start_date is of type datetime.date for matching purposes
 fire_dates['fire_start_date'] = fire_dates['fire_start_date'].dt.date
+logger.info(f"Sample fire_dates:\n{fire_dates.head()}")
 
 for period, batch in grouped:
     start_date = batch['date'].min()
