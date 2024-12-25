@@ -70,7 +70,7 @@ def main():
         long_range=[-120, -110], 
         grid_resolution=0.5
     )
-
+    
     ## RAW DATA ASSEMBLY
     ## Create pipelines list
     pipelines = [{'CDS': cds_pipeline}]
@@ -81,8 +81,8 @@ def main():
                                                                     end_date='2023-12-31', 
                                                                     resample_interval='4D',
                                                                     grouping_period_size='M',
-                                                                    latitude_tolerance=0.5,
-                                                                    longitude_tolerance=0.5)
+                                                                    latitude_tolerance=1.0,
+                                                                    longitude_tolerance=1.0)
 
     ## Assemble the dataset
     raw_data_assembly_instance.assemble_dataset(pipelines)

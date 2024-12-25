@@ -4,7 +4,7 @@ from datetime import timedelta
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class RawDataAssembler:
@@ -166,7 +166,7 @@ class RawDataAssembler:
             int: 1 if a matching fire is found, 0 otherwise.
         """
 
-        logger.info(f"Processing row: {row}")
+        logger.debug(f"Processing row: {row}")
         logger.debug(f"Sample row (date, lat, long): ({row['date']}, {row['latitude']}, {row['longitude']})")
         matching_fires = self.fire_dates[
             (self.fire_dates['fire_start_date'] == row['date']) &
