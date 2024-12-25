@@ -75,19 +75,17 @@ def main():
     ## Create pipelines list
     pipelines = [{'CDS': cds_pipeline}]
 
-    ## Initialize the raw data assembly
+    ## Initialize the raw data assembler
     raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(wildfire_incidence_data, 
                                                                     start_date='2006-01-01', 
                                                                     end_date='2023-12-31', 
-                                                                    resample_interval='4D')
+                                                                    resample_interval='4D',
+                                                                    grouping_period_size='M',
+                                                                    latitude_tolerance=0.5,
+                                                                    longitude_tolerance=0.5)
 
     ## Assemble the dataset
-    raw_data_assembly_instance.assemble_dataset(
-        pipelines, 
-        grouping_period_size='M', 
-        latitude_tolerance=1.0,  # Increased tolerance to 0.5 degree
-        longitude_tolerance=1.0
-    )
+    raw_data_assembly_instance.assemble_dataset(pipelines)
 
 if __name__ == "__main__":
     main()

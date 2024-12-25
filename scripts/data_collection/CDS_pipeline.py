@@ -118,6 +118,12 @@ class CdsPipeline:
             logger.info(f"Weather data successfully retrieved and saved to '{target_file}'.")
 
             df = self._read_grib_to_dataframe(target_file)  # Read the GRIB file into a DataFrame
+            # Filter weather data to ensure it's within the correct date range
+            df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
+
+            # Convert weather_df 'date' to datetime.date type for matching purposes
+            df['date'] = df['date'].dt.date
+
             os.remove(target_file)  # Remove the temporary file
             logger.info(f"Temporary GRIB file '{target_file}' has been removed.")
 

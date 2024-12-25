@@ -103,6 +103,8 @@ fire_dates['fire_start_date'] = fire_dates['fire_start_date'].dt.date
 logger.info(f"Sample fire_dates:\n{fire_dates.head()}")
 
 for period, batch in grouped:
+    logger.info(f"Processing batch for period: {period}")
+    logger.info(f"Batch shape: {batch.shape}")
     start_date = batch['date'].min()
     end_date = batch['date'].max()
     
@@ -137,7 +139,7 @@ for period, batch in grouped:
         else:
             logger.debug(f"Fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
 
-        return int(not matching_fires.empty)
+        return int(not matching_fires.empty) # May be multiple fires on the same day for a given locational area square
 
     # Apply the labeling function to the DataFrame
     weather_df['is_fire_day'] = weather_df.apply(is_fire_day, axis=1)
