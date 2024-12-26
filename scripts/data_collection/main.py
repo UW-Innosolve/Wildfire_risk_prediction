@@ -24,14 +24,8 @@ def main():
     ## Load wildfire incidence data
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
 
-    ## Resample wildfire incidence data
-    start_date = "2006-01-01"
-    end_date = "2023-12-31"
-    interval = '4D'
-    resampled_fire_incidents = wildfire_loader.wildfire_incidence_data_resample(
-        start_date, end_date, interval, wildfire_loader.ab_fire_incidents
-    )
-    wildfire_incidence_data = resampled_fire_incidents
+    ## wildfire_incidence_data
+    wildfire_incidence_data = wildfire_loader.ab_fire_incidents
 
     # Debug: Print columns to verify 'fire_start_date' exists
     logger.info(f"Wildfire Incidence Data Columns in main: {wildfire_incidence_data.columns}")
@@ -42,12 +36,26 @@ def main():
     
     ## Set CDS time-variant variables
     cds_pipeline.set_variant_variables([
-        '2m_temperature', 
-        'surface_pressure', 
-        '10m_u_component_of_wind', 
-        '10m_v_component_of_wind', 
-        '2m_dewpoint_temperature', 
-        'total_precipitation'
+        # Temperature and pressure
+            '2m_temperature', 
+            'surface_pressure',
+            # Wind
+            '10m_u_component_of_wind', 
+            '10m_v_component_of_wind',
+            # Water variables
+            '2m_dewpoint_temperature', 
+            'total_precipitation',
+            'total_evaporation',
+            # Leaf area index (vegetation)
+            'leaf_area_index_low_vegetation',
+            'leaf_area_index_high_vegetation',
+            # Heat variables (NOTE: needs review and/or reduction)
+            'surface_sensible_heat_flux',
+            'surface_latent_heat_flux',
+            'surface_solar_radiation_downwards',
+            'surface_thermal_radiation_downwards',
+            'surface_net_solar_radiation',
+            'surface_net_thermal_radiation',
     ])
     
     ## Set CDS time-invariant variables 
@@ -62,21 +70,22 @@ def main():
         long_range=[-120, -110], 
         grid_resolution=0.5
     )
-
+    
     ## RAW DATA ASSEMBLY
     ## Create pipelines list
     pipelines = [{'CDS': cds_pipeline}]
 
-    ## Initialize the raw data assembly
-    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(wildfire_incidence_data)
+    ## Initialize the raw data assembler
+    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(wildfire_incidence_data, 
+                                                                    start_date='2006-01-01', 
+                                                                    end_date='2023-12-31', 
+                                                                    resample_interval='4D',
+                                                                    grouping_period_size='M',
+                                                                    latitude_tolerance=1.0,
+                                                                    longitude_tolerance=1.0)
 
     ## Assemble the dataset
-    raw_data_assembly_instance.assemble_dataset(
-        pipelines, 
-        grouping_period_size='M', 
-        latitude_tolerance=1.0,  # Increased tolerance to 0.5 degree
-        longitude_tolerance=1.0
-    )
+    raw_data_assembly_instance.assemble_dataset(pipelines)
 
 if __name__ == "__main__":
     main()
