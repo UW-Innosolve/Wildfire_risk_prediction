@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import timedelta
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -99,6 +100,7 @@ class RawDataAssembler:
 
                 ## CDS Pipeline loop
                 for period, batch in self.grouped_all_dates:
+                    time_start = time.time()
                     logger.info(f"Processing batch for period: {period}")
                     logger.info(f"Batch shape: {batch.shape}")
                     start_date = batch['date'].min()
@@ -142,6 +144,8 @@ class RawDataAssembler:
                     try:
                         weather_data.to_csv(target_file, index=False)
                         logger.info(f"Weather data saved to '{target_file}'.")
+                        time_end = time.time()
+                        logger.info(f"Processing time for this batch: {time_end - time_start:.2f} seconds")
                     except Exception as e:
                         logger.error(f"Failed to save weather data to '{target_file}': {e}")
 

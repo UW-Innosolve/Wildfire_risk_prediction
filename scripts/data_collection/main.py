@@ -4,6 +4,8 @@ import alberta_wf_incidence_loader
 from CDS_pipeline import CdsPipeline
 import raw_data_assembly
 import logging
+import time
+
 
 # Configure logging
 logging.basicConfig(
@@ -17,7 +19,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def main():
-
     ## WILDFIRE INCIDENCE DATA
     wildfire_data_path = "scripts/data_collection/fp-historical-wildfire-data-2006-2023.xlsx"
 
@@ -86,6 +87,7 @@ def main():
 
     ## Assemble the dataset
     raw_data_assembly_instance.assemble_dataset(pipelines)
+
 
 if __name__ == "__main__":
     main()
