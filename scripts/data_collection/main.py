@@ -16,6 +16,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# NEW IMPORT for the Human Activity Pipeline
+from human_activity_pipeline import HumanActivityPipeline
+
 def main():
 
     ## WILDFIRE INCIDENCE DATA
@@ -73,16 +76,22 @@ def main():
     
     ## RAW DATA ASSEMBLY
     ## Create pipelines list
-    pipelines = [{'CDS': cds_pipeline}]
+    pipelines = [
+        {'CDS': cds_pipeline},
+        # NEW: Add human activity pipeline
+        {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+    ]
 
     ## Initialize the raw data assembler
-    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(wildfire_incidence_data, 
-                                                                    start_date='2006-01-01', 
-                                                                    end_date='2023-12-31', 
-                                                                    resample_interval='4D',
-                                                                    grouping_period_size='M',
-                                                                    latitude_tolerance=1.0,
-                                                                    longitude_tolerance=1.0)
+    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
+        wildfire_incidence_data, 
+        start_date='2006-01-01', 
+        end_date='2023-12-31', 
+        resample_interval='4D',
+        grouping_period_size='M',
+        latitude_tolerance=1.0,
+        longitude_tolerance=1.0
+    )
 
     ## Assemble the dataset
     raw_data_assembly_instance.assemble_dataset(pipelines)
