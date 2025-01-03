@@ -1,9 +1,8 @@
-# raw_data_assembly.py
-
 import pandas as pd
 import numpy as np
 from datetime import timedelta
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,12 +26,15 @@ class RawDataAssembler:
     """
 
     def __init__(self, wildfire_incidence_data,
-                start_date, end_date, resample_interval,
-                grouping_period_size, latitude_tolerance, longitude_tolerance):
-        
+                 start_date, end_date, resample_interval,
+                 grouping_period_size, latitude_tolerance, longitude_tolerance):
+
         # Load wildfire incidence data and separate fire dates with location data
         self.wildfire_incidence_data = wildfire_incidence_data
-        self.fire_dates = self.wildfire_incidence_data[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']].dropna()
+        self.fire_dates = self.wildfire_incidence_data[
+            ['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']
+        ].dropna()
+
         # Ensure fire_start_date is of type datetime.date for matching purposes
         self.fire_dates['fire_start_date'] = self.fire_dates['fire_start_date'].dt.date
         logger.info(f"Number of fire dates with location data: {len(self.fire_dates)}")
@@ -52,21 +54,13 @@ class RawDataAssembler:
         self.latitude_tolerance = latitude_tolerance
         self.longitude_tolerance = longitude_tolerance
 
-        ## Initialize the variable to store the dataset
+        # Initialize the variable to store the dataset
         self.dataset = None
-
 
     ## assemble_dataset method
     ##      - assemble the dataset using the specified data pipelines
-    ##      - pipelines is a list of dictionaries with the following keys:
-    ##          - 'CDS': Copernicus Data Service pipeline
-    ##          - Future data pipelines will be added as needed
-    ##      - grouping_period_size is the temporal grouping period for the dataset (i.e., temporal size of the output CSVs)
-    ##        must be one of the following:
-    ##          - 'D': daily grouping
-    ##          - 'W': weekly grouping
-    ##          - 'M': monthly grouping
-    ##          - 'Y': yearly grouping
+    ##      - pipelines is a list of dictionaries with keys like 'CDS', 'HUMAN_ACTIVITY', etc.
+    ##      - grouping_period_size is the temporal grouping period (e.g., 'M' for monthly)
     ##      - output: None
     ##      - mutates self.dataset (combining dataframes as they are assembled)
     def assemble_dataset(self, pipelines):
@@ -79,7 +73,7 @@ class RawDataAssembler:
             start_date=self.start_date,
             end_date=self.end_date,
             interval=self.resample_interval,
-            fire_dataset=self.fire_dates  # Pass fire_dates that omits rows with missing fire start dates
+            fire_dataset=self.fire_dates
         )
 
         # Group all dates by the specified period size
@@ -93,28 +87,32 @@ class RawDataAssembler:
             logger.error(f"Grouping failed due to missing key: {e}")
             return
 
-        # Iterate month by month (or period by period) once, processing each pipeline sequentially
+        # Iterate over each period (e.g., month)
         for period, batch in self.grouped_all_dates:
+            # Start timing for this batch
+            time_start = time.time()
+
             logger.info(f"--- Processing batch for period: {period} ---")
             logger.info(f"Batch shape: {batch.shape}")
+
             start_date = batch['date'].min()
             end_date = batch['date'].max()
             period_key = period.strftime('%Y%m')
 
-            # Initialize a DataFrame to hold monthly data
+            # Initialize a DataFrame to hold the integrated data for this period
             monthly_data = None
 
-            # Process each pipeline in sequence for the current period
+            # Process each pipeline in sequence
             for pipeline in pipelines:
                 # 1) CDS pipeline
                 if 'CDS' in pipeline:
                     cds_pipeline = pipeline['CDS']
                     logger.info("CDS pipeline found!")
-                    
+
                     # Fetch weather data
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
                     weather_data = cds_pipeline.fetch_weather_data(start_date, end_date)
-                    
+
                     if weather_data is None or weather_data.empty:
                         logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
                         continue
@@ -132,7 +130,7 @@ class RawDataAssembler:
                     num_fire_days = weather_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
 
-                    # Assign to monthly_data
+                    # Store the resulting DataFrame in monthly_data
                     monthly_data = weather_data.copy()
 
                 # 2) HUMAN_ACTIVITY pipeline
@@ -149,9 +147,10 @@ class RawDataAssembler:
                     logger.info(f"Integrated HumanActivity data into {period_key} => final shape={monthly_data.shape}")
 
                 else:
+                    # If there are other pipelines (e.g., LIGHTNING), they'd go here:
                     logger.warning(f"Unknown pipeline key in {pipeline}. Skipping this pipeline.")
 
-            # After processing all pipelines for the current period, save the CSV
+            # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
                 target_file = f"final_weather_data_{period_key}.csv"
                 try:
@@ -162,11 +161,14 @@ class RawDataAssembler:
             else:
                 logger.warning(f"No final data to save for {period_key}.")
 
+            # End timing for this batch
+            time_end = time.time()
+            logger.info(f"Processing time for this batch ({period_key}): {time_end - time_start:.2f} seconds")
+
     ## _is_fire_labeler method
     ##      - label the fire incidents in the dataset within a specified location tolerance
     ##      - input: row, fire_dates, latitude_tolerance, longitude_tolerance
     ##      - output: 1 if a matching fire is found, 0 otherwise
-    ## Note this method checks for a matching fire incident in the fire_dates DataFrame (goes through all of it each time its called)
     def _is_fire_labeler(self, row):
         """Label the fire incidents in the dataset within a specified location tolerance.
         Args:
@@ -181,7 +183,6 @@ class RawDataAssembler:
         Returns:
             int: 1 if a matching fire is found, 0 otherwise.
         """
-
         matching_fires = self.fire_dates[
             (self.fire_dates['fire_start_date'] == row['date']) &
             (self.fire_dates['fire_location_latitude'].between(
@@ -195,14 +196,11 @@ class RawDataAssembler:
         ]
         return int(not matching_fires.empty)
 
-
     ## all_dates_generator
     ##      - generates a dataframe of dates with all fire dates in fire_dataset and non-fire dates resampled to the specified interval
     ##      - input: start_date, end_date, interval (e.g., '4D' is every 4th day), fire_dataset
     ##      - output: all_dates_df (pandas DataFrame)
-    ##      - private method
     def _all_dates_generator(self, start_date, end_date, interval, fire_dataset):
-
         fire_dates = fire_dataset[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']].dropna()
 
         all_dates = pd.date_range(start=start_date, end=end_date, freq=interval).normalize()
