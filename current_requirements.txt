@@ -20,7 +20,7 @@ click==8.1.7
 colorama==0.4.6
 colorclass==2.2.2
 docopt==0.6.2
-earthaccess @ git+https://github.com/nsidc/earthaccess.git@91866ac18e806e2d53d6b68cd000fa372c3e010f
+earthaccess==0.11.0
 eccodes==2.38.3
 et_xmlfile==2.0.0
 findlibs==0.0.5
@@ -48,7 +48,6 @@ multidict==6.1.0
 multimethod==2.0
 multiurl==0.3.2
 namex==0.0.8
-numcodecs==0.14.1
 numpy==2.0.2
 openpyxl==3.1.5
 opt_einsum==3.4.0
@@ -56,6 +55,7 @@ optree==0.13.1
 packaging==24.1
 pandas==2.2.3
 pip-tools==7.4.1
+pip-upgrader==1.4.15
 pqdm==0.2.0
 propcache==0.2.1
 protobuf==5.29.2
@@ -70,7 +70,6 @@ rich==13.9.4
 s3fs==2024.12.0
 scikit-learn==1.6.0
 scipy==1.13.1
-setuptools==75.8.0
 six==1.16.0
 tensorboard==2.18.0
 tensorboard-data-server==0.7.2
@@ -84,12 +83,8 @@ tomli==2.2.1
 tqdm==4.67.0
 typing_extensions==4.12.2
 tzdata==2024.2
-ujson==5.10.0
-universal_pathlib==0.2.6
 urllib3==1.26.20
-virtualizarr==1.1.0
 Werkzeug==3.1.3
-wheel==0.45.1
 wrapt==1.17.0
 xarray==2024.7.0
 yarl==1.18.3
