@@ -63,7 +63,7 @@ class RawDataAssembler:
     ##      - grouping_period_size is the temporal grouping period (e.g., 'M' for monthly)
     ##      - output: None
     ##      - mutates self.dataset (combining dataframes as they are assembled)
-    def assemble_dataset(self, pipelines):
+    def assemble_dataset(self, pipelines): ## NOTE: THIS METHOD IS TIME-VARIANT
         """Assemble the dataset using the specified data pipelines"""
         logger.info(f"Wildfire Incidence Data Columns in Assembler: {self.fire_dates.columns}")
         logger.info(f"Pipeline list: {pipelines}")
@@ -216,5 +216,21 @@ class RawDataAssembler:
         logger.debug(f"Sample all_dates:\n{all_dates_df.head()}")
 
         return all_dates_df
+    
+    
+    ## _time_invar_assembler method
+    ##      - assemble the time-invariant datasets together in to time-variant dataframes
+    ##      - input: time_invariant_datasets, dates
+    ##      - output: time_variant_datasets (in one dataframe)
+    def _time_invar_assembler(self, time_invariant_datasets, dates):
+        """Assemble the time-invariant datasets together into time-variant DataFrames.
+        Args:
+            time_invariant_datasets: A dictionary of DataFrames containing time-invariant data.
+            dates: A DataFrame containing the dates for which the data is assembled.
+
+        Returns:
+            dict: A dictionary of DataFrames containing the time-variant data.
+        """
+        pass
     
 
