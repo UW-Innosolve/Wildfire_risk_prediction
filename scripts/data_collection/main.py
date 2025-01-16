@@ -23,7 +23,7 @@ from human_activity_pipeline import HumanActivityPipeline
 
 def main():
     ## WILDFIRE INCIDENCE DATA
-    wildfire_data_path = "scripts/data_collection/fp-historical-wildfire-data-2006-2023.xlsx"
+    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2023.xlsx"
 
     ## Load wildfire incidence data
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
