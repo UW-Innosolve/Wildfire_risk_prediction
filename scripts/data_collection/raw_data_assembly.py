@@ -8,8 +8,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-
-
 class RawDataAssembler:
     """A class to manage the raw data assembly and storage process.
         Must be initialized with:
@@ -109,7 +107,7 @@ class RawDataAssembler:
 
                     ## Fetch weather data for the period
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    weather_data = cds_pipeline.fetch_weather_data(start_date, end_date)  # fetch_weather_data returns a DataFrame or None
+                    weather_data = cds_pipeline.fetch_var_data(start_date, end_date)  # fetch_weather_data returns a DataFrame or None
 
                     if weather_data is None:
                         logger.error(f"Failed to fetch weather data for period {period}. Skipping this batch.")
