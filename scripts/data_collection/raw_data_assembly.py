@@ -7,6 +7,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+
+
 class RawDataAssembler:
     """A class to manage the raw data assembly and storage process.
         Must be initialized with:
