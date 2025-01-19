@@ -1,0 +1,61 @@
+import earthaccess
+import pandas as pd
+import h5py
+import logging
+import xarray as xr
+import requests
+import os
+from nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+## NOTE: Credentials functionality should be transferred to seperate utility function/file.
+def load_credentials():
+    # Open and read the credentials file
+    with open("scripts/data_collection/keys_n_creds/earthdata_credentials.txt", "r") as file:
+        credentials = {}
+        for line in file:
+            key, value = line.strip().split("=", 1)  # Split key and value
+            credentials[key] = value
+
+    # Access the credentials
+    username = credentials.get("username")
+    password = credentials.get("password")
+    return username, password
+
+
+static_data_path = "scripts/data_collection/static_datasets"
+username, password = load_credentials()
+ned_pipeline = ned(username=username, password=password) # Initialize the NASA Earthdata pipeline
+
+ab_terrain = ned_pipeline.earthdata_pull_invar(
+        short_name='GLAH06',
+        doi='10.5067/ICESAT/GLAS/DATA109',
+        daac='NSIDC',
+        bounding_box=(-120, 49, -110, 60), # `(lower_left_lon, lower_left_lat, upper_right_lon, upper_right_lat)`
+        temporal=("2006-01", "2007-01"),
+
+        ## NOTE:
+        # lat_range=[49, 60], 
+        # long_range=[-120, -110], 
+        # grid_resolution=0.5
+    )
+
+print(type(ab_terrain))
+print("length of ab_terrain: ", len(ab_terrain))
+
+# ned_pipeline.earthdata_save_to_h5(ab_terrain, "scripts/data_collection/static_datasets")
+# param_list = ['d_lat', 'd_lon', 'd_UTCTime_40']
+dataset = ned_pipeline.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
+                                    csv=True, # Save as CSV is turned on
+                                    output_dir=static_data_path
+                                    )
+
+if os.path.exists("scripts/data_collection/static_datasets/earthdata.csv"):
+    logger.info("earthdata.csv is available for inspection")
+
+
+

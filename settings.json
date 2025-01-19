@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/path/to/.venv/bin/python",
+    "python.venvPath": "/path/to/.venv",
+    "python.autoActivateEnvironment": true
+  }

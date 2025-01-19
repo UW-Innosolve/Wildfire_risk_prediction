@@ -1,0 +1,7 @@
+{
+    "notebook.editorOptionsCustomizations": {
+        "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+        "python.venvPath": "/Users/jromero/Documents/GitHub/Wildfire_risk_prediction/.venv",
+        "python.autoActivateEnvironment": true}
+    
+}
