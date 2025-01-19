@@ -57,6 +57,7 @@ class RawDataAssembler:
         # Initialize the variable to store the dataset
         self.dataset = None
 
+
     ## assemble_dataset method
     ##      - assemble the dataset using the specified data pipelines
     ##      - pipelines is a list of dictionaries with keys like 'CDS', 'HUMAN_ACTIVITY', etc.
@@ -165,6 +166,7 @@ class RawDataAssembler:
             time_end = time.time()
             logger.info(f"Processing time for this batch ({period_key}): {time_end - time_start:.2f} seconds")
 
+
     ## _is_fire_labeler method
     ##      - label the fire incidents in the dataset within a specified location tolerance
     ##      - input: row, fire_dates, latitude_tolerance, longitude_tolerance
@@ -195,6 +197,7 @@ class RawDataAssembler:
             ))
         ]
         return int(not matching_fires.empty)
+
 
     ## all_dates_generator
     ##      - generates a dataframe of dates with all fire dates in fire_dataset and non-fire dates resampled to the specified interval
