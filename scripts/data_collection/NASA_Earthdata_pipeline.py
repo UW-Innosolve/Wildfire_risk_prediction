@@ -4,36 +4,28 @@ import h5py
 import logging
 import xarray as xr
 import os
-import requests
 import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# # Set up the Earthdata login credentials
-# EARTHDATA_USERNAME = 'jromero7'
-# EARTHDATA_PASSWORD = 'InnoSolve@UW7'
-
-
-
-
 ### NasaEarthdataPipeline Overview
 ## Initialization and Authentication
 ## - initialize Earthdata login
 ## - set up Earthdata login credentials
 
-## Search and Download Bulk Dataset (H5)
+## Search and Download Bulk Dataset (H5) from Earthdata API via earthdata_pull functions
 ## - checks for dataset in local files first
 ## - Sets all parameters for search
 ## - called for each daac to be used
 
-## Complile subsets from Downloaded .H5 File into dataframe
+## Complile subsets from Downloaded .H5 File into dataframe via earthdata_slice
 ## - can accept data from multiple daacs
 ## - One time range and freuency set for all data
 
-## Save Dataframe as CSV
-## - saves the compiled dataframe as a CSV file
+## Save Dataframes
+## - Optionally save dataframes as CSV files
 
 
 class NasaEarthdataPipeline:
@@ -54,9 +46,9 @@ class NasaEarthdataPipeline:
         pass
 
 
-    ## earthdata_pull
+    ## earthdata_pull_invar
     ## - Searches and downloads the dataset from the Earthdata API
-    ## - single spatial snapshot dataset
+    ## - Single spatial snapshot dataset NOTE: This spatial nature is unverified.
     def earthdata_pull_invar(self, short_name, daac, doi, bounding_box, temporal):
         ## Create search query
         h5_file = earthaccess.search_data(
@@ -74,17 +66,23 @@ class NasaEarthdataPipeline:
         return downloaded_files
     
 
+    ## earthdata_pull_var
+    ## - Searches and downloads the a full dataset from the Earthdata API
+    ## - Multiple spatial snapshots dataset accross desired time range
+    def earthdata_pull_var(self, short_name, daac, doi, bounding_box, temporal, time_range):
+        pass
+
+
     ## earthdata_slice_to_csv
     ## - Slices the dataset into a dataframe from hardcoded parameters
     ## - Converts the dataframe to a CSV file then saves it
     ## - Returns the dataframe
-
+    ## - NOTE: This functino and the parameters used from the H5 file are hardcoded
     def earthdata_slice(self, output_dir, h5_file, csv=False):
         dataset = pd.DataFrame()
 
         h5py_file = h5py.File(h5_file, "r")
         level1 = h5py_file.keys()
-        # level2 = h5py_file[level1[0]].keys()
         print(level1)
 
         g1 = h5py_file.get('Data_40HZ')
@@ -118,7 +116,6 @@ class NasaEarthdataPipeline:
             'Elevation': elevs
         })
         logger.debug(f"Sliced dataset: {dataset}")
-
         ## Save as CSV if csv is True
         if csv:
             output_file_path = os.path.join(output_dir, "earthdata.csv")
@@ -128,6 +125,9 @@ class NasaEarthdataPipeline:
         return dataset
         
 
+    ## earthdata_save_to_h5
+    ## - Downloads the dataset from the Earthdata API
+    ## - Saves the dataset to the output directory
     def earthdata_save_to_h5(self, h5_file, output_dir):
         downloaded_files = earthaccess.download(h5_file, output_dir)
         logger.info(f"Downloaded {len(downloaded_files)} files")
@@ -135,45 +135,3 @@ class NasaEarthdataPipeline:
 
         
    
-
-# def convert_h5_to_csv(h5_file_path, output_dir):
-#     with h5py.File(h5_file_path, 'r') as h5_file:
-#         def extract_dataset(group, path=""):
-#             for key in group.keys():
-#                 item = group[key]
-#                 full_path = f"{path}/{key}".lstrip('/')
-#                 if isinstance(item, h5py.Dataset):
-#                     # Convert dataset to a pandas DataFrame and save to CSV
-#                     data = item[:]
-#                     if data.ndim == 1:
-#                         df = pd.DataFrame(data, columns=[key])
-#                     else:
-#                         # Handle multidimensional datasets
-#                         df = pd.DataFrame(data)
-#                     csv_file = os.path.join(output_dir, f"{full_path.replace('/', '_')}.csv")
-#                     print(f"Exporting dataset {full_path} to {csv_file}")
-#                     df.to_csv(csv_file, index=False)
-#                     save_path = os.path.join(csv_output_dir, csv_file)
-#                     print(f"Dataset saved to {save_path}")
-#                 elif isinstance(item, h5py.Group):
-#                     extract_dataset(item, path=full_path)
-
-#         print(f"Processing file: {h5_file_path}")
-#         extract_dataset(h5_file)
-
-# for h5_file_path in downloaded_files:
-#     logger.info(f"Converting {h5_file_path} to CSV")
-#     convert_h5_to_csv(h5_file_path, csv_output_dir)
-
-# print(f"CSV files have been saved to {csv_output_dir}")
-
-
-# # logger.info("Saving the GLAH06 dataset as a CSV file")
-# # df.to_csv("scripts/data_collection/earthaccess_samples/GLAH06_data_sample.csv")
-
-
-
-
-
-
-# files = earthaccess.download(results, "scripts/data_collection/earthaccess_samples")

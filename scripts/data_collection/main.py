@@ -1,7 +1,7 @@
 # main.py
 
 import alberta_wf_incidence_loader
-from CDS_pipeline import CdsPipeline
+from cds_pipeline import CdsPipeline
 import raw_data_assembly
 import logging
 import time
