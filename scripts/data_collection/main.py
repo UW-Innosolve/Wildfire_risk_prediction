@@ -36,7 +36,8 @@ def main():
 
     ## CDS PIPELINE
     ## Initialize CDS pipeline
-    cds_pipeline = CdsPipeline(key='734d2638-ef39-4dc1-bc54-4842b788fff6')
+    cds_pipeline = CdsPipeline()
+    cds_pipeline.cds_pipeline_initialize() # Initialize the CDS pipeline (uses api key from credentials.json)
     
     ## Set CDS time-variant variables
     cds_pipeline.set_variant_variables([

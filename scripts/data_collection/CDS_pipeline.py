@@ -7,31 +7,38 @@ import requests
 import tempfile
 import os.path
 import logging
-
-## CDS_pipeline class
-## Should be initialized with a CDS API key
-## Innosolve key: '734d2638-ef39-4dc1-bc54-4842b788fff6'
+import sys
+sys.path.append('scripts/utils/authentication')
+from firebird_auth import FirebirdAuth ## TODO: Optimize modular organization for the project.
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class CdsPipeline:
-    def __init__(self, key):
+    def __init__(self):
         self.var_variables = []
         self.invar_variables = []
         self.cds_request_parameters = {}
-        self.CDS_client = cdsapi.Client(url='https://cds.climate.copernicus.eu/api', key=key)
+        self.cds_api_key = ''
+        self.CDS_client = None
+        
+        ## Obtain key from from credentials file
+        self.cds_api_key = FirebirdAuth().get_cds_key("scripts/utils/authentication/credentials.json")
+        ## Initialize CDS client
+        self.CDS_client = cdsapi.Client(url='https://cds.climate.copernicus.eu/api', key=self.cds_api_key)
         logger.info("""CDS Pipeline (client) has been initialized.
                     The following methods must be called before an API call can be made:
                         - set_variant_variables(self, var_variables)
                         - set_invariant_variables(self, invar_variables)
                         - set_request_parameters(self, var_variables, invar_variables, lat_range, long_range, grid_resolution)""")
 
+
     def set_variant_variables(self, var_variables):
         """Set the time-variant variables for the CDS API request"""
         self.var_variables = var_variables
         logger.info(f"Time-variant variables set: {self.var_variables}")
+
     ## set_invariant_variables method
     ##          - set the time-invariant variables for the CDS API request
     ##          - must be called before fetch_weather_data method

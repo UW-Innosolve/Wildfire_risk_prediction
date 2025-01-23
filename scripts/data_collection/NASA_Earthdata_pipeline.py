@@ -5,6 +5,9 @@ import logging
 import xarray as xr
 import os
 import numpy as np
+import sys
+sys.path.append('scripts/utils/authentication')
+from firebird_auth import FirebirdAuth ## TODO: Optimize modular organization for the project.
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -29,21 +32,23 @@ logger = logging.getLogger(__name__)
 
 
 class NasaEarthdataPipeline:
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-        os.environ['EARTHDATA_USERNAME'] = self.username
-        os.environ['EARTHDATA_PASSWORD'] = self.password
+    def __init__(self):
+        self.ned_username = ""
+        self.ned_password = ""
+        self.auth = None
+        ## initialize_earthdata
+        ## - Sets up the Earthdata login credentials
+        ## - Initializes the Earthdata login
         try:
-            self.auth = earthaccess.login()
-            logger.info("Earthdata login  successful")
+            self.ned_username, self.ned_password = FirebirdAuth().get_earthdata_credentials("scripts/utils/authentication/credentials.JSON")
+            os.environ['EARTHDATA_USERNAME'] = self.ned_username
+            os.environ['EARTHDATA_PASSWORD'] = self.ned_password
+            self.auth = earthaccess.login(strategy="environment")
+            if self.auth:
+                logger.info("Earthdata login successful")
         except Exception as e:
             logger.error(f"Earthdata login failed: {e}")
             raise e
-        
-
-    def initialize_earthdata(self):
-        pass
 
 
     ## earthdata_pull_invar
