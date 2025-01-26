@@ -1,7 +1,7 @@
 # main.py
 
 import alberta_wf_incidence_loader
-from CDS_pipeline import CdsPipeline
+from cds_pipeline import CdsPipeline
 import raw_data_assembly
 import logging
 import time
@@ -23,7 +23,7 @@ from human_activity_pipeline import HumanActivityPipeline
 
 def main():
     ## WILDFIRE INCIDENCE DATA
-    wildfire_data_path = "scripts/data_collection/fp-historical-wildfire-data-2006-2023.xlsx"
+    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2023.xlsx"
 
     ## Load wildfire incidence data
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
@@ -36,7 +36,8 @@ def main():
 
     ## CDS PIPELINE
     ## Initialize CDS pipeline
-    cds_pipeline = CdsPipeline(key='734d2638-ef39-4dc1-bc54-4842b788fff6')
+    cds_pipeline = CdsPipeline()
+    cds_pipeline.cds_pipeline_initialize() # Initialize the CDS pipeline (uses api key from credentials.json)
     
     ## Set CDS time-variant variables
     cds_pipeline.set_variant_variables([

@@ -57,13 +57,14 @@ class RawDataAssembler:
         # Initialize the variable to store the dataset
         self.dataset = None
 
+
     ## assemble_dataset method
     ##      - assemble the dataset using the specified data pipelines
     ##      - pipelines is a list of dictionaries with keys like 'CDS', 'HUMAN_ACTIVITY', etc.
     ##      - grouping_period_size is the temporal grouping period (e.g., 'M' for monthly)
     ##      - output: None
     ##      - mutates self.dataset (combining dataframes as they are assembled)
-    def assemble_dataset(self, pipelines):
+    def assemble_dataset(self, pipelines): ## NOTE: THIS METHOD IS TIME-VARIANT
         """Assemble the dataset using the specified data pipelines"""
         logger.info(f"Wildfire Incidence Data Columns in Assembler: {self.fire_dates.columns}")
         logger.info(f"Pipeline list: {pipelines}")
@@ -165,6 +166,7 @@ class RawDataAssembler:
             time_end = time.time()
             logger.info(f"Processing time for this batch ({period_key}): {time_end - time_start:.2f} seconds")
 
+
     ## _is_fire_labeler method
     ##      - label the fire incidents in the dataset within a specified location tolerance
     ##      - input: row, fire_dates, latitude_tolerance, longitude_tolerance
@@ -196,6 +198,7 @@ class RawDataAssembler:
         ]
         return int(not matching_fires.empty)
 
+
     ## all_dates_generator
     ##      - generates a dataframe of dates with all fire dates in fire_dataset and non-fire dates resampled to the specified interval
     ##      - input: start_date, end_date, interval (e.g., '4D' is every 4th day), fire_dataset
@@ -216,3 +219,21 @@ class RawDataAssembler:
         logger.debug(f"Sample all_dates:\n{all_dates_df.head()}")
 
         return all_dates_df
+    
+    
+    ## _time_invar_assembler method
+    ##      - assemble the time-invariant datasets together in to time-variant dataframes
+    ##      - input: time_invariant_datasets, dates
+    ##      - output: time_variant_datasets (in one dataframe)
+    def _time_invar_assembler(self, time_invariant_datasets, dates):
+        """Assemble the time-invariant datasets together into time-variant DataFrames.
+        Args:
+            time_invariant_datasets: A dictionary of DataFrames containing time-invariant data.
+            dates: A DataFrame containing the dates for which the data is assembled.
+
+        Returns:
+            dict: A dictionary of DataFrames containing the time-variant data.
+        """
+        pass
+    
+
