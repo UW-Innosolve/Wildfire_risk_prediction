@@ -4,6 +4,8 @@ import alberta_wf_incidence_loader
 from cds_pipeline import CdsPipeline
 import raw_data_assembly
 import logging
+import time
+
 
 # Configure logging
 logging.basicConfig(
@@ -16,10 +18,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def main():
+# NEW IMPORT for the Human Activity Pipeline
+from human_activity_pipeline import HumanActivityPipeline
 
+def main():
     ## WILDFIRE INCIDENCE DATA
-    wildfire_data_path = "scripts/data_collection/fp-historical-wildfire-data-2006-2023.xlsx"
+    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2023.xlsx"
 
     ## Load wildfire incidence data
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
@@ -32,7 +36,8 @@ def main():
 
     ## CDS PIPELINE
     ## Initialize CDS pipeline
-    cds_pipeline = CdsPipeline(key='734d2638-ef39-4dc1-bc54-4842b788fff6')
+    cds_pipeline = CdsPipeline()
+    cds_pipeline.cds_pipeline_initialize() # Initialize the CDS pipeline (uses api key from credentials.json)
     
     
     ## Set CDS time-invariant variables (parameters)
@@ -76,19 +81,26 @@ def main():
     
     ## RAW DATA ASSEMBLY
     ## Create pipelines list
-    pipelines = [{'CDS': cds_pipeline}]
+    pipelines = [
+        {'CDS': cds_pipeline},
+        # NEW: Add human activity pipeline
+        {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+    ]
 
     ## Initialize the raw data assembler
-    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(wildfire_incidence_data, 
-                                                                    start_date='2006-01-01', 
-                                                                    end_date='2023-12-31', 
-                                                                    resample_interval='4D',
-                                                                    grouping_period_size='M',
-                                                                    latitude_tolerance=1.0,
-                                                                    longitude_tolerance=1.0)
+    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
+        wildfire_incidence_data, 
+        start_date='2006-01-01', 
+        end_date='2023-12-31', 
+        resample_interval='4D',
+        grouping_period_size='M',
+        latitude_tolerance=1.0,
+        longitude_tolerance=1.0
+    )
 
     ## Assemble the dataset
     raw_data_assembly_instance.assemble_dataset(pipelines)
+
 
 if __name__ == "__main__":
     main()
