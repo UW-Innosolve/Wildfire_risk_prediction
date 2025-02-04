@@ -34,7 +34,9 @@ class CdsPipeline:
     ## set_var_params method
     ##          - set the time-variant variables for the CDS API request
     ##          - must be called before fetch_weather_data method
-    def set_var_params(self, var_params):
+    ##          - input parameters: var_params (list of time-variant variables from the CDS API)
+    ##          - mutates self.var_variables
+    def _set_var_params(self, var_params):
         """Set the time-variant variables for the CDS API request"""
         self.var_params = var_params
         logger.info(f"Time-variant variables set: {self.var_variables}")
@@ -43,7 +45,12 @@ class CdsPipeline:
     ## set_invariant_variables method
     ##          - set the time-invariant variables for the CDS API request
     ##          - must be called before fetch_weather_data method
-    def set_invar_params(self, invar_params):
+    ##          - input parameters: invar_variables (list of time-invariant parameters from url list below)
+    ##          - NOTE: invar_variables must a list containing a subset of the following variables:
+    ##              - land_sea_mask, low_veg_cover, high_veg_cover, soil_type, low_veg_type, high_veg_type
+    ##          - mutates self.invar_variables
+    ##          - private method
+    def _set_invar_params(self, invar_params):
         """Set the time-invariant variables for the CDS API request"""
         self.invar_params = invar_params
         logger.info(f"Time-invariant variables set: {self.invar_variables}")
@@ -53,7 +60,8 @@ class CdsPipeline:
     ##          - time-variant variables and time-invariant variables lists must be set before calling this method and cannot be empty
     ##          - must be called before fetch_weather_data method
     ##          - input parameters: var_variables, invar_variables, lat_range, long_range, grid_resolution
-    ##          - mutates self.cds_request_parameters
+    ##          - mutates self.cdsapi_request_parameters
+    ##          - mutates self.var_params and self.invar_params
     def set_request_parameters(self, var_params, invar_params, lat_range, long_range, grid_resolution):
         """Set the parameters for the CDS API request including time-variant variables, time-invariant variables, latitude range, longitude range, and grid resolution
             input parameters:
@@ -63,8 +71,8 @@ class CdsPipeline:
                 - long_range: longitude range for the data request as a list [min_long, max_long]
                 - grid_resolution: resolution of the grid for the data request, in degrees"""
     
-        self.set_var_params(var_params)
-        self.set_invar_params(invar_params)
+        self._set_var_params(var_params)
+        self._set_invar_params(invar_params)
         
         self.cdsapi_request_parameters = {
             'format': 'grib',
@@ -73,9 +81,6 @@ class CdsPipeline:
             'grid': [grid_resolution, grid_resolution]
         }
         logger.info(f"Request parameters set: {self.cdsapi_request_parameters}")
-
-
-
 
 
     ## _read_grib_to_dataframe method

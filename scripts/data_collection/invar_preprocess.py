@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 # # data = xr.open_dataset('output_file.nc')
 # # print(data)
 
-class InvarDataLoader:
+class InvarPreporcessor:
     def __init__(self):
         pass
 
