@@ -6,3 +6,4 @@ environments/
 scripts/utils/authentication/credentials.JSON
 scripts/utils/authentication/credentials.JSON
 scripts/utils/authentication/credentials.JSON
+scripts/data_collection/credentials.JSON
