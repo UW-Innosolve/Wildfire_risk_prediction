@@ -1,5 +1,7 @@
 from cds_pipeline.CDS_pipeline import CdsPipeline as cds
 import data_collection.collection_utils.raw_data_assembly as raw_data_assembly
+import data_collection.collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_loader
+# from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline
 import logging
 import time
 from cds_pipeline.cds_auth import CdsAuth
@@ -16,8 +18,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# NEW IMPORT for the Human Activity Pipeline
-from human_activity_pipeline import HumanActivityPipeline
+# # NEW IMPORT for the Human Activity Pipeline
+# from human_activity_pipeline import HumanActivityPipeline
 
 def main():
     ## WILDFIRE INCIDENCE DATA
