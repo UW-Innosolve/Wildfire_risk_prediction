@@ -2,13 +2,15 @@ import cdsapi
 import pandas as pd
 import numpy as np
 import xarray as xr  # Import xarray for working with GRIB files
+import cfgrib        # Also for working with grib files
 from datetime import timedelta
 import requests
 import urllib.request as request # Import request for specifically for downloading files (invar files downloaded from URLs)
-import tempfile
+# import tempfile
 import os.path
 import logging
 import ssl
+import cfgrib
 
 ## CDS_pipeline class
 ## Should be initialized with a CDS API key
@@ -18,10 +20,11 @@ import ssl
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class CdsPipeline:
     def __init__(self, key):
-        self.var_variables = []
-        self.invar_variables = []
+        self.var_params = []
+        self.var_params = []
         self.cds_request_parameters = {}
         self.CDS_client = cdsapi.Client(url='https://cds.climate.copernicus.eu/api', key=key)
         logger.info("""CDS Pipeline (client) has been initialized.
@@ -39,7 +42,7 @@ class CdsPipeline:
     def _set_var_params(self, var_params):
         """Set the time-variant variables for the CDS API request"""
         self.var_params = var_params
-        logger.info(f"Time-variant variables set: {self.var_variables}")
+        logger.info(f"Time-variant variables set: {self.var_params}")
 
     
     ## set_invariant_variables method
@@ -53,7 +56,7 @@ class CdsPipeline:
     def _set_invar_params(self, invar_params):
         """Set the time-invariant variables for the CDS API request"""
         self.invar_params = invar_params
-        logger.info(f"Time-invariant variables set: {self.invar_variables}")
+        logger.info(f"Time-invariant variables set: {self.invar_params}")
 
     ## set_request_parameters method
     ##          - set the parameters for the CDS API request including latitude range, longitude range, and grid resolution
@@ -83,6 +86,17 @@ class CdsPipeline:
         logger.info(f"Request parameters set: {self.cdsapi_request_parameters}")
 
 
+    def process_grib_file(self, file_path):
+        try:
+            ds = cfgrib.open_dataset(file_path)
+            logger.info("Successfully opened GRIB file: %s", file_path)
+            
+            return ds
+            # Process the dataset
+        except Exception as e:
+            logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
+        
+    
     ## _read_grib_to_dataframe method
     ##          - read the GRIB file into a DataFrame
     ##          - input: grib_file
@@ -91,7 +105,13 @@ class CdsPipeline:
     def _read_grib_to_dataframe(self, grib_file):
         """Read the GRIB file into a DataFrame"""
         try:
-            ds = xr.open_dataset(grib_file, engine='cfgrib')
+            logger.info("==============MOMENTS BEFORE READING GRIB FILE================")
+            # backend_kwargs={"indexpath": "/tmp/custom_index.idx"}  # Use a different location
+            ds = xr.open_dataset(grib_file, 
+                                 engine='cfgrib', 
+                                 backend_kwargs={"indexpath": "scripts/data_collection/cds_pipeline/cache"})
+            # ds = self.process_grib_file(grib_file)
+            logger.info(f"Successfully opened GRIB file: {grib_file} to a dataset of type: {type(ds)}")
             df = ds.to_dataframe().reset_index()
             df['date'] = pd.to_datetime(df['time']).dt.normalize()  # Extract only date part
             df = df.drop(columns=['number'], errors='ignore')  # Drop 'number' column if it exists
@@ -172,7 +192,7 @@ class CdsPipeline:
         # Ensure all required parameters have been set
         if not self.cdsapi_request_parameters:
             raise ValueError("Request parameters have not been set. Please call set_request_parameters first.")
-        elif not self.var_variables:
+        elif not self.var_params:
             raise ValueError("Time-variant variables have not been set. Please call set_variant_variables first.")
 
         try:
@@ -187,18 +207,26 @@ class CdsPipeline:
             # Merge cds_request_parameters and dates
             request_parameters = {**self.cdsapi_request_parameters, **dates}
             logger.info(f"Fetching weather data with parameters: {request_parameters}")
+            # Set up file path to store the GRIB data in the main file's directory
+            target_file = os.path.join(os.path.dirname(__file__), "temp_data.grib")
+            print(f"Target file: {target_file}")
 
-            # Set up temporary file to store the GRIB data
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp_file:
-                target_file = tmp_file.name
-
-            # Make the API call to retrieve the data and store it in the temporary file
-            self.CDS_client.retrieve('reanalysis-era5-land', request_parameters, target_file)
-            logger.info(f"Weather data successfully retrieved and saved to '{target_file}'.")
-
+            # Make the API call to retrieve the data and store it in the file
+            target_file_other = self.CDS_client.retrieve('reanalysis-era5-land', request_parameters, target_file)
+            logger.info(f"CDS Client Response: {target_file_other}")
+            logger.info(f"Weather data successfully retrieved and saved to '{target_file}', of type: {type(target_file)}")
+            logger.info(f"Other target file: {target_file_other}, of type: {type(target_file_other)}")
+            
+            logger.info(f"Reading GRIB file '{target_file}' of type '{type(target_file)}' into DataFrame...")
             df = self._read_grib_to_dataframe(target_file)  # Read the GRIB file into a DataFrame
             # Filter weather data to ensure it's within the correct date range
             df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
+
+            # Convert weather_df 'date' to datetime.date type for matching purposes
+            df['date'] = df['date'].dt.date
+
+            os.remove(target_file)  # Remove the GRIB file
+            logger.info(f"GRIB file '{target_file}' has been removed.")
 
             # Convert weather_df 'date' to datetime.date type for matching purposes
             df['date'] = df['date'].dt.date

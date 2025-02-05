@@ -2,21 +2,16 @@ import earthaccess
 import pandas as pd
 import h5py
 import logging
-import xarray as xr
 import os
-import requests
 import numpy as np
+import sys
+import sys
+import os
+from earthdata_pipeline.earthdata_auth import EarthdataAuth
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-# # Set up the Earthdata login credentials
-# EARTHDATA_USERNAME = 'jromero7'
-# EARTHDATA_PASSWORD = 'InnoSolve@UW7'
-
-
-
 
 ### NasaEarthdataPipeline Overview
 ## Initialization and Authentication
@@ -37,9 +32,11 @@ logger = logging.getLogger(__name__)
 
 
 class NasaEarthdataPipeline:
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+    def __init__(self):
+        auth = EarthdataAuth()
+        earthdata_user, earthdata_pass = auth.get_earthdata_credentials(cred_file_path = 'scripts/data_collection/credentials.JSON')
+        self.username = earthdata_user
+        self.password = earthdata_pass
         os.environ['EARTHDATA_USERNAME'] = self.username
         os.environ['EARTHDATA_PASSWORD'] = self.password
         try:

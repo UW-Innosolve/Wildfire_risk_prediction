@@ -33,7 +33,8 @@ class RawDataAssembler:
         self.wildfire_incidence_data = wildfire_incidence_data
         self.fire_dates = self.wildfire_incidence_data[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']].dropna()
         # Ensure fire_start_date is of type datetime.date for matching purposes
-        self.fire_dates['fire_start_date'] = self.fire_dates['fire_start_date'].dt.date
+        fire_dates_temp = pd.to_datetime(self.fire_dates['fire_start_date'], errors='raise')
+        self.fire_dates['fire_start_date'] = fire_dates_temp
         logger.info(f"Number of fire dates with location data: {len(self.fire_dates)}")
         logger.debug(f"Sample fire_dates:\n{self.fire_dates.head()}")
 
@@ -108,7 +109,7 @@ class RawDataAssembler:
                     ## Fetch weather data for the period
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
                     weather_data = cds_pipeline.fetch_var_data(start_date, end_date)  # fetch_weather_data returns a DataFrame or None
-
+                    
                     if weather_data is None:
                         logger.error(f"Failed to fetch weather data for period {period}. Skipping this batch.")
                         continue  # Skip to the next batch
@@ -145,6 +146,15 @@ class RawDataAssembler:
                         logger.info(f"Weather data saved to '{target_file}'.")
                     except Exception as e:
                         logger.error(f"Failed to save weather data to '{target_file}': {e}")
+                        
+                    # # # NOTE:also save invariant data
+                    # if invar_data is not None:
+                    #     target_file = f"invar_data_{period.strftime('%Y%m')}.csv"
+                    #     try:
+                    #         invar_data.to_csv(target_file, index=False)
+                    #         logger.info(f"Invariant data saved to '{target_file}'.")
+                    #     except Exception as e:
+                    #         logger.error(f"Failed to save invariant data to '{target_file}': {e}")
 
 
     ## _is_fire_labeler method

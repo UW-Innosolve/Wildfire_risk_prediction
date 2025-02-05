@@ -90,10 +90,17 @@ class HumanActivityPipeline:
         but it will defeat the purpose of monthly caching.
         """
         # 1) bounding box from monthly_df lat/lon
-        lat_min = monthly_df['latitude'].min()
-        lat_max = monthly_df['latitude'].max()
-        lon_min = monthly_df['longitude'].min()
-        lon_max = monthly_df['longitude'].max()
+       
+        lat_min = pd.DataFrame(monthly_df['latitude']).min()
+        lat_max = pd.DataFrame(monthly_df['latitude']).max()
+        lon_min = pd.DataFrame(monthly_df['longitude']).min()
+        lon_max = pd.DataFrame(monthly_df['longitude']).max()
+        
+        # lat_min = monthly_df['latitude'].min()
+        # lat_max = monthly_df['latitude'].max()
+        # lon_min = monthly_df['longitude'].min()
+        # lon_max = monthly_df['longitude'].max()
+        
 
         # 2) see if we have a monthly cache
         cache_file = self._cache_filename(period_key)

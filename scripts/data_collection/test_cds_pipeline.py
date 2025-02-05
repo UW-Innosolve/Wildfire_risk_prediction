@@ -1,20 +1,8 @@
-# main.py
-
-import time
-
-## Import Pipeline classes
-from cds_pipeline.CDS_pipeline import CdsPipeline
-from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
-
-# Import Utility classes
-import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_loader
-import collection_utils.raw_data_assembly as raw_data_assembly
-
+from cds_pipeline.CDS_pipeline import CdsPipeline as cds
+import data_collection.collection_utils.raw_data_assembly as raw_data_assembly
 import logging
+import time
 from cds_pipeline.cds_auth import CdsAuth
-import cfgrib
-import eccodes
-
 
 
 # Configure logging
@@ -46,7 +34,7 @@ def main():
 
     ## CDS PIPELINE
     ## Initialize CDS pipeline
-    cds_key = CdsAuth().get_cds_key(cred_file_path="/Users/jromero/Documents/GitHub/Wildfire_risk_prediction/scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
+    cds_key = CdsAuth().get_cds_key(cred_file_path="scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
     cds_pipeline = CdsPipeline(cds_key)
     
     
@@ -106,6 +94,9 @@ def main():
         latitude_tolerance=1.0,
         longitude_tolerance=1.0
     )
+    
+    invar_data = cds_pipeline.get_invariant_data()
+    
 
     ## Assemble the dataset
     raw_data_assembly_instance.assemble_dataset(pipelines)

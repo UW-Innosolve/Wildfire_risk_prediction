@@ -3,3 +3,6 @@ __pycache__/
 data/
 environments/
 .venv/
+scripts/utils/authentication/credentials.JSON
+scripts/utils/authentication/credentials.JSON
+scripts/utils/authentication/credentials.JSON
