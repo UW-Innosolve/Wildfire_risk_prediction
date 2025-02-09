@@ -29,7 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # NEW IMPORT for the Human Activity Pipeline
-from human_activity_pipeline import HumanActivityPipeline
+# from human_activity_pipeline import HumanActivityPipeline
 
 def main():
     ## WILDFIRE INCIDENCE DATA
