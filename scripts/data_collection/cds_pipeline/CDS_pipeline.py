@@ -97,82 +97,76 @@ class CdsPipeline:
             logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
         
     
-    # ## _read_grib_to_dataframe method
-    # ##          - read the GRIB file into a DataFrame
-    # ##          - input: grib_file
-    # ##          - output: df (pandas DataFrame)
-    # ##          - private method
+    ## _read_grib_to_dataframe method
+    ##          - read the GRIB file into a DataFrame
+    ##          - input: grib_file
+    ##          - output: df (pandas DataFrame)
+    ##          - private method
+    
+    def _read_grib_to_dataframe(self, grib_file):
+        """Read the GRIB file into a DataFrame with enhanced error handling.
+        
+        If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
+        this function logs an error or attempts to unzip it before parsing.
+        """
+        try:
+            # Log the downloaded file size for debugging.
+            file_size = os.path.getsize(grib_file)
+            logger.info(f"Downloaded file size: {file_size} bytes")
+            if file_size < 10000:  # adjust threshold as needed; 10KB is an example threshold
+                logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
+                raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
+            
+            # If the file is actually a zip archive, unzip it first.
+            if zipfile.is_zipfile(grib_file):
+                logger.info("Downloaded file is a ZIP archive. Unzipping...")
+                with zipfile.ZipFile(grib_file, 'r') as z:
+                    # Assume the ZIP contains one GRIB file; take the first.
+                    grib_names = z.namelist()
+                    if not grib_names:
+                        raise ValueError("ZIP archive is empty.")
+                    # Extract the first file to a temporary location.
+                    extracted_file = os.path.join(os.path.dirname(grib_file), grib_names[0])
+                    z.extract(grib_names[0], os.path.dirname(grib_file))
+                    logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
+                    # Attempt to read the extracted GRIB file.
+                    ds = xr.open_dataset(extracted_file, engine='cfgrib')
+                    df = ds.to_dataframe().reset_index()
+                    df['date'] = pd.to_datetime(df['time']).dt.normalize()
+                    df = df.drop(columns=['number'], errors='ignore')
+                    logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
+                    os.remove(extracted_file)  # Cleanup the extracted file.
+                    return df
+            else:
+                # If not a ZIP, try reading the file directly.
+                ds = xr.open_dataset(grib_file, engine='cfgrib')
+                df = ds.to_dataframe().reset_index()
+                df['date'] = pd.to_datetime(df['time']).dt.normalize()
+                df = df.drop(columns=['number'], errors='ignore')
+                logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
+                return df
+        except Exception as e:
+            logger.error(f"Error reading GRIB file '{grib_file}': {e}")
+            return None
     
     # def _read_grib_to_dataframe(self, grib_file):
-    #     """Read the GRIB file into a DataFrame with enhanced error handling.
-        
-    #     If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
-    #     this function logs an error or attempts to unzip it before parsing.
-    #     """
+    #     """Read the GRIB file into a DataFrame"""
     #     try:
-    #         ds = xr.open_dataset(grib_file, engine='cfgrib')
+    #         logger.info("==============MOMENTS BEFORE READING GRIB FILE================")
+    #         # backend_kwargs={"indexpath": "/tmp/custom_index.idx"}  # Use a different location
+    #         ds = xr.open_dataset(grib_file, 
+    #                              engine='cfgrib', 
+    #                              backend_kwargs={"indexpath": "scripts/data_collection/cds_pipeline/cache"})
+    #         # ds = self.process_grib_file(grib_file)
+    #         logger.info(f"Successfully opened GRIB file: {grib_file} to a dataset of type: {type(ds)}")
     #         df = ds.to_dataframe().reset_index()
     #         df['date'] = pd.to_datetime(df['time']).dt.normalize()  # Extract only date part
     #         df = df.drop(columns=['number'], errors='ignore')  # Drop 'number' column if it exists
     #         logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
     #         return df
-    #         # Log the downloaded file size for debugging.
-    #         file_size = os.path.getsize(grib_file)
-    #         logger.info(f"Downloaded file size: {file_size} bytes")
-    #         if file_size < 10000:  # adjust threshold as needed; 10KB is an example threshold
-    #             logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
-    #             raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
-            
-    #         # If the file is actually a zip archive, unzip it first.
-    #         if zipfile.is_zipfile(grib_file):
-    #             logger.info("Downloaded file is a ZIP archive. Unzipping...")
-    #             with zipfile.ZipFile(grib_file, 'r') as z:
-    #                 # Assume the ZIP contains one GRIB file; take the first.
-    #                 grib_names = z.namelist()
-    #                 if not grib_names:
-    #                     raise ValueError("ZIP archive is empty.")
-    #                 # Extract the first file to a temporary location.
-    #                 extracted_file = os.path.join(os.path.dirname(grib_file), grib_names[0])
-    #                 z.extract(grib_names[0], os.path.dirname(grib_file))
-    #                 logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
-    #                 # Attempt to read the extracted GRIB file.
-    #                 ds = xr.open_dataset(extracted_file, engine='cfgrib')
-    #                 df = ds.to_dataframe().reset_index()
-    #                 df['date'] = pd.to_datetime(df['time']).dt.normalize()
-    #                 df = df.drop(columns=['number'], errors='ignore')
-    #                 logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
-    #                 os.remove(extracted_file)  # Cleanup the extracted file.
-    #                 return df
-    #         else:
-    #             # If not a ZIP, try reading the file directly.
-    #             ds = xr.open_dataset(grib_file, engine='cfgrib')
-    #             df = ds.to_dataframe().reset_index()
-    #             df['date'] = pd.to_datetime(df['time']).dt.normalize()
-    #             df = df.drop(columns=['number'], errors='ignore')
-    #             logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
-    #             return df
     #     except Exception as e:
     #         logger.error(f"Error reading GRIB file '{grib_file}': {e}")
     #         return None
-    
-    def _read_grib_to_dataframe(self, grib_file):
-        """Read the GRIB file into a DataFrame"""
-        try:
-            logger.info("==============MOMENTS BEFORE READING GRIB FILE================")
-            # backend_kwargs={"indexpath": "/tmp/custom_index.idx"}  # Use a different location
-            ds = xr.open_dataset(grib_file, 
-                                 engine='cfgrib', 
-                                 backend_kwargs={"indexpath": "scripts/data_collection/cds_pipeline/cache"})
-            # ds = self.process_grib_file(grib_file)
-            logger.info(f"Successfully opened GRIB file: {grib_file} to a dataset of type: {type(ds)}")
-            df = ds.to_dataframe().reset_index()
-            df['date'] = pd.to_datetime(df['time']).dt.normalize()  # Extract only date part
-            df = df.drop(columns=['number'], errors='ignore')  # Drop 'number' column if it exists
-            logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
-            return df
-        except Exception as e:
-            logger.error(f"Error reading GRIB file '{grib_file}': {e}")
-            return None
 
 
     ## fetch_invar_data method
