@@ -1,5 +1,6 @@
-*.pyc
-__pycache__/
 data/
 environments/
 .venv/
+scripts/data_collection/credentials.JSON
+__pycache__/
+*.pyc

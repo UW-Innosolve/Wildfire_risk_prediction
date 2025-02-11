@@ -1,15 +1,25 @@
 # main.py
 
-import alberta_wf_incidence_loader
-from cds_pipeline import CdsPipeline
-import raw_data_assembly
-import logging
 import time
+
+## Import Pipeline classes
+from cds_pipeline.CDS_pipeline import CdsPipeline
+from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
+
+# Import Utility classes
+import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_loader
+import collection_utils.raw_data_assembly as raw_data_assembly
+
+import logging
+from cds_pipeline.cds_auth import CdsAuth
+import cfgrib
+import eccodes
+
 
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
     handlers=[
         logging.FileHandler("pipeline.log"),
@@ -19,7 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # NEW IMPORT for the Human Activity Pipeline
-from human_activity_pipeline import HumanActivityPipeline
+# from human_activity_pipeline import HumanActivityPipeline
 
 def main():
     ## WILDFIRE INCIDENCE DATA
@@ -36,41 +46,44 @@ def main():
 
     ## CDS PIPELINE
     ## Initialize CDS pipeline
-    cds_pipeline = CdsPipeline()
-    cds_pipeline.cds_pipeline_initialize() # Initialize the CDS pipeline (uses api key from credentials.json)
+    cds_key = CdsAuth().get_cds_key(cred_file_path="/Users/jromero/Documents/GitHub/Wildfire_risk_prediction/scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
+    cds_pipeline = CdsPipeline(cds_key)
+    
+    
+    ## Set CDS time-invariant variables (parameters)
+    invariant_cds_params = ['low_veg_cover', 
+                            'high_veg_cover', cl
+                            'low_veg_type', 
+                            'high_veg_type']
     
     ## Set CDS time-variant variables
-    cds_pipeline.set_variant_variables([
-        # Temperature and pressure
-            '2m_temperature', 
-            'surface_pressure',
-            # Wind
-            '10m_u_component_of_wind', 
-            '10m_v_component_of_wind',
-            # Water variables
-            '2m_dewpoint_temperature', 
-            'total_precipitation',
-            'total_evaporation',
-            # Leaf area index (vegetation)
-            'leaf_area_index_low_vegetation',
-            'leaf_area_index_high_vegetation',
-            # Heat variables (NOTE: needs review and/or reduction)
-            'surface_sensible_heat_flux',
-            'surface_latent_heat_flux',
-            'surface_solar_radiation_downwards',
-            'surface_thermal_radiation_downwards',
-            'surface_net_solar_radiation',
-            'surface_net_thermal_radiation',
-    ])
-    
-    ## Set CDS time-invariant variables 
-    ## Using correct abbreviated variable names
-    cds_pipeline.set_invariant_variables(['slt', 'tvl', 'tvh'])  # soil type, type low vegetation, and type high vegetation
+    variant_cds_params = [  # Temperature and pressure
+                            '2m_temperature', 
+                            'surface_pressure',
+                            # Wind
+                            '10m_u_component_of_wind', 
+                            '10m_v_component_of_wind',
+                            # Water variables
+                            '2m_dewpoint_temperature', 
+                            'total_precipitation',
+                            'total_evaporation',
+                            # Leaf area index (vegetation)
+                            'leaf_area_index_low_vegetation',
+                            'leaf_area_index_high_vegetation',
+                            # Heat variables (NOTE: needs review and/or reduction)
+                            'surface_sensible_heat_flux',
+                            'surface_latent_heat_flux',
+                            'surface_solar_radiation_downwards',
+                            'surface_thermal_radiation_downwards',
+                            'surface_net_solar_radiation',
+                            'surface_net_thermal_radiation',
+    ]
+
 
     ## Set CDS request parameters
     cds_pipeline.set_request_parameters(
-        var_variables=cds_pipeline.var_variables, 
-        invar_variables=cds_pipeline.invar_variables, 
+        var_params=variant_cds_params, 
+        invar_params=invariant_cds_params, 
         lat_range=[49, 60], 
         long_range=[-120, -110], 
         grid_resolution=0.5
@@ -80,8 +93,7 @@ def main():
     ## Create pipelines list
     pipelines = [
         {'CDS': cds_pipeline},
-        # NEW: Add human activity pipeline
-        {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+        # {'HUMAN_ACTIVITY': HumanActivityPipeline()},
     ]
 
     ## Initialize the raw data assembler
