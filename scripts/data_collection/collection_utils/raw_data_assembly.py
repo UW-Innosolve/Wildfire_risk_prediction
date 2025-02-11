@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
-from datetime import timedelta
+import datetime as dt
+import time
 import logging
+from cds_pipeline.CDS_pipeline import CdsPipeline
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -32,9 +34,11 @@ class RawDataAssembler:
         # Load wildfire incidence data and separate fire dates with location data
         self.wildfire_incidence_data = wildfire_incidence_data
         self.fire_dates = self.wildfire_incidence_data[['fire_start_date', 'fire_location_latitude', 'fire_location_longitude']].dropna()
+        
         # Ensure fire_start_date is of type datetime.date for matching purposes
-        fire_dates_temp = pd.to_datetime(self.fire_dates['fire_start_date'], errors='raise')
-        self.fire_dates['fire_start_date'] = fire_dates_temp
+        self.fire_dates['fire_start_date'] = self.fire_dates['fire_start_date'].dt.date
+        # fire_dates_temp = pd.to_datetime(self.fire_dates['fire_start_date'], errors='raise')
+        # self.fire_dates['fire_start_date'] = fire_dates_temp
         logger.info(f"Number of fire dates with location data: {len(self.fire_dates)}")
         logger.debug(f"Sample fire_dates:\n{self.fire_dates.head()}")
 
@@ -93,75 +97,179 @@ class RawDataAssembler:
             logger.error(f"Grouping failed due to missing key: {e}")
             return
 
-        ## Loop through each pipeline in the pipelines list
-        for pipeline in pipelines:
-            if 'CDS' in pipeline:
-                cds_pipeline = pipeline['CDS']
-                logger.info("CDS pipeline found!")
+        # Iterate over each period (e.g., month)
+        for period, batch in self.grouped_all_dates:
+            # Start timing for this batch
+            time_start = time.time()
 
-                ## CDS Pipeline loop
-                for period, batch in self.grouped_all_dates:
-                    logger.info(f"Processing batch for period: {period}")
-                    logger.info(f"Batch shape: {batch.shape}")
-                    start_date = batch['date'].min()
-                    end_date = batch['date'].max()
+            logger.info(f"--- Processing batch for period: {period} ---")
+            logger.info(f"Batch shape: {batch.shape}")
 
-                    ## Fetch weather data for the period
+            start_date = batch['date'].min()
+            end_date = batch['date'].max()
+            period_key = period.strftime('%Y%m')
+
+            # Initialize a DataFrame to hold the integrated data for this period
+            monthly_data = None
+
+            # Process each pipeline in sequence
+            for pipeline in pipelines:
+                # 1) CDS pipeline
+                if 'CDS' in pipeline:
+                    cds_pipeline = pipeline['CDS']
+                    logger.info("CDS pipeline found!")
+
+                    # Fetch weather data
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    weather_data = cds_pipeline.fetch_var_data(start_date, end_date)  # fetch_weather_data returns a DataFrame or None
-                    
-                    if weather_data is None:
-                        logger.error(f"Failed to fetch weather data for period {period}. Skipping this batch.")
-                        continue  # Skip to the next batch
+                    weather_data = cds_pipeline.fetch_var_data(start_date, end_date)
+
+                    if weather_data is None or weather_data.empty:
+                        logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
+                        continue
 
                     # Check if 'date' column exists
                     if 'date' not in weather_data.columns:
                         logger.error("Weather data does not contain 'date' column. Skipping this batch.")
                         continue
 
-                    # try: ## NOTE: Raises error that forces func to continue. This already implemented in fetch_weather_data
-                    #     weather_data['date'] = weather_data['date'].dt.date
-                    # except Exception as e:
-                    #     logger.error(f"Error converting 'date' column: {e}")
-                    #     continue
-
-                    # Optionally, print sample weather_data
                     logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {weather_data.shape}")
-                    logger.debug(f"Sample weather_data (date, lat, long) only:\n{weather_data[['date', 'latitude', 'longitude']].head()}")
 
-                    # Label fire days by searching fire_dates for matching dates and locations in the row
+                    # Label fire days in weather data
                     logger.info("Labeling fire days in weather data...")
                     weather_data['is_fire_day'] = weather_data.apply(self._is_fire_labeler, axis=1)
-                    
-                    # Check how many fire days were found
                     num_fire_days = weather_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
 
-                    # Generate the target file name for the weather data
-                    target_file = f"weather_data_{period.strftime('%Y%m')}.csv"
+                    # Store the resulting DataFrame in monthly_data
+                    monthly_data = weather_data.copy()
+                    
+            # After all pipelines are processed for this period, write the final CSV
+            if monthly_data is not None and not monthly_data.empty:
+                target_file = f"final_weather_data_{period_key}.csv"
+                try:
+                    monthly_data.to_csv(target_file, index=False)
+                    logger.info(f"Wrote monthly CSV for {period_key} -> '{target_file}'")
+                except Exception as e:
+                    logger.error(f"Failed to save updated weather data for {period_key}: {e}")
+            else:
+                logger.warning(f"No final data to save for {period_key}.")
 
-                    # Save the DataFrame to a CSV file labeled as above
-                    try:
-                        weather_data.to_csv(target_file, index=False)
-                        logger.info(f"Weather data saved to '{target_file}'.")
-                    except Exception as e:
-                        logger.error(f"Failed to save weather data to '{target_file}': {e}")
+            # End timing for this batch
+            time_end = time.time()
+            logger.info(f"Processing time for this batch ({period_key}): {time_end - time_start:.2f} seconds")
+                    
+                
+        # ## Loop through each pipeline in the pipelines list
+        # for pipeline in pipelines:
+        #     if 'CDS' in pipeline:
+        #         cds_pipeline = pipeline['CDS'] # Get the CDS pipeline object from the pipeline dictionary
+        #         logger.info("CDS pipeline found!")
+
+        #         ## CDS Pipeline loop
+        #         for period, batch in self.grouped_all_dates:
+        #             logger.info(f"Processing batch for period: {period}")
+        #             logger.info(f"Batch shape: {batch.shape}")
+        #             start_date = batch['date'].min()
+        #             end_date = batch['date'].max()
+
+        #             ## Fetch weather data for the period
+        #             logger.info(f"Starting request for weather data from {start_date} to {end_date}")
+        #             weather_data = cds_pipeline.fetch_var_data(start_date, end_date)  # fetch_weather_data returns a DataFrame or None
+                    
+        #             if weather_data is None:
+        #                 logger.error(f"Failed to fetch weather data for period {period}. Skipping this batch.")
+        #                 continue  # Skip to the next batch
+
+        #             # Check if 'date' column exists
+        #             if 'date' not in weather_data.columns:
+        #                 logger.error("Weather data does not contain 'date' column. Skipping this batch.")
+        #                 continue
+
+        #             # try: ## NOTE: Raises error that forces func to continue. This already implemented in fetch_weather_data
+        #             #     weather_data['date'] = dt.date(weather_data['date'])
+        #             #     # weather_data['date'] = weather_data['date'].dt.date
+        #             #     # weather_data['date'] = pd.to_datetime(weather_data['date'])
+        #             #     # weather_data['date'] = weather_data['date'].dt.date
+
+        #             # except Exception as e:
+        #             #     logger.error(f"Error converting 'date' column: {e}")
+        #             #     continue
+
+        #             # Optionally, print sample weather_data
+        #             logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {weather_data.shape}")
+        #             logger.debug(f"Sample weather_data (date, lat, long) only:\n{weather_data[['date', 'latitude', 'longitude']].head()}")
+
+        #             # Label fire days by searching fire_dates for matching dates and locations in the row
+        #             logger.info("Labeling fire days in weather data...")
+        #             weather_data['is_fire_day'] = weather_data.apply(self._is_fire_labeler, axis=1)
+                    
+        #             # Check how many fire days were found
+        #             num_fire_days = weather_data['is_fire_day'].sum()
+        #             logger.info(f"Number of fire days found in this batch: {num_fire_days}")
+
+        #             # Generate the target file name for the weather data
+        #             target_file = f"weather_data_{period.strftime('%Y%m')}.csv"
+
+        #             # Save the DataFrame to a CSV file labeled as above
+        #             try:
+        #                 weather_data.to_csv(target_file, index=False)
+        #                 logger.info(f"Weather data saved to '{target_file}'.")
+        #             except Exception as e:
+        #                 logger.error(f"Failed to save weather data to '{target_file}': {e}")
                         
-                    # # # NOTE:also save invariant data
-                    # if invar_data is not None:
-                    #     target_file = f"invar_data_{period.strftime('%Y%m')}.csv"
-                    #     try:
-                    #         invar_data.to_csv(target_file, index=False)
-                    #         logger.info(f"Invariant data saved to '{target_file}'.")
-                    #     except Exception as e:
-                    #         logger.error(f"Failed to save invariant data to '{target_file}': {e}")
+        #             # # # NOTE:also save invariant data
+        #             # if invar_data is not None:
+        #             #     target_file = f"invar_data_{period.strftime('%Y%m')}.csv"
+        #             #     try:
+        #             #         invar_data.to_csv(target_file, index=False)
+        #             #         logger.info(f"Invariant data saved to '{target_file}'.")
+        #             #     except Exception as e:
+        #             #         logger.error(f"Failed to save invariant data to '{target_file}': {e}")
+        
 
 
+    # ## _is_fire_labeler method
+    # ##      - label the fire incidents in the dataset within a specified location tolerance
+    # ##      - input: row, fire_dates, latitude_tolerance, longitude_tolerance
+    # ##      - output: 1 if a matching fire is found, 0 otherwise
+    # ## Note this method checks for a matching fire incident in the fire_dates DataFrame (goes through all of it each time its called)
+    # def _is_fire_labeler(self, row):
+    #     """Label the fire incidents in the dataset within a specified location tolerance.
+    #     Args:
+    #         row: A single row of the DataFrame (supplied automatically by `apply`).
+    #         fire_dates: DataFrame containing fire incident data with columns:
+    #             - fire_start_date
+    #             - fire_location_latitude
+    #             - fire_location_longitude
+    #         latitude_tolerance: Latitude tolerance for matching locations.
+    #         longitude_tolerance: Longitude tolerance for matching locations.
+
+    #     Returns:
+    #         int: 1 if a matching fire is found, 0 otherwise.
+    #     """
+
+    #     # logger.info(f"Processing row: {row}")
+    #     logger.info(f"Sample row (date, lat, long): ({row['date']}, {row['latitude']}, {row['longitude']})")
+    #     matching_fires = self.fire_dates[
+    #         (self.fire_dates['fire_start_date'] == row['date']) &
+    #         (self.fire_dates['fire_location_latitude'].between(row['latitude'] - self.latitude_tolerance,
+    #                                                       row['latitude'] + self.latitude_tolerance)) &
+    #         (self.fire_dates['fire_location_longitude'].between(row['longitude'] - self.longitude_tolerance,
+    #                                                        row['longitude'] + self.longitude_tolerance))
+    #     ]
+
+    #     # Debug logging
+    #     if matching_fires.empty:
+    #         logger.debug(f"No fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
+    #     else:
+    #         logger.debug(f"Fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
+
+    #     return int(not matching_fires.empty)
+    
     ## _is_fire_labeler method
     ##      - label the fire incidents in the dataset within a specified location tolerance
     ##      - input: row, fire_dates, latitude_tolerance, longitude_tolerance
     ##      - output: 1 if a matching fire is found, 0 otherwise
-    ## Note this method checks for a matching fire incident in the fire_dates DataFrame (goes through all of it each time its called)
     def _is_fire_labeler(self, row):
         """Label the fire incidents in the dataset within a specified location tolerance.
         Args:
@@ -176,23 +284,17 @@ class RawDataAssembler:
         Returns:
             int: 1 if a matching fire is found, 0 otherwise.
         """
-
-        logger.debug(f"Processing row: {row}")
-        logger.debug(f"Sample row (date, lat, long): ({row['date']}, {row['latitude']}, {row['longitude']})")
         matching_fires = self.fire_dates[
             (self.fire_dates['fire_start_date'] == row['date']) &
-            (self.fire_dates['fire_location_latitude'].between(row['latitude'] - self.latitude_tolerance,
-                                                          row['latitude'] + self.latitude_tolerance)) &
-            (self.fire_dates['fire_location_longitude'].between(row['longitude'] - self.longitude_tolerance,
-                                                           row['longitude'] + self.longitude_tolerance))
+            (self.fire_dates['fire_location_latitude'].between(
+                row['latitude'] - self.latitude_tolerance,
+                row['latitude'] + self.latitude_tolerance
+            )) &
+            (self.fire_dates['fire_location_longitude'].between(
+                row['longitude'] - self.longitude_tolerance,
+                row['longitude'] + self.longitude_tolerance
+            ))
         ]
-
-        # Debug logging
-        if matching_fires.empty:
-            logger.debug(f"No fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
-        else:
-            logger.debug(f"Fire match found for date {row['date']} and location ({row['latitude']}, {row['longitude']})")
-
         return int(not matching_fires.empty)
     
 

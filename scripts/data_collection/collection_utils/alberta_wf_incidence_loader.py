@@ -11,6 +11,8 @@ class AlbertaWildfireIncidenceLoader:
 
     def __init__(self, wildfire_data_path):
         self.wildfire_data_path = wildfire_data_path
+        logger.info(f"AlbertaWildfireIncidenceLoader initialized with wildfire data path: {self.wildfire_data_path}")
+        
         # Load wildfire data (i.e., wildfire incidence data)
         try:
             self.ab_wildfire_data_raw = pd.read_excel(self.wildfire_data_path)

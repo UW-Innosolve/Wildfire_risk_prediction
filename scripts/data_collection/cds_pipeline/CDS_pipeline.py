@@ -3,10 +3,9 @@ import pandas as pd
 import numpy as np
 import xarray as xr  # Import xarray for working with GRIB files
 import cfgrib
-from datetime import timedelta
 import requests
 import urllib.request as request # Import request for specifically for downloading files (invar files downloaded from URLs)
-# import tempfile
+import tempfile
 import os.path
 import logging
 import ssl
@@ -95,20 +94,19 @@ class CdsPipeline:
             # Process the dataset
         except Exception as e:
             logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
-        
-    
+
     ## _read_grib_to_dataframe method
     ##          - read the GRIB file into a DataFrame
     ##          - input: grib_file
     ##          - output: df (pandas DataFrame)
     ##          - private method
-    
     def _read_grib_to_dataframe(self, grib_file):
         """Read the GRIB file into a DataFrame with enhanced error handling.
         
         If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
         this function logs an error or attempts to unzip it before parsing.
         """
+
         try:
             # Log the downloaded file size for debugging.
             file_size = os.path.getsize(grib_file)
@@ -145,89 +143,196 @@ class CdsPipeline:
                 df = df.drop(columns=['number'], errors='ignore')
                 logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
                 return df
+
         except Exception as e:
             logger.error(f"Error reading GRIB file '{grib_file}': {e}")
             return None
+
+    
+    # ## _read_grib_to_dataframe method
+    # ##          - read the GRIB file into a DataFrame
+    # ##          - input: grib_file
+    # ##          - output: df (pandas DataFrame)
+    # ##          - private method
     
     # def _read_grib_to_dataframe(self, grib_file):
-    #     """Read the GRIB file into a DataFrame"""
+    #     """Read the GRIB file into a DataFrame with enhanced error handling.
+        
+    #     If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
+    #     this function logs an error or attempts to unzip it before parsing.
+    #     """
     #     try:
-    #         logger.info("==============MOMENTS BEFORE READING GRIB FILE================")
-    #         # backend_kwargs={"indexpath": "/tmp/custom_index.idx"}  # Use a different location
-    #         ds = xr.open_dataset(grib_file, 
-    #                              engine='cfgrib', 
-    #                              backend_kwargs={"indexpath": "scripts/data_collection/cds_pipeline/cache"})
-    #         # ds = self.process_grib_file(grib_file)
-    #         logger.info(f"Successfully opened GRIB file: {grib_file} to a dataset of type: {type(ds)}")
-    #         df = ds.to_dataframe().reset_index()
-    #         df['date'] = pd.to_datetime(df['time']).dt.normalize()  # Extract only date part
-    #         df = df.drop(columns=['number'], errors='ignore')  # Drop 'number' column if it exists
-    #         logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
-    #         return df
+    #         # Log the downloaded file size for debugging.
+    #         file_size = os.path.getsize(grib_file)
+    #         logger.info(f"Downloaded file size: {file_size} bytes")
+    #         if file_size < 10000:  # adjust threshold as needed; 10KB is an example threshold
+    #             logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
+    #             raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
+            
+    #         # If the file is actually a zip archive, unzip it first.
+    #         if zipfile.is_zipfile(grib_file):
+    #             logger.info("Downloaded file is a ZIP archive. Unzipping...")
+    #             with zipfile.ZipFile(grib_file, 'r') as z:
+    #                 # Assume the ZIP contains one GRIB file; take the first.
+    #                 grib_names = z.namelist()
+    #                 if not grib_names:
+    #                     raise ValueError("ZIP archive is empty.")
+    #                 # Extract the first file to a temporary location.
+    #                 extracted_file = os.path.join(os.path.dirname(grib_file), grib_names[0])
+    #                 z.extract(grib_names[0], os.path.dirname(grib_file))
+    #                 logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
+    #                 # Attempt to read the extracted GRIB file.
+    #                 ds = xr.open_dataset(extracted_file, engine='cfgrib')
+    #                 df = ds.to_dataframe().reset_index()
+    #                 df['date'] = pd.to_datetime(df['time']).dt.normalize()
+    #                 df = df.drop(columns=['number'], errors='ignore')
+    #                 logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
+    #                 os.remove(extracted_file)  # Cleanup the extracted file.
+    #                 return df
+    #         else:
+    #             # If not a ZIP, try reading the file directly.
+    #             ds = xr.open_dataset(grib_file, engine='cfgrib')
+    #             df = ds.to_dataframe().reset_index()
+    #             df['date'] = pd.to_datetime(df['time']).dt.normalize()
+    #             df = df.drop(columns=['number'], errors='ignore')
+    #             logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
+    #             return df
     #     except Exception as e:
     #         logger.error(f"Error reading GRIB file '{grib_file}': {e}")
     #         return None
-
-
-    ## fetch_invar_data method
-    ##          - fetch time-invariant weather data from the CDS API using the specified request parameters
+    ## fetch_weather_data method
+    ##          - fetch weather data from the CDS API using the specified request parameters
     ##          - invariant variables must be set before calling this method, method cannot be called without at least one invariant variable set
-    def fetch_invar_data(self):
-        if not self.cds_request_parameters:
-            raise ValueError("Request parameters have not been set. Please call set_request_parameters first.")
-        elif not self.invar_variables and any(var in self.cdsapi_request_parameters['variable'] for var in self.invar_variables):
-            raise ValueError("Time-invariant variables have not been set. Please call set_invariant_variables first.")
+    ##          - variant variables must be set before calling this method, method cannot be called without at least one variant variable set
+    
+    
+    def fetch_weather_data(self, start_date, end_date):
+        """Fetch weather data from the CDS API using the specified request parameters.
         
-        ## Dictionary list containing the urls for the invariant variables
-        ## geopotential, lake total depth, lake cover, glacier mask not included.
-        invar_params_url = { # TODO: Get the actual variable
-            'land_sea_mask': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/151519681/lsm_1279l4_0.1x0.1.grb",
-            'low_veg_cover': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346364/cvl.grib",
-            'high_veg_cover': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346365/cvh.grib",
-            'soil_type': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346371/slt.grib",
-            'low_veg_type': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346366/tvl.grib",
-            'high_veg_type': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346368/tvh.grib"
-        }
+        This function downloads the data to a temporary file, logs the file size for debugging,
+        and then attempts to read the file using _read_grib_to_dataframe. It cleans up the temporary
+        file afterward.
+        """
+        # # Ensure all required parameters have been set
+        # if not self.cds_request_parameters:
+        #     raise ValueError("Request parameters have not been set. Please call set_request_parameters first.")
+        # elif not self.var_variables:
+        #     raise ValueError("Time-variant variables have not been set. Please call set_variant_variables first.")
+        # elif not self.invar_variables and any(var in self.cds_request_parameters['variable'] for var in self.invar_variables):
+        #     raise ValueError("Time-invariant variables have not been set. Please call set_invariant_variables first.")
 
-        list_of_invar_params_request = [] # List to store the invariant parameters requested with the urls
+        try:
+            # Set dates for the request
+            dates = {
+                'year': list(set([str(date.year) for date in pd.date_range(start=start_date, end=end_date)])),
+                'month': list(set([str(date.month).zfill(2) for date in pd.date_range(start=start_date, end=end_date)])),
+                'day': list(set([str(date.day).zfill(2) for date in pd.date_range(start=start_date, end=end_date)])),
+                'time': ['12:00']
+            }
 
-        for invar_param_no_url in self.invar_params:
-            if invar_param_no_url in invar_params_url:
-                invar_param = invar_params_url[invar_param_no_url]
-                list_of_invar_params_request.append(invar_param)
-            else:
-                logger.error(f"URL for invariant parameter '{invar_param_no_url}' not found.")
+            # Merge cds_request_parameters and dates
+            request_parameters = {**self.cds_request_parameters, **dates}
+            logger.info(f"Fetching weather data with parameters: {request_parameters}")
+
+            # Set up temporary file to store the GRIB data
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp_file:
+                target_file = tmp_file.name
+
+            # Make the API call to retrieve the data and store it in the temporary file
+            self.CDS_client.retrieve('reanalysis-era5-land', request_parameters, target_file)
+            logger.info(f"Weather data successfully retrieved and saved to '{target_file}'.")
+
+            # Log the downloaded file size
+            file_size = os.path.getsize(target_file)
+            logger.info(f"Downloaded GRIB file size: {file_size} bytes")
+
+            # Read the GRIB file using the updated function
+            df = self._read_grib_to_dataframe(target_file)
+            if df is None:
+                logger.error("Failed to parse the GRIB file into a DataFrame.")
                 return None
 
-        # Define the directory to save the file
-        output_dir = "scripts/data_collection/static_datasets"
+            # Filter weather data to ensure it's within the correct date range
+            df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
 
-        for invar_param in list_of_invar_params_request:
-            ## Set file name and destination path
-            filename = f"{invar_param}.grib"
-            file_path = os.path.join(output_dir, filename)
+            # Convert weather_df 'date' to datetime.date type for matching purposes
+            df['date'] = df['date'].dt.date
 
-            ## Check if the file already exists
-            if not os.path.exists(file_path):
-                logger.info(f"File not found locally. Downloading: {invar_param}")
-                try:
-                    ssl._create_default_https_context = ssl._create_unverified_context
-                    # Use certifi for SSL verification TODO: Fix SSL verification issue.
-                    # context = ssl.create_default_context(cafile=certifi.where())
+            os.remove(target_file)
+            logger.info(f"Temporary GRIB file '{target_file}' has been removed.")
 
-                    # Download the file
-                    file = request.urlretrieve(invar_param, f"{invar_param}.grib")
+            return df
 
-                    # Save the file to disk
-                    with open(file_path, 'wb') as f:
-                        f.write(file[1])
-                    print(f"File downloaded and saved as: {file_path}")
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP Error during data retrieval: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error during data retrieval: {e}")
+            if 'target_file' in locals() and os.path.exists(target_file):
+                os.remove(target_file)
+                logger.info(f"Temporary GRIB file '{target_file}' has been removed due to an error.")
+            return None
 
-                except requests.exceptions.RequestException as e:
-                    logger.error(f"An error occurred: {e}")
-                    return None
-            else:
-                    print(f"File already exists: {file_path}")
+
+    # ## fetch_invar_data method
+    # ##          - fetch time-invariant weather data from the CDS API using the specified request parameters
+    # ##          - invariant variables must be set before calling this method, method cannot be called without at least one invariant variable set
+    # def fetch_invar_data(self):
+    #     if not self.cds_request_parameters:
+    #         raise ValueError("Request parameters have not been set. Please call set_request_parameters first.")
+    #     elif not self.invar_variables and any(var in self.cdsapi_request_parameters['variable'] for var in self.invar_variables):
+    #         raise ValueError("Time-invariant variables have not been set. Please call set_invariant_variables first.")
+        
+    #     ## Dictionary list containing the urls for the invariant variables
+    #     ## geopotential, lake total depth, lake cover, glacier mask not included.
+    #     invar_params_url = { # TODO: Get the actual variable
+    #         'land_sea_mask': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/151519681/lsm_1279l4_0.1x0.1.grb",
+    #         'low_veg_cover': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346364/cvl.grib",
+    #         'high_veg_cover': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346365/cvh.grib",
+    #         'soil_type': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346371/slt.grib",
+    #         'low_veg_type': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346366/tvl.grib",
+    #         'high_veg_type': "https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation?preview=/140385202/239346368/tvh.grib"
+    #     }
+
+    #     list_of_invar_params_request = [] # List to store the invariant parameters requested with the urls
+
+    #     for invar_param_no_url in self.invar_params:
+    #         if invar_param_no_url in invar_params_url:
+    #             invar_param = invar_params_url[invar_param_no_url]
+    #             list_of_invar_params_request.append(invar_param)
+    #         else:
+    #             logger.error(f"URL for invariant parameter '{invar_param_no_url}' not found.")
+    #             return None
+
+    #     # Define the directory to save the file
+    #     output_dir = "scripts/data_collection/static_datasets"
+
+    #     for invar_param in list_of_invar_params_request:
+    #         ## Set file name and destination path
+    #         filename = f"{invar_param}.grib"
+    #         file_path = os.path.join(output_dir, filename)
+
+    #         ## Check if the file already exists
+    #         if not os.path.exists(file_path):
+    #             logger.info(f"File not found locally. Downloading: {invar_param}")
+    #             try:
+    #                 ssl._create_default_https_context = ssl._create_unverified_context
+    #                 # Use certifi for SSL verification TODO: Fix SSL verification issue.
+    #                 # context = ssl.create_default_context(cafile=certifi.where())
+
+    #                 # Download the file
+    #                 file = request.urlretrieve(invar_param, f"{invar_param}.grib")
+
+    #                 # Save the file to disk
+    #                 with open(file_path, 'wb') as f:
+    #                     f.write(file[1])
+    #                 print(f"File downloaded and saved as: {file_path}")
+
+    #             except requests.exceptions.RequestException as e:
+    #                 logger.error(f"An error occurred: {e}")
+    #                 return None
+    #         else:
+    #                 print(f"File already exists: {file_path}")
 
 
     ## fetch_var_data method
@@ -235,7 +340,12 @@ class CdsPipeline:
     ##          - invariant variables must be set before calling this method, method cannot be called without at least one invariant variable set
     ##          - variant variables must be set before calling this method, method cannot be called without at least one variant variable set
     def fetch_var_data(self, start_date, end_date):
-        """Fetch weather data from the CDS API using the specified request parameters"""
+        """Fetch weather data from the CDS API using the specified request parameters.
+        
+        This function downloads the data to a temporary file, logs the file size for debugging,
+        and then attempts to read the file using _read_grib_to_dataframe. It cleans up the temporary
+        file afterward.
+        """
         # Ensure all required parameters have been set
         if not self.cdsapi_request_parameters:
             raise ValueError("Request parameters have not been set. Please call set_request_parameters first.")
@@ -254,46 +364,48 @@ class CdsPipeline:
             # Merge cds_request_parameters and dates
             request_parameters = {**self.cdsapi_request_parameters, **dates}
             logger.info(f"Fetching weather data with parameters: {request_parameters}")
-            # Set up file path to store the GRIB data in the main file's directory
-            target_file = os.path.join(os.path.dirname(__file__), "temp_data.grib")
-            print(f"Target file: {target_file}")
+            
+            # Set up temporary file to store the GRIB data
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp_file:
+                target_file = tmp_file.name
 
             # Make the API call to retrieve the data and store it in the file
-            target_file_other = self.CDS_client.retrieve('reanalysis-era5-land', request_parameters, target_file)
-            logger.info(f"CDS Client Response: {target_file_other}")
-            logger.info(f"Weather data successfully retrieved and saved to '{target_file}', of type: {type(target_file)}")
-            logger.info(f"Other target file: {target_file_other}, of type: {type(target_file_other)}")
+            # cds_client_response = self.CDS_client.retrieve('reanalysis-era5-land', request_parameters, target_file)
+            self.CDS_client.retrieve('reanalysis-era5-land', request_parameters, target_file)
+            file_size = os.path.getsize(target_file) ##CDS Client Response: {cds_client_response}
+            logger.info(f""" 
+                            Weather data retrieved and saved to '{target_file}',
+                            File type {type(target_file)} and size {file_size} bytes""")
+
+            # Read the GRIB file into a DataFrame
+            df = self._read_grib_to_dataframe(target_file)
+            if df is None:
+                logger.error("Failed to parse the GRIB file into a DataFrame.")
+                return None
             
-            logger.info(f"Reading GRIB file '{target_file}' of type '{type(target_file)}' into DataFrame...")
-            df = self._read_grib_to_dataframe(target_file)  # Read the GRIB file into a DataFrame
             # Filter weather data to ensure it's within the correct date range
             df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
 
-            # Convert weather_df 'date' to datetime.date type for matching purposes
+            # # Convert weather_df 'date' to datetime.date type for matching purposes
+            # df['date'] = dt.date(df['date'])
             df['date'] = df['date'].dt.date
-
-            os.remove(target_file)  # Remove the GRIB file
-            logger.info(f"GRIB file '{target_file}' has been removed.")
-
-            # Convert weather_df 'date' to datetime.date type for matching purposes
-            df['date'] = df['date'].dt.date
+            # df['date'].dt.date
+            # df['date'] = pd.to_datetime(df['date'])
+            # df['date'] = df['date'].dt.date
 
             os.remove(target_file)  # Remove the temporary file
-            logger.info(f"Temporary GRIB file '{target_file}' has been removed.")
+            logger.info(f"Temporary file '{target_file}' has been removed.")
 
-            if df is not None:
-                return df
-            else:
-                logger.error("Failed to read GRIB data into DataFrame.")
-                return None
+            return df
 
         except requests.exceptions.HTTPError as e:
             logger.error(f"HTTP Error during data retrieval: {e}")
             return None
+            
         except Exception as e:
             logger.error(f"Error during data retrieval: {e}")
             # Ensure the temporary file is deleted in case of an error
             if 'target_file' in locals() and os.path.exists(target_file):
                 os.remove(target_file)
                 logger.info(f"Temporary GRIB file '{target_file}' has been removed due to an error.")
-            return None
+                return None
