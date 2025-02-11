@@ -1,9 +1,6 @@
-*.pyc
-__pycache__/
 data/
 environments/
 .venv/
-scripts/utils/authentication/credentials.JSON
-scripts/utils/authentication/credentials.JSON
-scripts/utils/authentication/credentials.JSON
 scripts/data_collection/credentials.JSON
+__pycache__/
+*.pyc

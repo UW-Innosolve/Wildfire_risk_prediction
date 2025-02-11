@@ -52,7 +52,7 @@ def main():
     
     ## Set CDS time-invariant variables (parameters)
     invariant_cds_params = ['low_veg_cover', 
-                            'high_veg_cover', 
+                            'high_veg_cover', cl
                             'low_veg_type', 
                             'high_veg_type']
     
