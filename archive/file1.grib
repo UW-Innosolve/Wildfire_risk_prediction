@@ -1,0 +1,1115 @@
+    
+
+<!DOCTYPE html>
+<html lang="en-GB" >
+<head>
+                            <title>ERA5-Land: data documentation - Copernicus Knowledge Base - ECMWF Confluence Wiki</title>
+    
+        
+
+                        
+    
+                        
+    
+
+                
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE,chrome=IE7">
+<meta charset="UTF-8">
+<meta id="confluence-context-path" name="confluence-context-path" content="">
+<meta id="confluence-base-url" name="confluence-base-url" content="https://confluence.ecmwf.int">
+
+    <meta id="atlassian-token" name="atlassian-token" content="b689dc84556476580d10df47e7223cc1ddb5c1ed">
+
+<meta id="confluence-cluster-node-id" name="confluence-cluster-node-id" value="546f0bcc">
+<meta id="confluence-cluster-node-name" name="confluence-cluster-node-name" value="confluence-0">
+
+<meta id="confluence-space-key" name="confluence-space-key" content="CKB">
+<script type="text/javascript">
+        var contextPath = '';
+</script>
+
+    
+
+    <meta name="confluence-request-time" content="1737201298575">
+        
+    
+        
+            <meta name="ajs-use-keyboard-shortcuts" content="true">
+            <meta name="ajs-is-confluence-admin" content="false">
+            <meta name="ajs-connection-timeout" content="10000">
+            <meta name="ajs-k15t-cxp-pdf-native-export-available" content="false">
+            <script type="text/x-template" title="gliffy-webpanel-footer">
+        <div class="gliffy-webpanel-footer"><span></span></div>
+</script>
+
+
+            <style>.ia-fixed-sidebar, .ia-splitter-left {width: 285px;}.theme-default .ia-splitter #main {margin-left: 285px;}.ia-fixed-sidebar {visibility: hidden;}</style>
+            <meta name="ajs-discovered-plugin-features" content="$discoveredList">
+            <meta name="ajs-keyboardshortcut-hash" content="4f79970300f85d41812ee37d7d0a2072">
+            <meta id="team-calendars-has-jira-link" content="true">
+            <meta name="ajs-team-calendars-display-time-format" content="displayTimeFormat12">
+            <meta id="team-calendars-display-week-number" content="false">
+            <meta id="team-calendars-user-timezone" content="Etc/UTC">
+            <script type="text/x-template" id="team-calendars-messages" title="team-calendars-messages"><fieldset class="i18n hidden"><input type="hidden" name="calendar3.month.long.july" value="July"><input type="hidden" name="calendar3.day.short.wednesday" value="Wed"><input type="hidden" name="calendar3.day.short.thursday" value="Thu"><input type="hidden" name="calendar3.month.short.march" value="Mar"><input type="hidden" name="calendar3.month.long.april" value="April"><input type="hidden" name="calendar3.month.long.october" value="October"><input type="hidden" name="calendar3.month.long.august" value="August"><input type="hidden" name="calendar3.month.short.july" value="Jul"><input type="hidden" name="calendar3.month.short.may" value="May"><input type="hidden" name="calendar3.month.short.november" value="Nov"><input type="hidden" name="calendar3.day.long.friday" value="Friday"><input type="hidden" name="calendar3.day.long.sunday" value="Sunday"><input type="hidden" name="calendar3.day.long.saturday" value="Saturday"><input type="hidden" name="calendar3.month.short.april" value="Apr"><input type="hidden" name="calendar3.day.long.wednesday" value="Wednesday"><input type="hidden" name="calendar3.month.long.december" value="December"><input type="hidden" name="calendar3.month.short.october" value="Oct"><input type="hidden" name="calendar3.day.long.monday" value="Monday"><input type="hidden" name="calendar3.month.short.june" value="Jun"><input type="hidden" name="calendar3.day.short.monday" value="Mon"><input type="hidden" name="calendar3.day.short.tuesday" value="Tue"><input type="hidden" name="calendar3.day.short.saturday" value="Sat"><input type="hidden" name="calendar3.month.long.march" value="March"><input type="hidden" name="calendar3.month.long.june" value="June"><input type="hidden" name="calendar3.month.short.february" value="Feb"><input type="hidden" name="calendar3.month.short.august" value="Aug"><input type="hidden" name="calendar3.month.short.december" value="Dec"><input type="hidden" name="calendar3.day.short.sunday" value="Sun"><input type="hidden" name="calendar3.month.long.february" value="February"><input type="hidden" name="calendar3.day.long.tuesday" value="Tuesday"><input type="hidden" name="calendar3.month.long.may" value="May"><input type="hidden" name="calendar3.month.long.september" value="September"><input type="hidden" name="calendar3.month.long.november" value="November"><input type="hidden" name="calendar3.month.short.january" value="Jan"><input type="hidden" name="calendar3.month.short.september" value="Sept"><input type="hidden" name="calendar3.day.long.thursday" value="Thursday"><input type="hidden" name="calendar3.month.long.january" value="January"><input type="hidden" name="calendar3.day.short.friday" value="Fri"></fieldset></script>
+            <meta name="ajs-emojis-allow-current-user-upload-emojis" content="true">
+<meta name="ajs-emojis-max-upload-file-size" content="1">
+
+            <meta name="ajs-k15t-cxp-word-native-export-available" content="false">
+            
+    
+    
+            <meta name="ajs-page-title" content="ERA5-Land: data documentation">
+            <meta name="ajs-latest-published-page-title" content="ERA5-Land: data documentation">
+            <meta name="ajs-space-name" content="Copernicus Knowledge Base">
+            <meta name="ajs-page-id" content="140385202">
+            <meta name="ajs-latest-page-id" content="140385202">
+            <meta name="ajs-content-type" content="page">
+            <meta name="ajs-parent-page-title" content="ERA5-Land">
+            <meta name="ajs-parent-page-id" content="158637746">
+            <meta name="ajs-space-key" content="CKB">
+            <meta name="ajs-max-number-editors" content="12">
+            <meta name="ajs-macro-placeholder-timeout" content="5000">
+            <meta name="ajs-jira-metadata-count" content="0">
+            <meta name="ajs-from-page-title" content="">
+            <meta name="ajs-can-remove-page" content="false">
+            <meta name="ajs-can-remove-page-hierarchy" content="false">
+            <meta name="ajs-browse-page-tree-mode" content="view">
+            <meta name="ajs-shared-drafts" content="true">
+            <meta name="ajs-context-path" content="">
+            <meta name="ajs-base-url" content="https://confluence.ecmwf.int">
+            <meta name="ajs-version-number" content="8.5.15">
+            <meta name="ajs-build-number" content="9012">
+            <meta name="ajs-remote-user" content="">
+            <meta name="ajs-remote-user-key" content="">
+            <meta name="ajs-remote-user-has-licensed-access" content="false">
+            <meta name="ajs-remote-user-has-browse-users-permission" content="false">
+            <meta name="ajs-current-user-fullname" content="">
+            <meta name="ajs-current-user-avatar-uri-reference" content="/images/icons/profilepics/anonymous.svg">
+            <meta name="ajs-static-resource-url-prefix" content="">
+            <meta name="ajs-global-settings-attachment-max-size" content="240857593">
+            <meta name="ajs-global-settings-quick-search-enabled" content="true">
+            <meta name="ajs-user-locale" content="en_GB">
+            <meta name="ajs-user-timezone-offset" content="0">
+            <meta name="ajs-enabled-dark-features" content="com.atlassian.profiling.ita.metrics.deny,site-wide.shared-drafts,confluence.in.product.diagnostics.deny,site-wide.synchrony,clc.quick.create,confluence.view.edit.transition,cql.search.screen,confluence-inline-comments-resolved,http.session.registrar,nps.survey.inline.dialog,confluence.efi.onboarding.new.templates,atlassian.cdn.static.assets,pdf-preview,previews.sharing,previews.versions,file-annotations,confluence.efi.onboarding.rich.space.content,collaborative-audit-log,confluence.reindex.improvements,previews.conversion-service,editor.ajax.save,crowd.sync.nested.groups.group.membership.changes.batching.enabled,read.only.mode,graphql,previews.trigger-all-file-types,attachment.extracted.text.extractor,lucene.caching.filter,confluence.table.resizable,notification.batch,previews.sharing.pushstate,confluence-inline-comments-rich-editor,tc.tacca.dacca,topicEventPublisher,confluence.reindex.audit,site-wide.synchrony.opt-in,atlassian.webresource.twophase.js.i18n.disabled,confluence.denormalisedpermissions,file-annotations.likes,gatekeeper-ui-v2,v2.content.name.searcher,confluence.search.improvements.ranking,crowd.event.transformer.directory.manager.cache,mobile.supported.version,confluence.reindex.spaces,confluence.fast-xml-backup-restore,pulp,crowd.sync.delete.user.memberships.batching.enabled,confluence-inline-comments,confluence-inline-comments-dangling-comment,quick-reload-inline-comments-flags,confluence.retention.rules">
+            <meta name="ajs-atl-token" content="b689dc84556476580d10df47e7223cc1ddb5c1ed">
+            <meta name="ajs-confluence-flavour" content="VANILLA">
+            <meta name="ajs-user-date-pattern" content="dd MMM yyyy">
+            <meta name="ajs-access-mode" content="READ_WRITE">
+            <meta name="ajs-render-mode" content="READ_WRITE">
+            <meta name="ajs-date.format" content="MMM dd, yyyy">
+    
+    <link rel="shortcut icon" href="/s/w7qqq6/9012/uyn54t/124/_/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/s/w7qqq6/9012/uyn54t/124/_/favicon.ico">
+
+<link rel="search" type="application/opensearchdescription+xml" href="/opensearch/osd.action" title="ECMWF Confluence Wiki"/>
+    
+                    
+            <meta name="ajs-create-issue-metadata-show-discovery" content="false">
+            
+
+    <script>
+window.WRM=window.WRM||{};window.WRM._unparsedData=window.WRM._unparsedData||{};window.WRM._unparsedErrors=window.WRM._unparsedErrors||{};
+WRM._unparsedData["com.atlassian.confluence.plugins.confluence-license-banner:confluence-license-banner-resources.license-details"]="{\u0022daysBeforeLicenseExpiry\u0022:0,\u0022daysBeforeMaintenanceExpiry\u0022:0,\u0022showLicenseExpiryBanner\u0022:false,\u0022showMaintenanceExpiryBanner\u0022:false,\u0022renewUrl\u0022:null,\u0022salesUrl\u0022:null}";
+WRM._unparsedData["com.onresolve.confluence.groovy.groovyrunner:pluginInfoSettingsWebResources.settings-data-provider"]="{\u0022helpBaseUrl\u0022:\u0022https://docs.adaptavist.com/sr4c/8.21.0/\u0022,\u0022pluginVersion\u0022:\u00228.21.0\u0022,\u0022buildNumber\u0022:19245,\u0022appKey\u0022:\u0022com.onresolve.confluence.groovy.groovyrunner\u0022,\u0022animationsEnabled\u0022:true,\u0022staticResourcePrefix\u0022:\u0022/s/w7qqq6/9012/uyn54t/_\u0022,\u0022editorSettings\u0022:{\u0022miniMapEnabled\u0022:true,\u0022hapiLinterEnabled\u0022:true}}";
+WRM._unparsedData["com.atlassian.applinks.applinks-plugin:applinks-common-exported.applinks-types"]="{\u0022crowd\u0022:\u0022Crowd\u0022,\u0022confluence\u0022:\u0022Confluence\u0022,\u0022fecru\u0022:\u0022FishEye / Crucible\u0022,\u0022stash\u0022:\u0022Stash\u0022,\u0022jira\u0022:\u0022Jira\u0022,\u0022refapp\u0022:\u0022Reference Application\u0022,\u0022bamboo\u0022:\u0022Bamboo\u0022,\u0022generic\u0022:\u0022Generic Application\u0022}";
+WRM._unparsedData["com.atlassian.confluence.plugins.confluence-feature-discovery-plugin:confluence-feature-discovery-plugin-resources.test-mode"]="false";
+WRM._unparsedData["com.onresolve.confluence.groovy.groovyrunner:enhancedSearchWebResources.enhanced-search-settings-data-provider"]="{\u0022enhancedSearchBinocularEnabled\u0022:true,\u0022enhancedSearchSectionMessagesEnabled\u0022:true}";
+WRM._unparsedData["com.atlassian.applinks.applinks-plugin:applinks-common-exported.entity-types"]="{\u0022singular\u0022:{\u0022refapp.charlie\u0022:\u0022Charlie\u0022,\u0022fecru.project\u0022:\u0022Crucible Project\u0022,\u0022fecru.repository\u0022:\u0022FishEye Repository\u0022,\u0022stash.project\u0022:\u0022Stash Project\u0022,\u0022generic.entity\u0022:\u0022Generic Project\u0022,\u0022confluence.space\u0022:\u0022Confluence Space\u0022,\u0022bamboo.project\u0022:\u0022Bamboo Project\u0022,\u0022jira.project\u0022:\u0022Jira Project\u0022},\u0022plural\u0022:{\u0022refapp.charlie\u0022:\u0022Charlies\u0022,\u0022fecru.project\u0022:\u0022Crucible Projects\u0022,\u0022fecru.repository\u0022:\u0022FishEye Repositories\u0022,\u0022stash.project\u0022:\u0022Stash Projects\u0022,\u0022generic.entity\u0022:\u0022Generic Projects\u0022,\u0022confluence.space\u0022:\u0022Confluence Spaces\u0022,\u0022bamboo.project\u0022:\u0022Bamboo Projects\u0022,\u0022jira.project\u0022:\u0022Jira Projects\u0022}}";
+WRM._unparsedData["com.onresolve.confluence.groovy.groovyrunner:web-item-response-renderer.web-item-actions-data-provider"]="[]";
+WRM._unparsedData["com.atlassian.analytics.analytics-client:programmatic-analytics-init.programmatic-analytics-data-provider"]="false";
+WRM._unparsedData["com.atlassian.plugins.atlassian-plugins-webresource-plugin:context-path.context-path"]="\u0022\u0022";
+WRM._unparsedData["com.atlassian.analytics.analytics-client:policy-update-init.policy-update-data-provider"]="false";
+WRM._unparsedData["com.atlassian.applinks.applinks-plugin:applinks-common-exported.authentication-types"]="{\u0022com.atlassian.applinks.api.auth.types.BasicAuthenticationProvider\u0022:\u0022Basic Access\u0022,\u0022com.atlassian.applinks.api.auth.types.TrustedAppsAuthenticationProvider\u0022:\u0022Trusted Applications\u0022,\u0022com.atlassian.applinks.api.auth.types.CorsAuthenticationProvider\u0022:\u0022CORS\u0022,\u0022com.atlassian.applinks.api.auth.types.OAuthAuthenticationProvider\u0022:\u0022OAuth\u0022,\u0022com.atlassian.applinks.api.auth.types.TwoLeggedOAuthAuthenticationProvider\u0022:\u0022OAuth\u0022,\u0022com.atlassian.applinks.api.auth.types.TwoLeggedOAuthWithImpersonationAuthenticationProvider\u0022:\u0022OAuth\u0022}";
+WRM._unparsedData["com.atlassian.confluence.plugins.confluence-search-ui-plugin:confluence-search-ui-plugin-resources.i18n-data"]="{\u0022search.ui.recent.link.text\u0022:\u0022View more recently visited\u0022,\u0022search.ui.search.results.empty\u0022:\u0022We couldn\u0027\u0027t find anything matching \u005C\u0022{0}\u005C\u0022.\u0022,\u0022search.ui.filter.clear.selected\u0022:\u0022Clear selected items\u0022,\u0022search.ui.content.name.search.items.panel.load.all.top.items.button.text\u0022:\u0022Show more app results...\u0022,\u0022search.ui.filter.contributor.button.text\u0022:\u0022Contributor\u0022,\u0022search.ui.filter.space.current.label\u0022:\u0022CURRENT\u0022,\u0022search.ui.clear.input.button.text\u0022:\u0022Clear text\u0022,\u0022search.ui.search.results.clear.button\u0022:\u0022clear your filters.\u0022,\u0022help.search.ui.link.title\u0022:\u0022Search tips\u0022,\u0022search.ui.container.close.text\u0022:\u0022Close\u0022,\u0022search.ui.filter.date.month.text\u0022:\u0022The past month\u0022,\u0022search.ui.infinite.scroll.button.text\u0022:\u0022More results\u0022,\u0022search.ui.filter.date.button.text\u0022:\u0022Date\u0022,\u0022search.ui.filter.date.week.text\u0022:\u0022The past week\u0022,\u0022search.ui.result.subtitle.calendar\u0022:\u0022Team calendar\u0022,\u0022search.ui.filter.date.heading\u0022:\u0022Last modified within\u0022,\u0022search.ui.filter.space.input.label\u0022:\u0022Find spaces...\u0022,\u0022search.ui.generic.error\u0022:\u0022Something went wrong. Refresh the page, or contact your admin if this keeps happening.\u0022,\u0022search.ui.recent.spaces\u0022:\u0022Recent Spaces\u0022,\u0022search.ui.result.subtitle.space\u0022:\u0022Space\u0022,\u0022search.ui.filter.space.category.input.label\u0022:\u0022Find space categories...\u0022,\u0022search.ui.filter.space.archive.label\u0022:\u0022Search archived spaces\u0022,\u0022search.ui.filter.label\u0022:\u0022filter\u0022,\u0022search.ui.filter.date.all.text\u0022:\u0022Any time\u0022,\u0022search.ui.filter.date.hour.text\u0022:\u0022The past day\u0022,\u0022search.ui.filters.heading\u0022:\u0022Filter by\u0022,\u0022search.ui.filter.label.input.label\u0022:\u0022Find labels...\u0022,\u0022search.ui.recent.items.anonymous\u0022:\u0022Start exploring. Your search results will appear here.\u0022,\u0022search.ui.input.label\u0022:\u0022Search\u0022,\u0022search.ui.input.aria.label\u0022:\u0022Search, when you type, your results will be displayed below.\u0022,\u0022search.ui.search.result\u0022:\u0022{0,choice,1#{0} search result|1\u003c{0} search results}\u0022,\u0022search.ui.filter.label.button.text\u0022:\u0022Label\u0022,\u0022search.ui.container.clear.ariaLabel\u0022:\u0022Clear\u0022,\u0022search.ui.input.alert\u0022:\u0022Hit enter to search\u0022,\u0022search.ui.filter.no.result.text\u0022:\u0022We can\u0027\u0027t find anything matching your search\u0022,\u0022search.ui.result.subtitle.user\u0022:\u0022User profile\u0022,\u0022search.ui.filter.contributor.input.label\u0022:\u0022Find people...\u0022,\u0022search.ui.filter.content.type.button.text\u0022:\u0022Type\u0022,\u0022search.ui.filter.date.year.text\u0022:\u0022The past year\u0022,\u0022search.ui.advanced.search.link.text\u0022:\u0022Advanced search\u0022,\u0022search.ui.filter.space.button.text\u0022:\u0022Space\u0022,\u0022search.ui.search.results.clear.line2\u0022:\u0022Try a different search term or\u0022,\u0022search.ui.filter.space.category.button.text\u0022:\u0022Space category\u0022,\u0022search.ui.search.results.clear.line1\u0022:\u0022We couldn\u0027\u0027t find anything matching your search.\u0022,\u0022search.ui.content.name.search.items.panel.load.all.top.items.admin.button.text\u0022:\u0022Show more settings and app results...\u0022,\u0022search.ui.recent.pages\u0022:\u0022Recently visited\u0022,\u0022search.ui.search.result.anonymous\u0022:\u0022{0,choice,1#{0} search result|1\u003c{0} search results}. Have an account? {1}Log in{2} to expand your search.\u0022,\u0022search.ui.recent.items.empty\u0022:\u0022Start exploring. Pages and spaces you\u0027\u0027ve visited recently will appear here.\u0022,\u0022search.ui.filter.space.init.heading\u0022:\u0022recent spaces\u0022}";
+WRM._unparsedData["com.atlassian.confluence.plugins.synchrony-interop:synchrony-status-banner-loader.synchrony-status"]="false";
+WRM._unparsedData["com.atlassian.applinks.applinks-plugin:applinks-common-exported.applinks-help-paths"]="{\u0022entries\u0022:{\u0022applinks.docs.root\u0022:\u0022https://confluence.atlassian.com/display/APPLINKS-091/\u0022,\u0022applinks.docs.diagnostics.troubleshoot.sslunmatched\u0022:\u0022SSL+and+application+link+troubleshooting+guide\u0022,\u0022applinks.docs.diagnostics.troubleshoot.oauthsignatureinvalid\u0022:\u0022OAuth+troubleshooting+guide\u0022,\u0022applinks.docs.diagnostics.troubleshoot.oauthtimestamprefused\u0022:\u0022OAuth+troubleshooting+guide\u0022,\u0022applinks.docs.delete.entity.link\u0022:\u0022Create+links+between+projects\u0022,\u0022applinks.docs.adding.application.link\u0022:\u0022Link+Atlassian+applications+to+work+together\u0022,\u0022applinks.docs.administration.guide\u0022:\u0022Application+Links+Documentation\u0022,\u0022applinks.docs.oauth.security\u0022:\u0022OAuth+security+for+application+links\u0022,\u0022applinks.docs.troubleshoot.application.links\u0022:\u0022Troubleshoot+application+links\u0022,\u0022applinks.docs.diagnostics.troubleshoot.unknownerror\u0022:\u0022Network+and+connectivity+troubleshooting+guide\u0022,\u0022applinks.docs.configuring.auth.trusted.apps\u0022:\u0022Configuring+Trusted+Applications+authentication+for+an+application+link\u0022,\u0022applinks.docs.diagnostics.troubleshoot.authlevelunsupported\u0022:\u0022OAuth+troubleshooting+guide\u0022,\u0022applinks.docs.diagnostics.troubleshoot.ssluntrusted\u0022:\u0022SSL+and+application+link+troubleshooting+guide\u0022,\u0022applinks.docs.diagnostics.troubleshoot.unknownhost\u0022:\u0022Network+and+connectivity+troubleshooting+guide\u0022,\u0022applinks.docs.delete.application.link\u0022:\u0022Link+Atlassian+applications+to+work+together\u0022,\u0022applinks.docs.adding.project.link\u0022:\u0022Configuring+Project+links+across+Applications\u0022,\u0022applinks.docs.link.applications\u0022:\u0022Link+Atlassian+applications+to+work+together\u0022,\u0022applinks.docs.diagnostics.troubleshoot.oauthproblem\u0022:\u0022OAuth+troubleshooting+guide\u0022,\u0022applinks.docs.diagnostics.troubleshoot.migration\u0022:\u0022Update+application+links+to+use+OAuth\u0022,\u0022applinks.docs.relocate.application.link\u0022:\u0022Link+Atlassian+applications+to+work+together\u0022,\u0022applinks.docs.administering.entity.links\u0022:\u0022Create+links+between+projects\u0022,\u0022applinks.docs.upgrade.application.link\u0022:\u0022OAuth+security+for+application+links\u0022,\u0022applinks.docs.diagnostics.troubleshoot.connectionrefused\u0022:\u0022Network+and+connectivity+troubleshooting+guide\u0022,\u0022applinks.docs.configuring.auth.oauth\u0022:\u0022OAuth+security+for+application+links\u0022,\u0022applinks.docs.insufficient.remote.permission\u0022:\u0022OAuth+security+for+application+links\u0022,\u0022applinks.docs.configuring.application.link.auth\u0022:\u0022OAuth+security+for+application+links\u0022,\u0022applinks.docs.diagnostics\u0022:\u0022Application+links+diagnostics\u0022,\u0022applinks.docs.configured.authentication.types\u0022:\u0022OAuth+security+for+application+links\u0022,\u0022applinks.docs.adding.entity.link\u0022:\u0022Create+links+between+projects\u0022,\u0022applinks.docs.diagnostics.troubleshoot.unexpectedresponse\u0022:\u0022Network+and+connectivity+troubleshooting+guide\u0022,\u0022applinks.docs.configuring.auth.basic\u0022:\u0022Configuring+Basic+HTTP+Authentication+for+an+Application+Link\u0022,\u0022applinks.docs.diagnostics.troubleshoot.authlevelmismatch\u0022:\u0022OAuth+troubleshooting+guide\u0022}}";
+if(window.WRM._dataArrived)window.WRM._dataArrived();</script>
+<link rel="stylesheet" href="/s/4ea88fe2bb92ba4f0cc530419bc25126-CDN/w7qqq6/9012/uyn54t/0da87ba8033b4e9b895f4905520cb1b1/_/download/contextbatch/css/_super,-com.atlassian.plugins.atlassian-plugins-webresource-rest:data-collector-perf-observer/batch.css" data-wrm-key="_super,-com.atlassian.plugins.atlassian-plugins-webresource-rest:data-collector-perf-observer" data-wrm-batch-type="context" media="all">
+<link rel="stylesheet" href="/s/df833ed31aebbe9a7dff491e05584da4-CDN/w7qqq6/9012/uyn54t/93f59c046b34a541e3f095b040c3c19e/_/download/contextbatch/css/atl.confluence.macros.expand.desktop,viewcontent,main,atl.general,page,atl.confluence.plugins.pagetree-desktop,atl.comments,-_super/batch.css?cefp_collab_enabled=true&amp;cefp_ed_perm=false&amp;cefp_is_admin=false&amp;highlightactions=true&amp;hostenabled=true" data-wrm-key="atl.confluence.macros.expand.desktop,viewcontent,main,atl.general,page,atl.confluence.plugins.pagetree-desktop,atl.comments,-_super" data-wrm-batch-type="context" media="all">
+<link rel="stylesheet" href="/s/df833ed31aebbe9a7dff491e05584da4-CDN/w7qqq6/9012/uyn54t/93f59c046b34a541e3f095b040c3c19e/_/download/contextbatch/css/atl.confluence.macros.expand.desktop,viewcontent,main,atl.general,page,atl.confluence.plugins.pagetree-desktop,atl.comments,-_super/batch.css?cefp_collab_enabled=true&amp;cefp_ed_perm=false&amp;cefp_is_admin=false&amp;highlightactions=true&amp;hostenabled=true&amp;media=print" media="print" data-wrm-key="atl.confluence.macros.expand.desktop,viewcontent,main,atl.general,page,atl.confluence.plugins.pagetree-desktop,atl.comments,-_super" data-wrm-batch-type="context">
+<link rel="stylesheet" href="/s/w7qqq6/9012/uyn54t/20/_/styles/colors.css?spaceKey=CKB" media="all">
+<link rel="stylesheet" href="/s/w7qqq6/9012/uyn54t/20/_/styles/custom.css?spaceKey=CKB" media="all">
+<script data-wrm-key="com.atlassian.plugins.atlassian-plugins-webresource-rest:data-collector-perf-observer" data-wrm-batch-type="resource" data-initially-rendered>
+!function(){"use strict";if("PerformanceObserver"in window){const e=[];window.__observedResources=e;const r=e=>"script"===e?"script":"css";new PerformanceObserver((n=>{n.getEntries().filter((({initiatorType:e,name:r})=>{const n="script"===e||((e,r)=>"link"===e&&"css"===new URL(r).pathname.split(".").pop())(e,r),i=new URL(location.href).origin===new URL(r).origin;return n&&i})).forEach((({name:n,transferSize:i,encodedBodySize:s,initiatorType:o})=>{e.push([i,s,n,r(o)])}))})).observe({type:"resource"})}}();
+
+</script>
+<script src="/s/d7e51ca9f5a68e961951f4f09dfc6161-CDN/w7qqq6/9012/uyn54t/0da87ba8033b4e9b895f4905520cb1b1/_/download/contextbatch/js/_super,-com.atlassian.plugins.atlassian-plugins-webresource-rest:data-collector-perf-observer/batch.js?locale=en-GB" data-wrm-key="_super,-com.atlassian.plugins.atlassian-plugins-webresource-rest:data-collector-perf-observer" data-wrm-batch-type="context" data-initially-rendered></script>
+<script src="/s/2bac453cd0d81afe3e4870a1d0189dab-CDN/w7qqq6/9012/uyn54t/93f59c046b34a541e3f095b040c3c19e/_/download/contextbatch/js/atl.confluence.macros.expand.desktop,viewcontent,main,atl.general,page,atl.confluence.plugins.pagetree-desktop,atl.comments,-_super/batch.js?cefp_collab_enabled=true&amp;cefp_ed_perm=false&amp;cefp_is_admin=false&amp;highlightactions=true&amp;hostenabled=true&amp;locale=en-GB" data-wrm-key="atl.confluence.macros.expand.desktop,viewcontent,main,atl.general,page,atl.confluence.plugins.pagetree-desktop,atl.comments,-_super" data-wrm-batch-type="context" data-initially-rendered></script>
+<script type="module">WRM.requireLazily(["wr!com.atlassian.plugins.atlassian-plugins-webresource-rest:data-collector-async"])</script>
+    
+
+        
+    
+
+        
+        <meta name="ajs-site-title" content="ECMWF Confluence Wiki" />
+            
+    <!-- Google Tag Manager -->
+<noscript>
+<iframe src="//www.googletagmanager.com/ns.html?id=GTM-P5T597" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5T597');</script>
+<!-- End Google Tag Manager -->
+
+    
+                <link rel="canonical" href="https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation">
+        <link rel="shortlink" href="https://confluence.ecmwf.int/x/shteC">
+    <meta name="wikilink" content="[CKB:ERA5-Land: data documentation]">
+    <meta name="page-version" content="121">
+    <meta name="ajs-page-version" content="121">
+
+</head>
+
+    
+<body      id="com-atlassian-confluence" class="theme-default  aui-layout aui-theme-default">
+
+        
+            
+
+<fieldset class="parameters hidden" style="display: none;">
+    <input type="hidden" id="shareItCanShowEmail" value="true"/>
+</fieldset>
+
+            
+
+<fieldset class="parameters hidden" style="display: none;">
+    </fieldset>
+            <div id='stp-licenseStatus-banner'></div>
+    <div id="page">
+<div id="full-height-container">
+    <div id="header-precursor">
+        <div class="cell">
+            
+                            </div>
+    </div>
+        
+
+
+
+
+
+<header id="header" role="banner">
+            <a class="aui-skip-link" href="https://confluence.ecmwf.int/login.action?os_destination=%2Fdisplay%2FCKB%2FERA5-Land%253A%2Bdata%2Bdocumentation%3Fpreview%3D%2F140385202%2F155324132%2Fgeo_1279l4_0.1x0.1.grb" tabindex="1">Log in</a>
+        <nav class="aui-header aui-dropdown2-trigger-group" aria-label="Site"><div class="aui-header-inner"><div class="aui-header-before"><button class=" aui-dropdown2-trigger app-switcher-trigger aui-dropdown2-trigger-arrowless" aria-controls="app-switcher" aria-haspopup="true" role="button" data-aui-trigger href="#app-switcher"><span class="aui-icon aui-icon-small aui-iconfont-appswitcher">Linked Applications</span></button><div id="app-switcher" class="aui-dropdown2 aui-style-default" role="menu" hidden data-is-user-admin="false" data-is-switcher="true"><div class="app-switcher-loading">Loading&hellip;</div></div></div><div class="aui-header-primary"><span id="logo" class="aui-header-logo aui-header-logo-custom"><a href="/" aria-label="Go to home page"><img src="/download/attachments/425986/atl.site.logo?version=7&amp;modificationDate=1663254847993&amp;api=v2" alt="ECMWF Confluence Wiki" /></a></span><ul class="aui-nav">
+                            <li>
+            
+    
+        
+<a  id="space-directory-link" href="/spacedirectory/view.action"  class=" aui-nav-imagelink"   title="Spaces">
+            <span>Spaces</span>
+    </a>
+        </li>
+                                <li class="aui-buttons">
+            </li>
+</ul>
+</div><div class="aui-header-secondary"><ul class="aui-nav">
+                        <li>
+        <div id="search-ui" class="aui-quicksearch dont-default-focus header-quicksearch"><button id="quick-search-query-button" aria-label="Search" aria-haspopup= "dialog" aria-controls="search_drawer" ></button><input id="quick-search-query" aria-label="Search" placeholder="Search" type="text" aria-haspopup= "dialog" aria-controls="search_drawer" /><div id="quick-search-alert" role="alert">Hit enter to search</div><aui-spinner size="small"></aui-spinner></div>
+    </li>
+        <li>
+            
+        <a id="help-menu-link" role="button" class="aui-nav-link aui-dropdown2-trigger aui-dropdown2-trigger-arrowless" href="#" aria-haspopup="true" aria-owns="help-menu-link-content" title="Help">
+        <span class="aui-icon aui-icon-small aui-iconfont-question-filled">Help</span>
+    </a>
+    <nav id="help-menu-link-content" class="aui-dropdown2 aui-style-default" >
+                    <div class="aui-dropdown2-section">
+                                    <strong></strong>
+                                <ul role="menu"
+                     role="menu"                    aria-label="Help"                    id="help-menu-link-pages"                    class="aui-list-truncate section-pages first">
+                                            <li role="presentation">
+        
+            
+<a role="menuitem"  id="confluence-help-link" href="https://docs.atlassian.com/confluence/docs-85/" class="    "      title="Visit the Confluence documentation home"  target="_blank"
+>
+        Online Help
+</a>
+</li>
+                                            <li role="presentation">
+    
+                
+<a role="menuitem"  id="keyboard-shortcuts-link" href="#" class="    "      title="View available keyboard shortcuts" >
+        Keyboard Shortcuts
+</a>
+</li>
+                                            <li role="presentation">
+    
+            
+<a role="menuitem"  id="feed-builder-link" href="/dashboard/configurerssfeed.action" class="    "      title="Create your custom RSS feed." >
+        Feed Builder
+</a>
+</li>
+                                            <li role="presentation">
+    
+            
+<a role="menuitem"  id="whats-new-menu-link" href="https://confluence.atlassian.com/display/DOC/Confluence+8.5+Release+Notes" class="    "      title="" >
+        What’s new
+</a>
+</li>
+                                            <li role="presentation">
+    
+                
+<a role="menuitem"  id="gadget-directory-link" href="#" class="   user-item administration-link "      title="Browse gadgets provided by Confluence" >
+        Available Gadgets
+</a>
+</li>
+                                            <li role="presentation">
+    
+            
+<a role="menuitem"  id="confluence-about-link" href="/aboutconfluencepage.action" class="    "      title="Get more information about Confluence" >
+        About Confluence
+</a>
+</li>
+                                    </ul>
+            </div>
+            </nav>
+    
+    </li>
+        <li>
+                
+    
+    </li>
+        <li>
+            
+    </li>
+        <li>
+                                            <li>
+        
+            
+<a role="menuitem"  id="login-link" href="/login.action?os_destination=%2Fdisplay%2FCKB%2FERA5-Land%253A%2Bdata%2Bdocumentation%3Fpreview%3D%2F140385202%2F155324132%2Fgeo_1279l4_0.1x0.1.grb" class="   user-item login-link "      title="" >
+        Log in
+</a>
+</li>
+                        
+    </li>
+    </ul>
+</div></div><!-- .aui-header-inner--></nav><!-- .aui-header -->
+    <br class="clear">
+</header>
+    
+
+    
+    	<div class="ia-splitter">
+    		<div class="ia-splitter-left">
+    			<div class="ia-fixed-sidebar" role="complementary" aria-label=sidebar>
+                                            
+                            <div class="acs-side-bar ia-scrollable-section"><div class="acs-side-bar-space-info tipsy-enabled" data-configure-tooltip="Edit space details"><div class="avatar"><div class="space-logo" data-key="CKB" data-name="Copernicus Knowledge Base" data-entity-type="confluence.space"><div class="avatar-img-container"><div class="avatar-img-wrapper"><a href="/pages/viewpage.action?pageId=55116796" title="Copernicus Knowledge Base"><img class="avatar-img" src="/download/attachments/55116794/CKB?version=7&amp;modificationDate=1665508468327&amp;api=v2" alt="Copernicus Knowledge Base"></a></div></div></div></div><div class="space-information-container"><div class="name"><a href="/pages/viewpage.action?pageId=55116796" title="Copernicus Knowledge Base">Copernicus Knowledge Base</a></div><div class="flyout-handle icon aui-icon aui-icon-small aui-iconfont-edit"></div></div></div><div class="acs-side-bar-content"><div class="acs-nav-wrapper"><div class="acs-nav" data-has-create-permission="false" data-quick-links-state="null" data-page-tree-state="null" data-nav-type="page-tree"><div class="acs-nav-sections"><div class="quick-links-wrapper"><h2 class="ia-quick-links-header-title">Space shortcuts</h2><div class="quick-links-section tipsy-enabled "><ul class="acs-nav-list"><li class="acs-nav-item pinned_page"><a class="acs-nav-item-link tipsy-enabled" href="/display/CKB/ERA5%3A+data+documentation" data-collapsed-tooltip="null"><span class="icon"></span><span class="acs-nav-item-label">ERA5: data documentation</span></a></li><li class="acs-nav-item pinned_page"><a class="acs-nav-item-link tipsy-enabled" href="/display/CKB/Please+read%3A+CDS+and+ADS+migrating+to+new+infrastructure%3A+Common+Data+Store+%28CDS%29+Engine" data-collapsed-tooltip="null"><span class="icon"></span><span class="acs-nav-item-label">Please read: CDS and ADS migrating to new infrastructure: Common Data Store (CDS) Engine</span></a></li></ul></div></div></div></div></div><div class="ia-secondary-container tipsy-enabled" data-tree-type="page-tree"><div class="ia-secondary-header"><h2 class="ia-secondary-header-title page-tree"><span class="icon"></span><span class="label">Page tree</span></h2></div><div class="ia-secondary-content"><div class="plugin_pagetree conf-macro output-inline" data-hasbody="false" data-macro-name="pagetree">
+
+        
+        
+    <ul role="list" class="plugin_pagetree_children_list plugin_pagetree_children_list_noleftspace">
+        <div class="plugin_pagetree_children">
+        </div>
+    </ul>
+
+    <fieldset class="hidden">
+        <input type="hidden" name="treeId" value=""/>
+        <input type="hidden" name="treeRequestId" value="/plugins/pagetree/naturalchildren.action?decorator=none&amp;excerpt=false&amp;sort=position&amp;reverse=false&amp;disableLinks=false&amp;expandCurrent=true&amp;placement=sidebar"/>
+        <input type="hidden" name="treePageId" value="140385202"/>
+
+        <input type="hidden" name="noRoot" value="false"/>
+        <input type="hidden" name="rootPageId" value="55116796"/>
+
+        <input type="hidden" name="rootPage" value=""/>
+        <input type="hidden" name="startDepth" value="0"/>
+        <input type="hidden" name="spaceKey" value="CKB"/>
+
+        <input type="hidden" name="i18n-pagetree.loading" value="Loading..."/>
+        <input type="hidden" name="i18n-pagetree.error.permission" value="Unable to load page tree. It seems that you do not have permission to view the root page."/>
+        <input type="hidden" name="i18n-pagetree.eeror.general" value="There was a problem retrieving the page tree. Please check the server log file for more information."/>
+        <input type="hidden" name="loginUrl" value="/login.action?os_destination=%2Fpages%2Fviewpage.action%3FspaceKey%3DCKB%26title%3DERA5-Land%253A%2Bdata%2Bdocumentation&amp;permissionViolation=true"/>
+        <input type="hidden" name="mobile" value="false"/>
+        <input type="hidden" name="placement" value="sidebar"/>
+
+                <fieldset class="hidden">
+                                                <input type="hidden" name="ancestorId" value="158637746"/>
+                                    <input type="hidden" name="ancestorId" value="158632658"/>
+                                    <input type="hidden" name="ancestorId" value="151530614"/>
+                                    <input type="hidden" name="ancestorId" value="55116796"/>
+                                    </fieldset>
+    </fieldset>
+</div></div></div></div><div class="hidden"><a href="/collector/pages.action?key=CKB" id="space-pages-link"></a><script type="text/x-template" title="logo-config-content"><h2>Space Details</h2><div class="personal-space-logo-hint">Your profile picture is used as the logo for your personal space. <a href="/users/profile/editmyprofilepicture.action" target="_blank">Change your profile picture</a>.</div></script></div></div><div class="space-tools-section"><div id="space-tools-menu-additional-items" class="hidden"><div data-label="Browse pages" data-class="" data-href="/pages/reorderpages.action?key=CKB">Browse pages</div></div><button id="space-tools-menu-trigger"  class=" aui-dropdown2-trigger aui-button aui-button-subtle tipsy-enabled aui-dropdown2-trigger-arrowless " aria-controls="space-tools-menu" aria-haspopup="true" role="button" data-aui-trigger><span class="aui-icon aui-icon-small aui-iconfont-configure">Configure</span><span class="aui-button-label">Space tools</span><span class="aui-icon "></span></button><div id="space-tools-menu" class="aui-dropdown2 aui-style-default space-tools-dropdown" role="menu" hidden data-aui-alignment="top left"></div><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-expanded="true"></a></div>
+                    
+                        			</div>
+    		</div>
+        <!-- \#header -->
+
+            
+    
+        <main role="main" id="main" class=" aui-page-panel">
+                    
+        <div id="custom-content-header">
+            
+<p><object data="https://sites.ecmwf.int/copernicus/user-support-journey/documentation_center_small_new.svg" style="width: 100%; margin-bottom:50px" type="image/svg+xml"></object></p>
+
+        </div>
+    
+                        <div id="main-header">
+                        
+    <div id="navigation" class="content-navigation view" role="region" aria-label="Page tools">
+                    <ul class="ajs-menu-bar">
+                                            
+        <li class="normal ajs-menu-item">
+        <a id="action-menu-link" class="action aui-dropdown2-trigger-arrowless aui-button aui-button-subtle ajs-menu-title aui-dropdown2-trigger" href="#" aria-haspopup="true" aria-label="More options" aria-owns="action-menu" data-container="#navigation">
+            <span>
+                                    <span class="aui-icon aui-icon-small aui-iconfont-more" aria-label="More options"></span>
+                                
+            </span>
+        </a>         <div id="action-menu" class="aui-dropdown2 aui-style-default"  role="menu" aria-labelledby="action-menu-link" >
+                            <div class="aui-dropdown2-section">
+                    <ul  id="action-menu-primary"                          class="section-primary first"                         role="presentation" >
+                                                    <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="view-attachments-link"                href="/pages/viewpageattachments.action?pageId=140385202"
+                rel="nofollow"
+                class="action-view-attachments"
+                 accessKey="t"                 title="View Attachments"                                                 role="menuitem"                >
+
+                        <span>
+                                A<u>t</u>tachments (30)
+            </span>        </a>
+    </li>
+                                                <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="action-view-history-link"                href="/pages/viewpreviousversions.action?pageId=140385202"
+                rel="nofollow"
+                class="action-view-history"
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                Page History
+            </span>        </a>
+    </li>
+                                        </ul>
+                </div>
+                            <div class="aui-dropdown2-section">
+                    <ul  id="action-menu-secondary"                          class="section-secondary"                         role="presentation" >
+                                                    <li
+                    role="presentation"
+            >
+
+    
+            
+    
+                                                                        
+    
+    
+            <a  id="view-resolved-comments"                href="#"
+                rel="nofollow"
+                class=""
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                Resolved comments
+            </span>        </a>
+    </li>
+                                                <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="view-page-info-link"                href="/pages/viewinfo.action?pageId=140385202"
+                rel="nofollow"
+                class="action-view-info"
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                Page Information
+            </span>        </a>
+    </li>
+                                                <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="view-in-hierarchy-link"                href="/pages/reorderpages.action?key=CKB&amp;openId=140385202#selectedPageInHierarchy"
+                rel="nofollow"
+                class=""
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                View in Hierarchy
+            </span>        </a>
+    </li>
+                                                <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="action-view-source-link"                href="/plugins/viewsource/viewpagesrc.action?pageId=140385202"
+                rel="nofollow"
+                class="action-view-source popup-link"
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                View Source
+            </span>        </a>
+    </li>
+                                                <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="action-export-pdf-link"                href="/spaces/flyingpdf/pdfpageexport.action?pageId=140385202"
+                rel="nofollow"
+                class=""
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                Export to PDF
+            </span>        </a>
+    </li>
+                                                <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="action-export-word-link"                href="/exportword?pageId=140385202"
+                rel="nofollow"
+                class="action-export-word"
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                Export to Word
+            </span>        </a>
+    </li>
+                                        </ul>
+                </div>
+                            <div class="aui-dropdown2-section">
+                    <ul  id="action-menu-modify"                          class="section-modify"                         role="presentation" >
+                                                    <li
+                    role="presentation"
+            >
+
+    
+        
+    
+                                                                        
+    
+    
+            <a  id="displayed-status-inline-comments"                href="/pages/viewpage.action?pageId=140385202"
+                rel="nofollow"
+                class=""
+                                 title=""                                                 role="menuitem"                >
+
+                        <span>
+                                Hide Inline Comments
+            </span>        </a>
+    </li>
+                                        </ul>
+                </div>
+                    </div>
+    </li>
+            </ul>
+    </div>
+
+            
+            <div id="title-heading" class="pagetitle with-breadcrumbs">
+                
+                                    <div id="breadcrumb-section">
+                        
+    
+    
+    <nav aria-label="Breadcrumbs">
+        <ol id="breadcrumbs">
+                                                            
+                                
+            <li class="first" >
+                                
+                                    <span class=""><a href="/collector/pages.action?key=CKB">Pages</a></span>
+                                                                                                                                                <li id="ellipsis" title="Show all breadcrumbs"><button class="elipsis-button" aria-label="Show all breadcrumbs"><strong>&#8230;</strong></button></li>
+                                                            
+                                
+            <li class="hidden-crumb" >
+                                
+                                    <span class=""><a href="/pages/viewpage.action?pageId=55116796">CAMS and C3S Knowledge Base (CKB)</a></span>
+                                                                                                                                        
+                                
+            <li class="hidden-crumb" >
+                                
+                                    <span class=""><a href="/pages/viewpage.action?pageId=151530614">C3S Knowledge Base (CKB)</a></span>
+                                                                                                                                        
+                                
+            <li class="hidden-crumb" >
+                                
+                                    <span class=""><a href="/display/CKB/CDS+dataset+documentation">CDS dataset documentation</a></span>
+                                                                                                                    
+                                
+            <li>
+                                
+                                    <span class=""><a href="/display/CKB/ERA5-Land">ERA5-Land</a></span>
+                                                                                                    </ol>
+    </nav>
+
+
+                    </div>
+                
+                
+                
+            <div id="page-metadata-banner"><ul class="banner"><li id="system-content-items" class="noprint"><a href="" title="Unrestricted" id="content-metadata-page-restrictions-hidden" class="hidden"></a><a href="/pages/viewpageattachments.action?pageId=140385202&amp;metadataLink=true" title="30 attachments" id="content-metadata-attachments" class="aui-icon aui-icon-small aui-iconfont-attachment"></a></li><li class="page-metadata-item noprinthas-button"  id="content-metadata-jira-wrapper"><a href="" title="" id="content-metadata-jira" class="aui-button aui-button-subtle content-metadata-jira tipsy-disabled hidden"><span>Jira links</span></a></li></ul></div>
+        
+
+                <h1 id="title-text" class="with-breadcrumbs">
+                                                <a href="/display/CKB/ERA5-Land%3A+data+documentation">ERA5-Land: data documentation</a>
+                                    </h1>
+            </div>
+        </div><!-- \#main-header -->
+        
+        
+
+        <div id="sidebar-container">
+                                                </div><!-- \#sidebar-container -->
+
+        
+    
+
+        
+
+
+
+
+            
+    
+
+                                
+    
+
+    
+    
+        
+    
+    
+                    
+    
+
+    
+
+    
+            
+        
+
+    
+    
+
+    
+            
+        
+
+    
+
+    
+
+    
+<div id="content" class="page view">
+    
+
+
+<div id="action-messages">
+                        </div>
+
+
+
+            <script type="text/x-template" title="searchResultsGrid">
+    <table class="aui">
+        <thead>
+            <tr class="header">
+                <th class="search-result-title">Page Title</th>
+                <th class="search-result-space">Space</th>
+                <th class="search-result-date">Updated</th>
+            </tr>
+        </thead>
+    </table>
+</script>
+<script type="text/x-template" title="searchResultsGridCount">
+    <p class="search-result-count">{0}</p>
+</script>
+<script type="text/x-template" title="searchResultsGridRow">
+    <tr class="search-result">
+        <td class="search-result-title"><a href="{1}" class="content-type-{2}"><span>{0}</span></a></td>
+        <td class="search-result-space"><a class="space" href="/display/{4}/" title="{3}">{3}</a></td>
+        <td class="search-result-date"><span class="date" title="{6}">{5}</span></td>
+    </tr>
+</script>
+        
+    
+            
+
+        
+                            
+    
+
+                    
+
+        
+        <div class="page-metadata">
+    <ul>
+        <li class="page-metadata-modification-info">
+            
+        
+    
+    
+        
+    
+        
+            
+            Created by <span class='author'>     <a href="    /display/~maxy
+"
+            aria-label="created by Xiaobo Yang"                       class="url fn"
+                            >Xiaobo Yang</a></span>, last modified by <span class='editor'>     <a href="    /display/~usmg
+"
+            aria-label="modified by Michela Giusti"                       class="url fn"
+                            >Michela Giusti</a></span> on <a class='last-modified' aria-label='modified on Jan 15, 2025, select to show changes' title='Show changes' href='/pages/diffpagesbyversion.action?pageId=140385202&amp;selectedPageVersions=120&amp;selectedPageVersions=121'>Jan 15, 2025</a>
+            </li>
+    </ul>
+</div>
+        
+                                            
+        <div id="main-content" class="wiki-content">
+                           
+        <p><time data-sort-value="Last modified on 2025-01-15" datetime="Last modified on 2025-01-15" class="date-upcoming conf-macro output-block" data-hasbody="false" data-macro-name="page-info">Last modified on Jan 15, 2025 16:55</time></p><div class="confluence-information-macro has-no-icon confluence-information-macro-information conf-macro output-block" data-hasbody="true" data-macro-name="info"><p class="title conf-macro-render">Table of Contents</p><div class="confluence-information-macro-body"><p></p><div class="toc-macro client-side-toc-macro conf-macro output-block" data-headerelements="H1,H2" data-hasbody="false" data-macro-name="toc"></div><p></p></div></div><p><div class="conf-macro output-block" data-hasbody="false" data-macro-name="easy-heading-free"><div class="easy-heading-free"><style type="text/css">
+.heading-expand-header h1,
+.heading-expand-header h2,
+.heading-expand-header h3,
+.heading-expand-header h4,
+.heading-expand-header h5,
+.heading-expand-header h6 {
+    display: block;
+    vertical-align: middle;
+    flex: 1 1 0%;
+    margin-top: 0px;
+}
+.heading-expand-body {
+	padding-top:5px;
+	padding-bottom:5px;
+}
+.heading-expand-header {
+	padding-top:5px;
+	padding-bottom:5px;
+    display: flex;
+    align-items: center;
+}
+.heading-expand-indent {
+	padding-left:16px;
+}
+.heading-arrow {
+	width: 16px;
+	text-align: center;
+	color: #DDD;
+    display: block;
+}
+.heading-arrow-hover {
+	width: 16px;
+	text-align: center;
+	color: #333;
+}
+.heading-expand-header:not(:first-child)
+{
+    margin-top: 20px;
+}
+
+/* Style for navigation */
+#ehp-navigation-wrapper {
+    position: absolute;
+    min-width: 100px;
+}
+
+#ehp-navigation {
+}
+.ehp-nav-popup {
+    background-color: white;
+    opacity: 0.9;
+}
+.nav-sticky {
+    position: fixed;
+}
+#ehp-nav-content-wrapper {
+    position: relative;
+}
+#ehp-navigation-content {
+	position: relative;
+	padding: 5px 0;
+}
+#ehp-navigation-title {
+    font-size: 16px;
+    font-weight: 700;
+    padding-bottom: 3px;
+}
+#ehp-navigation-list {
+	max-height: calc(100vh - 200px);
+	overflow-y: auto;
+    font-size:14px;
+    margin-top: 0px;
+    padding-left: 0px;
+    list-style: none;
+}
+#ehp-navigation-list li {
+
+}
+.nav-list-nowrap li {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-top:5px;
+}
+.nav-list-wrap li {
+    overflow: hidden;
+    padding-top:5px;
+}
+.nav-list-nowrap a {
+    vertical-align:middle;
+    white-space: nowrap;
+}
+.nav-list-wrap a {
+    vertical-align:top;
+    line-height: 1.2;
+    display: inline-block;
+    white-space: normal;
+}
+.ehp-highlight {
+	font-weight: bold;
+}
+
+#ehp-drag-bar {
+    position: absolute;
+    left: -20px;
+    padding-left: 5px;
+    top: 6px;
+    height: 100%;
+    width: 15px;
+    cursor: col-resize;
+}
+.nav-drag-button {
+    color: #ddd;
+}
+#ehp-navigation-switcher {
+    position: absolute;
+    top: 8px;
+    right: 6px;
+    cursor: pointer;
+}
+.nav-switcher {
+    color: #999;
+}
+.nav-switcher-hover {
+    color: #333;
+}
+.nav-expand-header {
+}
+.nav-header-nowrap {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.nav-header-wrap {
+    white-space: nowrap;
+    line-height: 1.1;
+    padding: 3px 0 3px 0;
+}
+
+.nav-empty {
+    height: 16px;
+    width: 16px;
+    display:inline-block;
+}
+.nav-dot {
+    font-size: 0.3em;
+	width: 16px;
+	text-align: center;
+	vertical-align: middle;
+	color: #999;
+}
+.nav-arrow {
+	width: 16px;
+	text-align: top;
+	vertical-align: middle;
+	color: #999;
+}
+.nav-arrow-hover {
+	width: 16px;
+	text-align: top;
+	vertical-align: middle;
+	color: #333;
+}
+
+#ehp-related-links-title {
+    font-size: 16px;
+    font-weight: 700;
+    padding-top: 20px;
+    padding-bottom: 3px;
+}
+#ehp-navigation-list-preview {
+    font-size:14px;
+    margin-top: 0px;
+    padding-left: 0px;
+    list-style: none;
+}
+</style><input class="hid-license-error" type="hidden" value=""/><input class="hid-enabled" type="hidden" value="true"/><input class="hid-selector" type="hidden" value="h1,h2,h3"/><input class="hid-headingIndent" type="hidden" value="20"/><input class="hid-enableExpandCollapse" type="hidden" value="true"/><input class="hid-expandAllByDefault" type="hidden" value="true"/><input class="hid-expandUntil" type="hidden" value="0"/><input class="hid-titleExpandClickable" type="hidden" value="false"/><input class="hid-useNavigation" type="hidden" value="true"/><input class="hid-useNavigationHiddenMode" type="hidden" value="false"/><input class="hid-wrapNavigationText" type="hidden" value="false"/><input class="hid-navigationTitle" type="hidden" value="Table of Contents"/><input class="hid-navigationTop" type="hidden" value="90"/><input class="hid-navigationWidth" type="hidden" value="250"/><input class="hid-navigationIndent" type="hidden" value="10"/><input class="hid-disableNavLinksUnder" type="hidden" value="0"/><input class="hid-enableNavExpandCollapse" type="hidden" value="true"/><input class="hid-expandNavAllByDefault" type="hidden" value="false"/><input class="hid-expandNavUntil" type="hidden" value="1"/><input class="hid-relatedLinksTitle" type="hidden" value="Related Links"/><input class="hid-relatedLinksTarget" type="hidden" value="new-window"/><input class="hid-linkText1" type="hidden" value=""/><input class="hid-linkUrl1" type="hidden" value=""/><input class="hid-linkText2" type="hidden" value=""/><input class="hid-linkUrl2" type="hidden" value=""/><input class="hid-linkText3" type="hidden" value=""/><input class="hid-linkUrl3" type="hidden" value=""/><input class="hid-linkText4" type="hidden" value=""/><input class="hid-linkUrl4" type="hidden" value=""/><input class="hid-linkText5" type="hidden" value=""/><input class="hid-linkUrl5" type="hidden" value=""/><input class="hid-linkText6" type="hidden" value=""/><input class="hid-linkUrl6" type="hidden" value=""/><input class="hid-macrosTOCDisabled" type="hidden" value=""/><input class="hid-macrosToRemoveContainer" type="hidden" value=""/></div><div class="easy-heading-free-end"></div></div></p><h2 id="ERA5Land:datadocumentation-Introduction">Introduction</h2><p>Here we document the <strong>ERA5-Land</strong> dataset <span style="color: rgb(0,51,102);">that, in its consolidated version,</span> <strong>covers the <span style="color: rgb(0,51,102);">period from </span>January 1950 to 2-3 months before the present</strong>. In addition, <span style="color: rgb(0,51,102);">the <strong>ERA5-Land-T</strong> version</span> <strong>delivers <span style="color: rgb(0,51,102);">non-checked</span> close to Near-Real-Time (NRT) <span style="color: rgb(0,51,102);">daily </span>updates. </strong>ERA5-Land<span style="color: rgb(0,51,102);">-T</span> is synchronized <span style="color: rgb(0,51,102);">with the close to NRT daily updates provided by the ERA5 climate reanalysis (ERA5T).</span></p><p>ERA5-Land is a replay of the land component o<span style="color: rgb(0,51,102);">f the ER</span>A5 climate reanalysis, forced by meteorological fields from ERA5. Note that ERA5-Land always uses forcing fields based on the final release of ERA5 (i.e., expver=0001). ERA5-Land comes with a series of improvements making it more accurate for all ty<span style="color: rgb(0,51,102);">pes </span>of land applications. In particular, ERA5-Land runs at enhanced resolution (9 km vs 31 km in ERA5). The temporal frequency of the output is hourly and the fields are masked for all oceans, making them lighter to handle. Click <a href="https://www.ecmwf.int/en/newsletter/159/news/first-era5-land-dataset-be-released-spring" class="external-link" rel="nofollow">this link here</a> for comparison of the ERA5-Land features against other ECMWF reanalys<span style="color: rgb(0,51,102);">e</span>s.</p><p>ERA5-Land is produced under a single simulation, without coupling to the atmospheric module of the ECMWF's Integrated Forecasting System (IFS) or to the ocean wave model of the IFS. <strong>It runs without data assimilation</strong>, making it computationally affordable for relatively quick updates. For example, if significant improvements of the land surface model are implemented<span style="color: rgb(255,0,0);">,</span> the whole or part of the dataset can be reprocessed in a relatively short period. Also, updates are possible in case improved auxiliary datasets are used as input for the production.</p><div class="confluence-information-macro confluence-information-macro-note conf-macro output-block" data-hasbody="true" data-macro-name="note"><span class="aui-icon aui-icon-small aui-iconfont-warning confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><p>Observations indirectly influence the simulation through the atmospheric forcing of ERA5. This forcing drives<span style="color: rgb(0,51,102);"> the</span> ERA5-Land single simulation and it has been obtained <span style="color: rgb(0,51,102);">by</span> assimilating observations through a 4D-VAR data assimilation system and a Simplified Extended Kalman Filter.</p></div></div><p> The core of ERA5-Land is the Tiled ECMWF Scheme for Surface Exchanges over Land incorporating land surface hydrology (H-TESSEL). It uses version CY45R1 of the IFS.</p><p>Currently, ERA5-Land dataset contains only one (9 km) high resolution realisation (HRES). Uncertainty information can currently be used from the reduced resolution ten member ensemble (EDA) of ERA5. The data are available at a sub-daily and monthly frequencies. <strong>For convention</strong> <strong>and consistency</strong> with the previous ERA-Interim/Land dataset, <strong>the data parameters are labelled as analyses and short </strong>(24 hour)<strong> forecasts</strong> initialised once daily from analyses at 00 UTC. Accumulation parameters are only available from <span style="color: rgb(0,51,102);">the</span> forecasts and the convention used in ERA5-Land differs from that for ERA5. </p><p>Currently, the data<strong> can only be downloaded on a regular latitude/longitude grid of 0.1<span class="ILfuVd"><span class="e24Kjd">°</span></span>x0.1<span class="ILfuVd"><span class="e24Kjd">°</span></span> via the CDS catalogue</strong>. ECMWF member states with access to the ECMWF Meteorological Archival and Retrieval System (MARS) can also retrieve the data in the native grid.</p><div class="confluence-information-macro confluence-information-macro-note conf-macro output-block" data-hasbody="true" data-macro-name="note"><span class="aui-icon aui-icon-small aui-iconfont-warning confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><p><strong>NOTE</strong>: <u>Please, note that <strong>since 1st Jan 2020</strong> the new ECMWF Meteorological Interpolation and Regridding interpolation package (<strong><a href="https://www.ecmwf.int/en/newsletter/152/computing/new-ecmwf-interpolation-package-mir" class="external-link" rel="nofollow">MIR</a></strong></u><u>) has been used to interpolate the atmospheric forcing of ERA5 into the ERA5-Land grid. While this change will be unnoticeable for the overwhelming majority of users, locally and under very limited conditions (some areas with high orography, some coastal points) some fields may suffer of a very small discontinuity this day.</u></p></div></div><h2 id="ERA5Land:datadocumentation-LandSurfaceModel">Land Surface Model </h2><p>H-TESSEL is the land surface model that is the basis of ERA5-Land. The H-TESSEL version used in the production of ERA5-Land corresponds to that of the <a href="https://www.ecmwf.int/en/publications/ifs-documentation" class="external-link" rel="nofollow">IFS model documentation CY45R1.</a></p><h2 id="ERA5Land:datadocumentation-Dataorganisationandaccess">Data organisation and access</h2><p>The <span style="color: rgb(0,51,102);">full ERA5-Land and ERA5-Land-T</span> data are archived in the ECMWF data archive (MARS) and the data have been copied to the Climate Data Store (CDS).<span style="color: rgb(0,51,102);"> ERA5-Land (or recent ERA5-Land-T) </span>data should be downloaded using the CDS catalogue or the CDS API, which can obtain data from the CDS copy or from MARS (Member State users can access the data using MARS directly, in the usual manner). Documentation on how to use the CDS API to download ERA5-Land data can be found <a href="https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5" rel="nofollow">here</a>. The installation and downloading steps are similar to those of ERA5.</p><p>A couple of downloading examples to extract the data using the CDS API are given below:</p><p><br/></p><div id="expander-261033945" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-261033945" class="expand-control"><button type="button" id="expand-button-261033945" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-261033945"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Basic CDS API script example to download hourly snow depth (in m of water equivalent) on 1st January 2013 from ERA5-Land data archived in the CDS</span></button></div><div role="region" id="expander-content-261033945" class="expand-content expand-hidden" aria-labelledby="expand-button-261033945"><div class="code panel pdl conf-macro output-block" style="border-width: 1px;" data-hasbody="true" data-macro-name="code"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: text; gutter: false; theme: Confluence" data-theme="Confluence">#!/usr/bin/env python
+import cdsapi
+
+c = cdsapi.Client()
+c.retrieve(
+    'reanalysis-era5-land',
+    {
+        'format':'grib',
+        'time':[
+            '00:00','01:00','02:00',
+            '03:00','04:00','05:00',
+            '06:00','07:00','08:00',
+            '09:00','10:00','11:00',
+            '12:00','13:00','14:00',
+            '15:00','16:00','17:00',
+            '18:00','19:00','20:00',
+            '21:00','22:00','23:00'
+        ],
+        'day':'01',
+        'month':'01',
+        'year':'2013',
+        'variable':'snow_depth_water_equivalent',
+    },
+    'snow_20130101_era5land.grib')</pre>
+</div></div></div></div><div id="expander-542498291" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-542498291" class="expand-control"><button type="button" id="expand-button-542498291" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-542498291"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Basic CDS API script example to download accumulated runoff from 00UTC to 12UTC on 1st January 2013 from ERA5-Land data archived in the CDS</span></button></div><div role="region" id="expander-content-542498291" class="expand-content expand-hidden" aria-labelledby="expand-button-542498291"><div class="code panel pdl conf-macro output-block" style="border-width: 1px;" data-hasbody="true" data-macro-name="code"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: text; gutter: false; theme: Confluence" data-theme="Confluence">#!/usr/bin/env python
+import cdsapi
+
+c = cdsapi.Client()
+
+c.retrieve(
+    'reanalysis-era5-land',
+    {
+        'variable':'runoff',
+        'year':'2013'
+        'month':'01',
+        'day':'01',
+        'time':'12:00',
+        'format':'grib'
+    },
+    'runoff_00-12_20130101_era5land.grib')
+</pre>
+</div></div></div></div><div id="expander-1066676309" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-1066676309" class="expand-control"><button type="button" id="expand-button-1066676309" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-1066676309"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Only for ECMWF member states</span></button></div><div role="region" id="expander-content-1066676309" class="expand-content expand-hidden" aria-labelledby="expand-button-1066676309"><p>The data in the native grid can be accessed from MARS using the keywords <em>class=&quot;l5&quot;</em> and <em>expver=0001</em>. Subdivisions of the data are labelled using the keywords '<em>stream</em>' and '<em>type</em>'. <span style="color: rgb(0,51,102);">The keyword '<em>levtype</em>' should be set to '<em>sfc</em>' for all the </span>fields in ERA5-Land.</p><p><strong>Stream:</strong></p><ul><li>oper: HRES sub-daily</li><li>mnth: HRES synoptic monthly means</li><li>moda: HRES monthly means of daily means</li></ul><p><strong>Type (for convention):</strong></p><ul><li>an: analyses</li><li>fc: forecasts</li></ul><p><strong>Levtype:</strong></p><ul><li>sfc: surface or single level</li></ul></div></div><p><br/><strong>Convention used in <span style="color: rgb(51,153,102);"><span style="color: rgb(0,51,102);">MARS:</span></span> </strong>the date and time of the data is specified with three MARS keywords, '<em>date</em>', '<em>time</em>' and '<em>step</em>'. For parameters labelled as analyses (see <a href="#ERA5Land:datadocumentation-parameterlisting">list of parameters</a>), <em>step=0</em> hours so that date and time specify the analysis time. <span style="color: rgb(0,51,102);">All forecasts start at 00UTC (<em>time=00</em> hours), and </span>for parameters labelled as forecasts (see <a href="#ERA5Land:datadocumentation-parameterlisting">list of parameters</a>), <em>date</em> specifies the forecast <span style="color: rgb(0,51,102);">start </span>day and <em>step</em> specifies the number of hours since the start of the forecast, with a maximum of <em>step=24</em> hours. The combination of <em>date</em>, <em>time</em> and forecast <em>step</em> defines the valid<span style="color: rgb(0,51,102);">ity date/</span>time. For analyses, the valid<span style="color: rgb(0,51,102);">ity date/</span>time is equal to the analysis date/time.</p><p><span style="color: rgb(0,51,102);"><strong>Convention used in the CDS:</strong> 'analyses' are provided if available for a particular parameter, otherwise forecasts are provided. T</span>he date and time of the data is specified using the validity <em>date/time</em>, so <em>step</em> does not need to be specified. For parameters labelled as forecasts<span style="color: rgb(0,51,102);"> in MARS,</span> steps between 1 and 24 hours have been used to provide data for all the vali<span style="color: rgb(0,51,102);">dity t</span>imes within 24 hours, see Table 0 below.</p><p><br/></p><p>Table 0: the mapping, for forecasts, between MARS <em>date, time</em> and <em>step</em> and the CDS <em>date</em> and <em>time</em></p><div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/><col/><col/><col/></colgroup><thead><tr><th class="confluenceTh"><p>CDS</p><p>date  time</p></th><th class="confluenceTh"><p>MARS</p><p>date      time  step</p></th><th colspan="1" class="confluenceTh"><br/></th><th class="confluenceTh"><p>CDS</p><p>date  time</p></th><th class="confluenceTh"><p>MARS</p><p>date   time  step</p></th></tr></thead><tbody><tr><td class="confluenceTd"><p>date  00</p></td><td class="confluenceTd"><p>date-1     0        24</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  12</p></td><td class="confluenceTd"><p>date        0     12</p></td></tr><tr><td class="confluenceTd"><p>date  01</p></td><td class="confluenceTd"><p>date        0        1</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  13</p></td><td class="confluenceTd"><p>date        0      13</p></td></tr><tr><td class="confluenceTd"><p>date  02</p></td><td class="confluenceTd"><p>date        0        2</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  14</p></td><td class="confluenceTd"><p>date        0      14</p></td></tr><tr><td class="confluenceTd"><p>date  03</p></td><td class="confluenceTd"><p>date        0        3</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  15</p></td><td class="confluenceTd"><p>date        0      15</p></td></tr><tr><td class="confluenceTd"><p>date  04</p></td><td class="confluenceTd"><p>date        0        4</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  16</p></td><td class="confluenceTd"><p>date        0      16</p></td></tr><tr><td class="confluenceTd"><p>date  05</p></td><td class="confluenceTd"><p>date        0        5</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  17</p></td><td class="confluenceTd"><p>date        0      17</p></td></tr><tr><td class="confluenceTd"><p>date  06</p></td><td class="confluenceTd"><p>date        0        6</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  18</p></td><td class="confluenceTd"><p>date        0      18</p></td></tr><tr><td class="confluenceTd"><p>date  07</p></td><td class="confluenceTd"><p>date        0        7</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  19</p></td><td class="confluenceTd"><p>date        0      19</p></td></tr><tr><td class="confluenceTd"><p>date  08</p></td><td class="confluenceTd"><p>date        0        8</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  20</p></td><td class="confluenceTd"><p>date        0      20</p></td></tr><tr><td class="confluenceTd"><p>date  09</p></td><td class="confluenceTd"><p>date        0        9</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  21</p></td><td class="confluenceTd"><p>date        0      21</p></td></tr><tr><td class="confluenceTd"><p>date  10</p></td><td class="confluenceTd"><p>date        0        10</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  22</p></td><td class="confluenceTd"><p>date        0      22</p></td></tr><tr><td class="confluenceTd"><p>date  11</p></td><td class="confluenceTd"><p>date        0        11</p></td><th colspan="1" class="confluenceTh"><br/></th><td class="confluenceTd"><p>date  23</p></td><td class="confluenceTd"><p>date        0      23</p></td></tr></tbody></table></div><h2 id="ERA5Land:datadocumentation-Spatialgrid">Spatial grid</h2><p>The ERA5-Land HRES dataset has been produced at a resolution of 9 km, (~0.08<span class="ILfuVd"><span class="e24Kjd">°</span></span>) and in a (octahedral) reduced Gaussian grid (represented as TCo1279). <span style="color: rgb(0,51,102);">Currently, the uncertainty of the fields is to be obtained </span>from the ERA5 EDA dataset, which has a resolution of 62km (~0.56<span class="ILfuVd"><span class="e24Kjd">°</span></span>).</p><p>The article &quot;<a href="https://confluence.ecmwf.int/display/CKB/Model+grid+box+and+time+step" rel="nofollow">Model grid box and time step&quot;</a> might be useful.</p><p><span><span class="ui-provider a b c d e f g h i j k l m n o p q r s t u v w x y z ab ac ae af ag ah ai aj ak"><span>The data is referenced in the horizontal with respect to the WGS84 ellipse (which defines the major/minor axes) and in the vertical it is referenced to the EGM96 geoid over land but over ocean it is referenced to mean sea level, with the approximation that this is assumed to be coincident with the geoid. For more information on the relationship between mean sea level and the geoid, see for example </span><a title="https://nora.nerc.ac.uk/id/eprint/524701/1/gregory2019_article_conceptsandterminologyforseale.pdf" class="external-link" href="https://nora.nerc.ac.uk/id/eprint/524701/1/Gregory2019_Article_ConceptsAndTerminologyForSeaLe.pdf" rel="nofollow">Gregory et al. (2019)</a><span>.</span></span></span></p><h2 id="ERA5Land:datadocumentation-Temporalfrequency">Temporal frequency</h2><p>For sub-daily data for the HRES (<em>stream=oper</em>) the parameters labelled as analyses (<em>type=an</em>) are available hourly. <span style="color: rgb(0,51,102);">The once daily short forecasts, run from 00 UTC, also provide data hourly, with steps from 01 to 24.</span> The uncertainty is currently provided by ERA5 EDA fields, which are available every 3 hours <span style="color: rgb(255,153,0);"><span style="color: rgb(0,51,102);">for the surface fields.</span> </span></p><h2 id="ERA5Land:datadocumentation-Dataupdatefrequency"><span style="color: rgb(0,51,102);">Data update frequency</span></h2><p><span style="color: rgb(0,51,102);">Initial release data, i.e. data with just a few days behind real time, is called <strong>ERA5-Land-T</strong>. Both for the CDS and MARS, daily updates for ERA5-Land-T are available about 5 days behind real time and monthly mean updates are available about 5 days after the end of the month. </span></p><p><span style="color: rgb(0,51,102);"><em>             The daily updates for ERA5-Land-T data on the CDS occur at no fixed time during the day.</em></span></p><p><span style="color: rgb(0,51,102);">For the CDS, ERA5-Land-T data for a month is overwritten by the final ERA5-Land data about two months after the month in question.</span></p><p><span style="color: rgb(0,51,102);">For MARS, the final ERA5-Land data are available about two months after the month in question. In addition, the last few months of data are kept online and can be accessed much quicker than older data on tape.</span></p><p><span style="color: rgb(0,51,102);">In the event that serious flaws are detected in ERA5-Land-T, the latter could be different to the final consolidated ERA5-Land data. Based on experience with the production of ERA5-Land so far, our expectation is that such an event would occur only when a flaw in the atmospheric forcing (from ERA5) is detected, and the expectation is that the latter occur only on rare occasions.</span></p><h2 id="ERA5Land:datadocumentation-accumulationsAccumulations"><span class="confluence-anchor-link conf-macro output-inline" id="ERA5Land:datadocumentation-accumulations" data-hasbody="false" data-macro-name="anchor"></span>Accumulations</h2><p>Please, note that <span style="color: rgb(0,0,0);"><strong>the convention for accumulations used in ERA5-Land differs with that for ERA5</strong>. </span>The accumulations in the short forecasts of ERA5-Land (<span style="color: rgb(0,51,102);">with hourly steps from 01 to 24</span>) are treated the same as those in ERA-Interim or ERA-Interim/Land, i.e., they are accumulated from the beginning of the forecast to the end of the forecast step. For example, runoff at <em>day=D</em>, <em>step=12</em> will provide runoff accumulated from <em>day=D</em>, <em>time=0</em> to <em>day=D, time=12</em>. The maximum accumulation is over 24 hours, i.e., from <em>day=D, time=0</em> to <em>day=D+1,time=0</em> (<em>step=24</em>).</p><ul><li><span style="color: rgb(0,51,102);">HRES: accumulations are from 00 UTC to the hour ending at the forecast step</span></li><li><span style="color: rgb(0,51,102);">For the CDS time, or validity time, of 00 UTC, the accumulations are over the 24 hours ending at 00 UTC i.e. the accumulation is during the previous day</span></li><li><span style="color: rgb(255,0,0);"><span style="color: rgb(0,51,102);">Synoptic monthly means (stream=mnth): accumulations have units of &quot;variable_units per forecast_step hours&quot;</span><br/></span></li><li>Monthly means of daily means (stream=moda): accumulations have units that include &quot;per day&quot;, see section <a href="#ERA5Land:datadocumentation-monthlymeans">Monthly means</a></li></ul><h2 id="ERA5Land:datadocumentation-monthlymeansMonthlymeans"><span class="confluence-anchor-link conf-macro output-inline" id="ERA5Land:datadocumentation-monthlymeans" data-hasbody="false" data-macro-name="anchor"></span>Monthly means</h2><p>In addition to the sub-daily data, all ERA5-Land parameters are also available as monthly means. Monthly means are available in two forms:</p><ul><li><strong>Synoptic monthly means</strong>, for each particular time and forecast step (stream=<strong>mnth</strong>) <span style="color: rgb(0,51,102);">- in the CDS, referred to as &quot;<em>monthly averaged by hour of day</em>&quot;.</span></li><li><strong>Monthly means of daily means</strong>, for the month as a whole (stream=<strong>moda</strong>) - <span style="color: rgb(51,153,102);"><span style="color: rgb(0,51,102);">in the CDS, referred to as &quot;<em>monthly averaged</em>&quot;. These monthly means are created from the hourly data for the HRES.</span></span></li></ul><p><span style="color: rgb(0,51,102);">Monthly means for:</span></p><ul><li><span style="color: rgb(0,51,102);"><a href="https://confluence.ecmwf.int/display/CKB/Parameters+valid+at+the+specified+time" rel="nofollow">parameters labelled as analyses or instantaneous forecasts</a> are created from data with a valid time in the month, between 00 and 23 UTC on each day of the month.</span></li><li><span style="color: rgb(0,51,102);">accumulations are created from data with a forecast period falling within the month. Monthly means of daily means for accumulations are created from the last forecast step (24) of the forecasts for each day of the month.</span></li></ul><p><br/></p><p>The accumulations in monthly means of daily means (stream=moda) have units that include &quot;<em>per day</em>&quot;. So for accumulations in this stream:</p><ul><li><span style="color: rgb(0,51,102);">The hydrological parameters are in units of &quot;m of water equivalent per day&quot; and so they should be multiplied by 1000 to convert to<em> kgm<sup>-2</sup>day<sup>-1</sup></em> or <em>mmday<sup>-1</sup></em>.</span></li><li><span style="color: rgb(0,51,102);">The energy (turbulent and radiative) and momentum fluxes should be divided by 86400 seconds (24 hours) to convert to the commonly used units of </span><em>Wm<sup>-2</sup></em><span style="color: rgb(0,51,102);"> and <em>Nm<sup>-2</sup></em>, respectively.</span></li></ul><p>The accumulations in synoptic monthly means (stream=mnth) have units that include &quot;<em><span style="color: rgb(0,0,0);">variable_units per forecast_step hours</span></em>&quot;. So for accumulations in this stream: </p><ul><li>The hydrological parameters are in units of &quot;m of water equivalent per forecast_step hours&quot; and so they should be multiplied by 1000 to convert to <em>kgm<sup>-2</sup> per forecast_step hours</em> or <em>mm per forecast_step hours</em>.</li><li><span style="color: rgb(255,0,0);"><span style="color: rgb(0,51,102);">The energy (turbulent and radiative) and momentum fluxes should be divided by <em>60 x 60 x fc_step</em> to convert to the units of <em>Wm<sup>-2</sup></em> and <em>Nm<sup>-2</sup></em>, respectively.</span> <br/></span></li></ul><h2 id="ERA5Land:datadocumentation-Dataformat">Data format</h2><p>Surface fields in ERA5-Land are encoded <span style="color: rgb(0,51,102);">either in GRIB1 or </span>GRIB2 format. <span style="color: rgb(255,0,0);"><span style="color: rgb(0,0,0);">Tables 1 and 2 <span style="color: rgb(0,51,102);">indicate </span>the format for all parameters in ERA5-Land. Note that the retrieval of the data in NetCDF format is still <span style="color: rgb(255,0,0);">an option available </span>via the CDS. </span> <br/></span></p><p><span style="color: rgb(255,0,0);"><span style="color: rgb(0,51,102);">The article &quot;<a href="/display/CKB/What+are+GRIB+files+and+how+can+I+read+them">What are GRIB files and how can I read them</a>&quot; </span><span style="color: rgb(0,51,102);">might be helpful.</span> </span></p><p><span style="color: rgb(0,51,102);">For GRIB format, ERA5-Land-T data can be identified by the key expver=0005 in the GRIB header. Consolidated ERA5-Land data is identified by the key expver=0001.</span></p><p><span style="color: rgb(0,51,102);">For netCDF data requests which return just ERA5-Land or just ERA5-Land-T data, there is no means of differentiating between ERA5-Land and ERA5-Land-T data in the resulting netCDF files.</span></p><p><span style="color: rgb(0,51,102);">For netCDF data requests which return a mixture of ERA5-Land and ERA5-Land-T data, the origin of the variables (1 or 5) will be identifiable in the resulting netCDF files. See this <a href="https://confluence.ecmwf.int/display/CUSF/ERA5+CDS+requests+which+return+a+mixture+of+ERA5+and+ERA5T+data" rel="nofollow">link</a> for more details applied to ERA5 data.</span></p><h2 id="ERA5Land:datadocumentation-parameterlistingParameterlistings"><span class="confluence-anchor-link conf-macro output-inline" id="ERA5Land:datadocumentation-parameterlisting" data-hasbody="false" data-macro-name="anchor"></span>Parameter listings</h2><p>Tables 1 and 2 below describe the surface parameters available in ERA5-Land (<em>levtype=sfc</em>). Information on all ECMWF parameters is available from the <a class="external-link" href="http://apps.ecmwf.int/codes/grib/param-db" rel="nofollow">ECMWF parameter database</a>.</p><p>For the sake of completeness, most of the <strong>forcing fields used to run ERA5-Land are included</strong> in the catalogue. Note, however, that <strong>these fields have purely been interpolated to the ERA5-Land grid and they are not obtained by running the land surface model (<span style="color: rgb(23,43,77);">i.e., a purely linear interpolation based on a triangular mesh</span>)</strong>. They are included in Table 1 and Table 2 below under the column &quot;Used as forcing field&quot;.</p><p><strong>Auxiliary land invariant parameters</strong> are attached here below, already interpolated to a regular lat/lon grid of 0.1<span class="ILfuVd"><span class="e24Kjd">°</span></span>x0.1<span class="ILfuVd"><span class="e24Kjd">°</span></span>. Relevant information about how to use/interpret these fields are in chapter 8 of <a href="https://www.ecmwf.int/en/elibrary/18714-ifs-documentation-cy45r1-part-iv-physical-processes" class="external-link" rel="nofollow">https://www.ecmwf.int/en/elibrary/18714-ifs-documentation-cy45r1-part-iv-physical-processes</a>, and plots of these fields are in chapter 11.</p><p>Parameters described as &quot;instantaneous&quot; in Table 2 are <a href="https://confluence.ecmwf.int/display/CKB/Parameters+valid+at+the+specified+time" rel="nofollow">valid at the specified time</a>.</p><p><span style="color: rgb(255,153,0);"><span style="color: rgb(0,51,102);">Note that in the tables below, &quot;<strong>an</strong>&quot; and &quot;<strong>fc</strong>&quot; is just a label used for convention to archive the data in MARS. </span></span></p><h3 id="ERA5Land:datadocumentation-Table1:surfaceparameters:invariants(intime)">Table 1: surface parameters: <span style="color: rgb(0,0,255);">invariants (in time)</span></h3><div class="table-wrap"><table class="relative-table wrapped confluenceTable" style="width: 73.9497%;"><colgroup><col style="width: 22.6453%;"/><col style="width: 19.3066%;"/><col style="width: 19.6695%;"/><col style="width: 11.1049%;"/><col style="width: 7.47586%;"/><col style="width: 5.95166%;"/><col style="width: 6.1694%;"/><col style="width: 7.76618%;"/></colgroup><tbody><tr><th class="confluenceTh"><p>name</p></th><th class="confluenceTh"><p>download link</p></th><th class="confluenceTh"><p style="text-align: center;">units</p></th><th class="confluenceTh"><p>shortName</p></th><th class="confluenceTh"><p>paramId</p></th><th class="confluenceTh">GRIB1</th><th class="confluenceTh">GRIB2</th><th class="confluenceTh">netCDF4</th></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/129" class="external-link" rel="nofollow">Geopotential</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/geo_1279l4_0.1x0.1.grb?version=1&amp;modificationDate=1570451952562&amp;api=v2" data-linked-resource-id="155324132" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="geo_1279l4_0.1x0.1.grb" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Geopotential</a> (GRIB version 1)</p><p><a href="/download/attachments/140385202/geo_1279l4_0.1x0.1.grib2?version=1&amp;modificationDate=1582901403445&amp;api=v2" data-linked-resource-id="174858157" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="geo_1279l4_0.1x0.1.grib2" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Geopotential</a>(GRIB version 2)</p><p><a href="/download/attachments/140385202/geo_1279l4_0.1x0.1.grib2_v4_unpack.nc?version=1&amp;modificationDate=1591983422003&amp;api=v2" data-linked-resource-id="188026704" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="geo_1279l4_0.1x0.1.grib2_v4_unpack.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Geopotential</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd">m**2 s**-2</td><td style="text-align: center;" class="confluenceTd">z</td><td style="text-align: center;" class="confluenceTd">129</td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p>x</p></td><td class="confluenceTd"><p><br/></p><p><br/></p><p style="text-align: center;"><br/></p><p style="text-align: center;">x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/26" class="external-link" rel="nofollow">Lake cover</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/clake.nc?version=1&amp;modificationDate=1634834818876&amp;api=v2" data-linked-resource-id="239346522" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="clake.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Lake cover</a> (GRIB version 2)</p><p><a href="/download/attachments/140385202/clake.nc?version=1&amp;modificationDate=1634834818876&amp;api=v2" data-linked-resource-id="239346522" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="clake.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Lake cover </a>(netCDF4)</p></td><td style="text-align: center;" class="confluenceTd">(0-1)</td><td style="text-align: center;" class="confluenceTd">cl</td><td style="text-align: center;" class="confluenceTd">26</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/228007" class="external-link" rel="nofollow">Lake total depth</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/dl.grib?version=1&amp;modificationDate=1706182774857&amp;api=v2" data-linked-resource-id="388499603" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="dl.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Lake total depth (GRIB version 2)</a></p><p><a href="/download/attachments/140385202/dl.nc?version=1&amp;modificationDate=1706182803108&amp;api=v2" data-linked-resource-id="388499604" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="dl.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Lake total depth (netCDF4)</a></p></td><td style="text-align: center;" class="confluenceTd"><span>m</span></td><td style="text-align: center;" class="confluenceTd">dl</td><td style="text-align: center;" class="confluenceTd"><span>228007</span></td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/172" class="external-link" rel="nofollow">Land-sea-mask</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/lsm_1279l4_0.1x0.1.grb?version=1&amp;modificationDate=1567528624201&amp;api=v2" data-linked-resource-id="151519681" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="lsm_1279l4_0.1x0.1.grb" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Land-sea-mask</a> (GRIB version 2)</p><p><a href="/download/attachments/140385202/lsm_1279l4_0.1x0.1.grb_v4_unpack.nc?version=1&amp;modificationDate=1591983422208&amp;api=v2" data-linked-resource-id="188026705" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="lsm_1279l4_0.1x0.1.grb_v4_unpack.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Land-sea mask</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd">(0-1)</td><td style="text-align: center;" class="confluenceTd">lsm</td><td style="text-align: center;" class="confluenceTd">172</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><p><br/></p><p style="text-align: center;">x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/27" class="external-link" rel="nofollow">Low vegetation cover</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/cvl.grib?version=1&amp;modificationDate=1634828040531&amp;api=v2" data-linked-resource-id="239346364" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="cvl.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Low vegetation cover</a> (GRIB version 2)</p><p><a href="/download/attachments/140385202/cvl.nc?version=1&amp;modificationDate=1634834838551&amp;api=v2" data-linked-resource-id="239346523" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="cvl.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Low vegetation cover</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd"><p>(0 - 1)</p></td><td style="text-align: center;" class="confluenceTd"><p>cvl</p></td><td style="text-align: center;" class="confluenceTd">27</td><td class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/28" class="external-link" rel="nofollow">High vegetation cover</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/cvh.grib?version=1&amp;modificationDate=1634828066961&amp;api=v2" data-linked-resource-id="239346365" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="cvh.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">High vegetation cover</a> (GRIB version 2)</p><p><a href="/download/attachments/140385202/cvh.nc?version=1&amp;modificationDate=1634834865190&amp;api=v2" data-linked-resource-id="239346526" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="cvh.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">High vegetation cover</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd"><p>(0 - 1)</p></td><td style="text-align: center;" class="confluenceTd"><p>cvh</p></td><td style="text-align: center;" class="confluenceTd">28</td><td class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><span><a href="https://codes.ecmwf.int/grib/param-db/260294" class="external-link" rel="nofollow">Glacier mask</a></span></p></td><td class="confluenceTd"><div class="content-wrapper"><p><a href="/download/attachments/140385202/cicecap_v015_1279_4_regMIR.grib?version=1&amp;modificationDate=1711562368826&amp;api=v2" data-linked-resource-id="402632714" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="cicecap_v015_1279_4_regMIR.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Glacier mask</a> (GRIB version 2)</p><p><a href="/download/attachments/140385202/cicecap_v015_1279_4_regMIR.nc?version=1&amp;modificationDate=1711562368310&amp;api=v2" data-linked-resource-id="402632713" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="cicecap_v015_1279_4_regMIR.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Glacier mask</a> (netCDF4)</p></div></td><td style="text-align: center;" class="confluenceTd"><span>Proportion</span></td><td style="text-align: center;" class="confluenceTd">glm</td><td style="text-align: center;" class="confluenceTd"><span>260294</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/43" class="external-link" rel="nofollow">Soil type</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/slt.grib?version=1&amp;modificationDate=1634828234152&amp;api=v2" data-linked-resource-id="239346371" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="slt.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Soil type</a> (GRIB version 2)</p><p><a href="/download/attachments/140385202/slt.nc?version=1&amp;modificationDate=1634835047055&amp;api=v2" data-linked-resource-id="239346536" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="slt.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Soil type</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd"><p>~</p></td><td style="text-align: center;" class="confluenceTd">slt</td><td style="text-align: center;" class="confluenceTd"><p>43</p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/29" class="external-link" rel="nofollow">Type of low vegetation</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/tvl.grib?version=1&amp;modificationDate=1634828079914&amp;api=v2" data-linked-resource-id="239346366" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="tvl.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Type of low vegetation</a> (GRIB version 1)</p><p><a href="/download/attachments/140385202/tvl.nc?version=1&amp;modificationDate=1634835074551&amp;api=v2" data-linked-resource-id="239346538" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="tvl.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Type of low vegetation</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd"><p>~</p></td><td style="text-align: center;" class="confluenceTd"><p>tvl</p></td><td style="text-align: center;" class="confluenceTd">29</td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p><br/></p><p>x</p></td></tr><tr><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/30" class="external-link" rel="nofollow">Type of high vegetation</a></p></td><td class="confluenceTd"><p><a href="/download/attachments/140385202/tvh.grib?version=1&amp;modificationDate=1634828096942&amp;api=v2" data-linked-resource-id="239346368" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="tvh.grib" data-linked-resource-content-type="application/octet-stream" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Type of high vegetation</a> (GRIB version 1)</p><p><a href="/download/attachments/140385202/tvh.nc?version=1&amp;modificationDate=1634835101113&amp;api=v2" data-linked-resource-id="239346539" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="tvh.nc" data-linked-resource-content-type="application/x-netcdf" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121">Type of high vegetation</a> (netCDF4)</p></td><td style="text-align: center;" class="confluenceTd"><p>~</p></td><td style="text-align: center;" class="confluenceTd"><p>tvh</p></td><td style="text-align: center;" class="confluenceTd"><p>30</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p><br/></p><p><br/></p><p>x</p></td></tr></tbody></table></div><h3 class="auto-cursor-target" id="ERA5Land:datadocumentation-Table2:stream=oper/mnth/moda,levtype=sfc:surfaceparameters:instantaneous">Table 2: stream=oper/mnth/moda, levtype=sfc: surface parameters: <a href="/display/CKB/Parameters+valid+at+the+specified+time">instantaneous</a></h3><div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col style="width: 37.0px;"/><col style="width: 216.0px;"/><col style="width: 154.0px;"/><col/><col style="width: 92.0px;"/><col style="width: 74.0px;"/><col style="width: 37.0px;"/><col style="width: 33.0px;"/><col style="width: 61.0px;"/><col style="width: 61.0px;"/><col/></colgroup><tbody><tr><th class="confluenceTh"><br/></th><th colspan="1" class="confluenceTh"><p>name</p></th><th colspan="1" class="confluenceTh"><p style="text-align: center;">units</p></th><th colspan="1" class="confluenceTh">Variable name in CDS</th><th colspan="1" class="confluenceTh"><p>shortName</p></th><th colspan="1" class="confluenceTh"><p>paramId</p></th><th colspan="1" class="confluenceTh"><p>an</p></th><th colspan="1" class="confluenceTh"><p>fc</p></th><th colspan="1" class="confluenceTh">GRIB1</th><th colspan="1" class="confluenceTh">GRIB2</th><th style="text-align: center;" colspan="1" class="confluenceTh">Used as forcing field</th></tr><tr><td class="confluenceTd">1</td><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/228008" class="external-link" rel="nofollow">Lake mix-layer temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">lake_mix_layer_temperature</td><td style="text-align: center;" class="confluenceTd"><p>lmlt</p></td><td style="text-align: center;" class="confluenceTd"><p>228008</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">2</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228009" class="external-link" rel="nofollow">Lake mix-layer depth</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td colspan="1" class="confluenceTd">lake_mix_layer_depth</td><td style="text-align: center;" class="confluenceTd"><p>lmld</p></td><td style="text-align: center;" class="confluenceTd"><p>228009</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">3</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228010" class="external-link" rel="nofollow">Lake bottom temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">lake_bottom_temperature</td><td style="text-align: center;" class="confluenceTd"><p>lblt</p></td><td style="text-align: center;" class="confluenceTd"><p>228010</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">4</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228011" class="external-link" rel="nofollow">Lake total layer temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">lake_total_layer_temperature</td><td style="text-align: center;" class="confluenceTd"><p>ltlt</p></td><td style="text-align: center;" class="confluenceTd"><p>228011</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">5</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228012" class="external-link" rel="nofollow">Lake shape factor</a></p></td><td style="text-align: center;" class="confluenceTd"><p>dimensionless</p></td><td colspan="1" class="confluenceTd">lake_shape_factor</td><td style="text-align: center;" class="confluenceTd"><p>lshf</p></td><td style="text-align: center;" class="confluenceTd"><p>228012</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">6</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228013" class="external-link" rel="nofollow">Lake ice temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">lake_ice_temperature</td><td style="text-align: center;" class="confluenceTd"><p>lict</p></td><td style="text-align: center;" class="confluenceTd"><p>228013</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">7</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228014" class="external-link" rel="nofollow">Lake ice depth</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td colspan="1" class="confluenceTd">lake_ice_depth</td><td style="text-align: center;" class="confluenceTd"><p>licd</p></td><td style="text-align: center;" class="confluenceTd"><p>228014</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td colspan="1" class="confluenceTd">8</td><td colspan="1" class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/260038" class="external-link" rel="nofollow">Snow cover</a></td><td style="text-align: center;" colspan="1" class="confluenceTd">%</td><td colspan="1" class="confluenceTd">snow_cover</td><td style="text-align: center;" colspan="1" class="confluenceTd">snowc</td><td style="text-align: center;" colspan="1" class="confluenceTd">260038</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td colspan="1" class="confluenceTd">9</td><td colspan="1" class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/3066" class="external-link" rel="nofollow">Snow depth</a></td><td style="text-align: center;" colspan="1" class="confluenceTd">m</td><td colspan="1" class="confluenceTd">snow_depth</td><td style="text-align: center;" colspan="1" class="confluenceTd">sde</td><td style="text-align: center;" colspan="1" class="confluenceTd">3066</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">10</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/32" class="external-link" rel="nofollow">Snow albedo</a></p></td><td style="text-align: center;" class="confluenceTd"><p>(0 - 1)</p></td><td colspan="1" class="confluenceTd">snow_albedo</td><td style="text-align: center;" class="confluenceTd"><p>asn</p></td><td style="text-align: center;" class="confluenceTd"><p>32</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">11</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/33" class="external-link" rel="nofollow">Snow density</a></p></td><td style="text-align: center;" class="confluenceTd"><p>kg m**-3</p></td><td colspan="1" class="confluenceTd">snow_density</td><td style="text-align: center;" class="confluenceTd"><p>rsn</p></td><td style="text-align: center;" class="confluenceTd"><p>33</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">12</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/39" class="external-link" rel="nofollow">Volumetric soil water layer 1</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>m**3 m**-3</p></td><td colspan="1" class="confluenceTd">volumetric_soil_water_layer_1</td><td style="text-align: center;" class="confluenceTd"><p>swvl1</p></td><td style="text-align: center;" class="confluenceTd"><p>39</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">13</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/40" class="external-link" rel="nofollow">Volumetric soil water layer 2</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>m**3 m**-3</p></td><td colspan="1" class="confluenceTd">volumetric_soil_water_layer_2</td><td style="text-align: center;" class="confluenceTd"><p>swvl2</p></td><td style="text-align: center;" class="confluenceTd"><p>40</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">14</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/41" class="external-link" rel="nofollow">Volumetric soil water layer 3</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>m**3 m**-3</p></td><td colspan="1" class="confluenceTd">volumetric_soil_water_layer_3</td><td style="text-align: center;" class="confluenceTd"><p>swvl3</p></td><td style="text-align: center;" class="confluenceTd"><p>41</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">15</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/42" class="external-link" rel="nofollow">Volumetric soil water layer 4</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>m**3 m**-3</p></td><td colspan="1" class="confluenceTd">volumetric_soil_water_layer_4</td><td style="text-align: center;" class="confluenceTd"><p>swvl4</p></td><td style="text-align: center;" class="confluenceTd"><p>42</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">16</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/66" class="external-link" rel="nofollow">Leaf area index, low vegetation</a><sup>2</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>m**2 m**-2</p></td><td colspan="1" class="confluenceTd">leaf_area_index_low_vegetation</td><td style="text-align: center;" class="confluenceTd"><p>lai_lv</p></td><td style="text-align: center;" class="confluenceTd"><p>66</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">17</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/67" class="external-link" rel="nofollow">Leaf area index, high vegetation</a><sup>2</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>m**2 m**-2</p></td><td colspan="1" class="confluenceTd">leaf_area_index_high_vegetation</td><td style="text-align: center;" class="confluenceTd"><p>lai_hv</p></td><td style="text-align: center;" class="confluenceTd"><p>67</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">18</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/134" class="external-link" rel="nofollow">Surface pressure</a></p></td><td style="text-align: center;" class="confluenceTd"><p>Pa</p></td><td colspan="1" class="confluenceTd"><pre class="toolBoxRequestPreviewClass ng-binding">surface_pressure</pre></td><td style="text-align: center;" class="confluenceTd"><p>sp</p></td><td style="text-align: center;" class="confluenceTd"><p>134</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td></tr><tr><td class="confluenceTd">19</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/139" class="external-link" rel="nofollow">Soil temperature level 1</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">soil_temperature_level_1</td><td style="text-align: center;" class="confluenceTd"><p>stl1</p></td><td style="text-align: center;" class="confluenceTd"><p>139</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">20</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/141" class="external-link" rel="nofollow">Snow depth water equivalent</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m of water equivalent</p></td><td colspan="1" class="confluenceTd">snow_depth_water_equivalent</td><td style="text-align: center;" class="confluenceTd"><p>sd</p></td><td style="text-align: center;" class="confluenceTd"><p>141</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">21</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/165" class="external-link" rel="nofollow">10 metre U wind component</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m s**-1</p></td><td colspan="1" class="confluenceTd">10m_u_component_of_wind</td><td style="text-align: center;" class="confluenceTd"><p>u10</p></td><td style="text-align: center;" class="confluenceTd"><p>165</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td></tr><tr><td class="confluenceTd">22</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/166" class="external-link" rel="nofollow">10 metre V wind component</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m s**-1</p></td><td colspan="1" class="confluenceTd">10m_v_component_of_wind</td><td style="text-align: center;" class="confluenceTd"><p>v10</p></td><td style="text-align: center;" class="confluenceTd"><p>166</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td></tr><tr><td class="confluenceTd">23</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/167" class="external-link" rel="nofollow">2 metre temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">2m_temperature</td><td style="text-align: center;" class="confluenceTd"><p>2t</p></td><td style="text-align: center;" class="confluenceTd"><p>167</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">24</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/168" class="external-link" rel="nofollow">2 metre dewpoint temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">2m_dewpoint_temperature</td><td style="text-align: center;" class="confluenceTd"><p>2d</p></td><td style="text-align: center;" class="confluenceTd"><p>168</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">25</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/170" class="external-link" rel="nofollow">Soil temperature level 2</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">soil_temperature_level_2</td><td style="text-align: center;" class="confluenceTd"><p>stl2</p></td><td style="text-align: center;" class="confluenceTd"><p>170</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">26</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/183" class="external-link" rel="nofollow">Soil temperature level 3</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">soil_temperature_level_3</td><td style="text-align: center;" class="confluenceTd"><p>stl3</p></td><td style="text-align: center;" class="confluenceTd"><p>183</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">27</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/198" class="external-link" rel="nofollow">Skin reservoir content</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m of water equivalent</p></td><td colspan="1" class="confluenceTd"><pre class="toolBoxRequestPreviewClass ng-binding">skin_reservoir_content</pre></td><td style="text-align: center;" class="confluenceTd"><p>src</p></td><td style="text-align: center;" class="confluenceTd"><p>198</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">28</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/235" class="external-link" rel="nofollow">Skin temperature</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">skin_temperature</td><td style="text-align: center;" class="confluenceTd"><p>skt</p></td><td style="text-align: center;" class="confluenceTd"><p>235</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">29</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/236" class="external-link" rel="nofollow">Soil temperature level 4</a><sup>1</sup></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">soil_temperature_level_4</td><td style="text-align: center;" class="confluenceTd"><p>stl4</p></td><td style="text-align: center;" class="confluenceTd"><p>236</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">30</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/238" class="external-link" rel="nofollow">Temperature of snow layer</a></p></td><td style="text-align: center;" class="confluenceTd"><p>K</p></td><td colspan="1" class="confluenceTd">temperature_of_snow_layer</td><td style="text-align: center;" class="confluenceTd"><p>tsn</p></td><td style="text-align: center;" class="confluenceTd"><p>238</p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr><tr><td class="confluenceTd">31</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/243" class="external-link" rel="nofollow">Forecast albedo</a></p></td><td style="text-align: center;" class="confluenceTd"><p>(0 - 1)</p></td><td colspan="1" class="confluenceTd">forecast_albedo</td><td style="text-align: center;" class="confluenceTd"><p>fal</p></td><td style="text-align: center;" class="confluenceTd"><p>243</p></td><td style="text-align: center;" class="confluenceTd"><p><br/></p></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" colspan="1" class="confluenceTd">x</td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td><td style="text-align: center;" colspan="1" class="confluenceTd"><br/></td></tr></tbody></table></div><p class="auto-cursor-target"><sup>1</sup></p><div id="expander-1656859657" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-1656859657" class="expand-control"><button type="button" id="expand-button-1656859657" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-1656859657"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Soil levels</span></button></div><div role="region" id="expander-content-1656859657" class="expand-content expand-hidden" aria-labelledby="expand-button-1656859657"><div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/></colgroup><tbody><tr><th class="confluenceTh">Layer</th><th class="confluenceTh">Range</th></tr><tr><td class="confluenceTd">Layer 1</td><td class="confluenceTd">0 - 7 cm</td></tr><tr><td class="confluenceTd">Layer 2</td><td class="confluenceTd">7 - 28 cm</td></tr><tr><td class="confluenceTd">Layer 3</td><td class="confluenceTd">28 - 100 cm</td></tr><tr><td colspan="1" class="confluenceTd">Layer 4</td><td colspan="1" class="confluenceTd">100 - 289 cm</td></tr></tbody></table></div></div></div><p class="auto-cursor-target"><span style="color: rgb(23,43,77);"><sup>2 </sup><strong>Leaf Area Index (LAI)</strong> parameters are based on a monthly climatology as explained <a href="https://www.ecmwf.int/en/elibrary/18714-part-iv-physical-processes" class="external-link" rel="nofollow">IFS model documentation CY45R1</a>. So the users will only see monthly variability, but not inter-annual variability.</span></p><h3 id="ERA5Land:datadocumentation-Table3:stream=oper/mnth/moda,levtype=sfc:surfaceparameters:accumulations">Table 3: stream=oper/mnth/moda, levtype=sfc: surface parameters: <a href="https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-accumulationsAccumulations" rel="nofollow">accumulations</a></h3><div class="table-wrap"><table class="wrapped confluenceTable" data-snooker-col-series="numbers" data-snooker-locked-cols="0"><colgroup><col/><col/><col/><col/><col/><col/><col/><col/><col/><col/><col/></colgroup><tbody><tr><th class="numberingColumn confluenceTh" data-mce-resize="false"><br/></th><th class="confluenceTh"><p>name</p></th><th class="confluenceTh"><p>units</p></th><th class="confluenceTh">Variable name in CDS</th><th class="confluenceTh"><p>shortName</p></th><th class="confluenceTh"><p>paramId</p></th><th class="confluenceTh"><p>an</p></th><th class="confluenceTh"><p>fc</p></th><th class="confluenceTh">GRIB1</th><th class="confluenceTh">GRIB2</th><th style="text-align: center;" class="confluenceTh">Used as forcing field</th></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">1</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/8" class="external-link" rel="nofollow">Surface runoff</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td class="confluenceTd">surface_runoff</td><td style="text-align: center;" class="confluenceTd"><p>sro</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">8</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">2</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/9" class="external-link" rel="nofollow">Sub-surface runoff</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td class="confluenceTd">sub_surface_runoff</td><td style="text-align: center;" class="confluenceTd"><p>ssro</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">9</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">3</td><td class="confluenceTd"><p><a href="https://codes.ecmwf.int/grib/param-db/44" class="external-link" rel="nofollow">Snow evaporation</a></p></td><td style="text-align: left;vertical-align: inherit;" class="confluenceTd"><p style="text-align: center;">m of water equivalent</p></td><td style="text-align: left;vertical-align: inherit;" class="confluenceTd"> snow_evaporation</td><td style="text-align: center;" class="confluenceTd"><p>es</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">44</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">4</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/45" class="external-link" rel="nofollow">Snowmelt</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m of water equivalent</p></td><td class="confluenceTd">snowmelt</td><td style="text-align: center;" class="confluenceTd"><p>smlt</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">45</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">5</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/144" class="external-link" rel="nofollow">Snowfall</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m of water equivalent</p></td><td class="confluenceTd">snowfall</td><td style="text-align: center;" class="confluenceTd"><p>sf</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">144</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">6</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/146" class="external-link" rel="nofollow">Surface sensible heat flux</a></td><td style="text-align: center;" class="confluenceTd">J m**-2</td><td class="confluenceTd">surface_sensible_heat_flux</td><td style="text-align: center;" class="confluenceTd">sshf</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">146</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">7</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/147" class="external-link" rel="nofollow">Surface latent heat flux</a></td><td style="text-align: center;" class="confluenceTd">J m**-2</td><td class="confluenceTd">surface_latent_heat_flux</td><td style="text-align: center;" class="confluenceTd">slhf</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">147</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">8</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/169" class="external-link" rel="nofollow">Surface solar radiation downwards</a></td><td style="text-align: center;" class="confluenceTd">J m**-2</td><td class="confluenceTd">surface_solar_radiation_downwards</td><td style="text-align: center;" class="confluenceTd">ssrd</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">169</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">9</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/175" class="external-link" rel="nofollow">Surface thermal radiation downwards</a></td><td style="text-align: center;" class="confluenceTd">J m**-2</td><td class="confluenceTd">surface_thermal_radiation_downwards</td><td style="text-align: center;" class="confluenceTd">strd</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">175</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">10</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/176" class="external-link" rel="nofollow">Surface net solar radiation</a></td><td style="text-align: center;" class="confluenceTd">J m**-2</td><td class="confluenceTd">surface_net_solar_radiation</td><td style="text-align: center;" class="confluenceTd">ssr</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">176</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">11</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/177" class="external-link" rel="nofollow">Surface net thermal radiation</a></td><td style="text-align: center;" class="confluenceTd">J m**-2</td><td class="confluenceTd">surface_net_thermal_radiation</td><td style="text-align: center;" class="confluenceTd">str</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">177</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd">x</td><td class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">12</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/182" class="external-link" rel="nofollow">Total Evaporation</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m of water equivalent</p></td><td class="confluenceTd">total_evaporation</td><td style="text-align: center;" class="confluenceTd"><p>e</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">182</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">13</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/205" class="external-link" rel="nofollow">Runoff</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td class="confluenceTd">runoff</td><td style="text-align: center;" class="confluenceTd"><p>ro</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">205</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">14</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228" class="external-link" rel="nofollow">Total precipitation</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td class="confluenceTd">total_precipitation</td><td style="text-align: center;" class="confluenceTd"><p>tp</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">228</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">15</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/228100" class="external-link" rel="nofollow">Evaporation from the top of canopy</a></td><td style="text-align: center;" class="confluenceTd">m of water equivalent</td><td class="confluenceTd">evaporation_from_the_top_of_canopy</td><td style="text-align: center;" class="confluenceTd">evatc</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">228100</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">16</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/228101" class="external-link" rel="nofollow">Evaporation from bare soil</a></td><td style="text-align: center;" class="confluenceTd">m of water equivalent</td><td class="confluenceTd">evaporation_from_bare_soil</td><td style="text-align: center;" class="confluenceTd">evabs</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">228101</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">17</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/228102" class="external-link" rel="nofollow">Evaporation from open water surfaces excluding oceans</a></td><td style="text-align: center;" class="confluenceTd">m of water equivalent</td><td class="confluenceTd">evaporation_from_open_water_surfaces_excluding_oceans</td><td style="text-align: center;" class="confluenceTd">evaow</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">228102</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">18</td><td class="confluenceTd"><a href="https://apps.ecmwf.int/codes/grib/param-db/228103" class="external-link" rel="nofollow">Evaporation from vegetation transpiration</a></td><td style="text-align: center;" class="confluenceTd">m of water equivalent</td><td class="confluenceTd">evaporation_from_vegetation_transpiration</td><td style="text-align: center;" class="confluenceTd">evavt</td><td style="text-align: center;" class="confluenceTd"><span style="color: rgb(0,0,0);">228103</span></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td></tr><tr><td class="numberingColumn confluenceTd" data-mce-resize="false">19</td><td class="confluenceTd"><p><a href="https://apps.ecmwf.int/codes/grib/param-db/228251" class="external-link" rel="nofollow">Potential evaporation</a></p></td><td style="text-align: center;" class="confluenceTd"><p>m</p></td><td class="confluenceTd">potential_evaporation</td><td style="text-align: center;" class="confluenceTd"><p>pev</p></td><td style="text-align: center;" class="confluenceTd"><p><span style="color: rgb(0,0,0);">228251</span></p></td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><p>x</p></td><td style="text-align: center;" class="confluenceTd">x</td><td style="text-align: center;" class="confluenceTd"><br/></td><td style="text-align: center;" class="confluenceTd"><br/></td></tr></tbody></table></div><p>Accumulations are described in section <a href="https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-accumulationsAccumulations" rel="nofollow">ERA5-Land: data documentation#accumulations</a>. The accumulations in monthly means (stream=moda/mnth) are described in section <a href="https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-monthlymeansMonthlymeans" rel="nofollow">monthly means</a></p><h2 id="ERA5Land:datadocumentation-Guidelines">Guidelines</h2><ol><li><div id="expander-1651543576" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-1651543576" class="expand-control"><button type="button" id="expand-button-1651543576" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-1651543576"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Actual and potential evapotranspiration</span></button></div><div role="region" id="expander-content-1651543576" class="expand-content expand-hidden" aria-labelledby="expand-button-1651543576"><p><strong>A</strong><span style="color: rgb(0,51,102);"><strong>ctual evapotranspiration</strong>&nbsp;in the ERA5-Land datasets is called &quot;Total Evaporation&quot; (param ID 182)&nbsp;</span>and is the sum of the following four evaporation components:</p><ol><li><a href="https://apps.ecmwf.int/codes/grib/param-db/228101" class="external-link" rel="nofollow">Evaporation from bare soil</a></li><li><a href="https://apps.ecmwf.int/codes/grib/param-db/228102" class="external-link" rel="nofollow">Evaporation from open water surfaces excluding oceans</a></li><li><a href="https://apps.ecmwf.int/codes/grib/param-db/228100" class="external-link" rel="nofollow">Evaporation from the top of canopy</a></li><li><a href="https://apps.ecmwf.int/codes/grib/param-db/228103" class="external-link" rel="nofollow">Evaporation from vegetation transpiration</a></li></ol><p>For the ERA5-Land datasets, actual evapotranspiration<span style="color: rgb(0,51,102);"> </span>and it's four components <span style="color: rgb(0,51,102);">can be downloaded from the<span>&nbsp;</span>C3S Climate Data Store (CDS) under the category heading &quot;Evaporation and Runoff&quot;.</span></p><p>For details about the computation of&nbsp;<span style="color: rgb(0,0,0);">actual evapotranspiration,</span> please see Chapter 8 of Part IV : Physical processes, of the IFS documentation:</p><p><a href="https://www.ecmwf.int/en/elibrary/18714-ifs-documentation-cy45r1-part-iv-physical-processes" class="external-link" rel="nofollow">ERA5-Land IFS cycle 45r1</a></p><p><strong>The</strong><span style="color: rgb(0,51,102);"><strong> potential evapotranspiration</strong> in the ERA5-Land CDS dataset is given by the parameter <a href="https://apps.ecmwf.int/codes/grib/param-db/228251" class="external-link" rel="nofollow">potential evaporation (pev)</a>.&nbsp;</span></p><p><span style="color: rgb(0,51,102);">Pev data&nbsp;can be downloaded from the CDS under the category heading &quot;Evaporation and Runoff&quot;, in the &quot;Download data&quot; tab for the ERA5-Land datasets.</span></p><div class="confluence-information-macro confluence-information-macro-note conf-macro output-block" data-hasbody="true" data-macro-name="note"><span class="aui-icon aui-icon-small aui-iconfont-warning confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><p><span style="color: rgb(23,43,77);">The&nbsp;</span>definitions of <span style="color: rgb(0,51,102);">potential and reference evapotranspiration</span> may vary according to the scientific application and can <span style="color: rgb(23,43,77);">have the same definition in some cases</span>. Users should therefore ensure that the definition of this parameter is suitable for their application.</p><p>Please note that to give more flexibilty to users,&nbsp; PEV in ERA5 and ERA5Land are not computed in the same way:</p><ul><li>ERA5: the definition of<span>&nbsp;</span><strong>PEV in ERA5</strong><span>&nbsp;</span>is<span style="color: rgb(51,51,51);">&nbsp;computed for<span>&nbsp;</span><strong>agricultural</strong><span>&nbsp;</span>land as if it is well watered (<strong>no soil moisture stress</strong>)&nbsp; and assuming that the atmosphere is not affected by this artificial surface condition.&nbsp;</span></li><li><span style="color: rgb(51,51,51);">ERA5Land: the definition of<span>&nbsp;</span><strong>PEV in ERA5Land</strong><span>&nbsp;</span>is computed as an open water evaporation (<strong>Pan evaporation</strong>)&nbsp;and assuming that the atmosphere is not affected by this artificial surface condition.</span></li></ul></div></div><div class="confluence-information-macro confluence-information-macro-note conf-macro output-block" data-hasbody="true" data-macro-name="note"><span class="aui-icon aui-icon-small aui-iconfont-warning confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><p>Please note that based on ERA5-Land atmospheric forcing, other independent (offline) methods such us &quot;Priesley-Taylor<sup>1</sup> (1972) , Schmidt<sup>2</sup> (1915) or de Bruin<sup>3</sup> (2000)&quot; can also be used to estimate Potential evapotranspiration.</p><p><span style="color: rgb(51,51,51);"><sup>1</sup>PRIESTLEY, C. H. B., &amp; TAYLOR, R. J. (1972). On the Assessment of Surface Heat Flux and Evaporation Using Large-Scale Parameters,&nbsp;</span><em>Monthly Weather Review</em><span style="color: rgb(51,51,51);">,&nbsp;</span><em>100</em><span style="color: rgb(51,51,51);">(2), 81-92. Retrieved Aug 27, 2021, from&nbsp;</span><a class="external-link" href="https://journals.ametsoc.org/view/journals/mwre/100/2/1520-0493_1972_100_0081_otaosh_2_3_co_2.xml" rel="nofollow">https://journals.ametsoc.org/view/journals/mwre/100/2/1520-0493_1972_100_0081_otaosh_2_3_co_2.xml</a>&nbsp;</p><p><span class="person-group" style="color: rgb(51,51,51);"><span class="name"><span class="surname"><span class="text-node"><sup>2</sup>Schmidt,&nbsp;</span></span><span class="given-names"><span class="text-node">W.</span></span></span></span><span class="text-node" style="color: rgb(51,51,51);">,&nbsp;</span><span class="year" style="color: rgb(51,51,51);"><span class="text-node">1915</span></span><span class="text-node" style="color: rgb(51,51,51);">:&nbsp;</span><span class="article-title" style="color: rgb(51,51,51);"><span class="text-node">Strahlung und Verdunstung an freien Wasserfl&auml;chen; ein Beitrag zum W&auml;rmehaushalt des Weltmeers und zum Wasserhaushalt der Erde (Radiation and evaporation over open water surfaces; a contribution to the heat budget of the world ocean and to the water budget of the earth)</span></span><span class="text-node" style="color: rgb(51,51,51);">.&nbsp;</span><em>Ann. Hydro. Maritimen Meteor.</em><span class="text-node" style="color: rgb(51,51,51);">,&nbsp;</span><span class="volume" style="color: rgb(51,51,51);"><strong>43</strong></span><span class="text-node" style="color: rgb(51,51,51);">,&nbsp;</span><span class="text-node" style="color: rgb(51,51,51);">111&ndash;124, 169&ndash;178</span><span class="text-node" style="color: rgb(51,51,51);">.</span></p><p><span class="text-node" style="color: rgb(51,51,51);"><span class="person-group"><span class="name"><span class="surname"><span class="text-node"><sup>3</sup>de Bruin,&nbsp;</span></span><span class="given-names"><span class="text-node">H. A. R.</span></span></span><span class="text-node">,&nbsp;</span><span class="text-node">, and&nbsp;</span><span class="name"><span class="surname"><span class="text-node">Stricker</span></span><span class="text-node">&nbsp;</span><span class="given-names"><span class="text-node">J. N. M.&nbsp;</span></span></span></span>,&nbsp;<span class="year"><span class="text-node">2000</span></span>:&nbsp;<span class="article-title"><span class="text-node">Evaporation of grass under non-restricted soil moisture conditions</span></span>.&nbsp;<em>Hydrol. Sci. J.</em>,&nbsp;<span class="volume"><strong>45</strong></span>,&nbsp;<span class="fpage"><span class="text-node">391</span></span>&ndash;<span class="lpage"><span class="text-node">406</span></span>, doi:<span>10.1080/02626660009492337</span>.</span></p></div></div></div></div></li><li><div id="expander-272013962" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-272013962" class="expand-control"><button type="button" id="expand-button-272013962" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-272013962"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">How to use lake-related fields</span></button></div><div role="region" id="expander-content-272013962" class="expand-content expand-hidden" aria-labelledby="expand-button-272013962"><p>Independently whether a model grid point is over a lake or not, the IFS computes lake variables all over the globe, at each grid-box. This is to ease output field aggregation at diverse model resolutions and to have a warm start of the model with shorter spin-up time if lake cover is upgraded, i.e.,&nbsp; it is still a decent lake initial condition if lake location are updated or a new lake is added operationally. Lake depths (input parameter for our lake parametrization) are specified for each grid-box either with in-situ values or with a default 25 m value; over ocean we use ocean bathymetry. Worth to mention that the later default values will be changed soon (extra information in <a href="https://www.hydrol-earth-syst-sci-discuss.net/hess-2019-234/hess-2019-234.pdf" class="external-link" rel="nofollow">this HESS reference</a>). The computed&nbsp; lake variable values are not taken into account in the total grid-box flux calculations if lake is not present in the grid-box.</p><p>The lake fields provided in ERA5-Land can be used in combination with the lake location. The latter in the model is determined by lake cover field (<a href="https://apps.ecmwf.int/codes/grib/param-db?id=26" class="external-link" rel="nofollow">parameter name CL</a>, in fraction: 0 - grid-box has no lakes, 1 - grid-box is fully covered with lake/s). Lake depths are presented in <a href="https://apps.ecmwf.int/codes/grib/param-db?id=228007" class="external-link" rel="nofollow">the field DL</a> (in meters).</p><p>The ECMWF model also contains an ice module, a snow module and a bottom sediments module. The present setup of the IFS is running with no bottom sediment and snow modules (snow accumulation over ice is not allowed and snow parameters are used only for albedo purposes). In the implementation in the IFS lake ice can be fractional within a grid-box with inland water (10 cm of ice means 100 % of a grid-box or tile is covered with ice; 0 cm of ice means 100 % of the grid-box is covered by water; in between a linear interpolation is applied) (<a href="https://journals.ametsoc.org/doi/full/10.1175/JHM-D-12-0108.1" class="external-link" rel="nofollow">Manrique-Sunen et al., 2013</a>). At present, the water balance equation is not included for lakes and the lake depth and surface area are kept constant in time (<a href="https://www.ecmwf.int/en/elibrary/18714-part-iv-physical-processes" class="external-link" rel="nofollow">IFS Documentation, 2017, chapter 8 and 11 </a>). Lake parametrization also requires the lake fraction CL, lake depth DL (preferably bathymetry), and lake initial conditions. DL is the most important external<span> parameter that uses the lake parametrization.</span></p></div></div></li></ol><h2 id="ERA5Land:datadocumentation-Knownissues">Known issues</h2><ol><li><p class="auto-cursor-target">ERA5-Land forecast parameters are missing for the validity time of 1st January 1950 00 UTC.</p></li><li><div id="expander-829308578" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-829308578" class="expand-control"><button type="button" id="expand-button-829308578" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-829308578"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Uncertainty fields</span></button></div><div role="region" id="expander-content-829308578" class="expand-content expand-hidden" aria-labelledby="expand-button-829308578"><p>As it was done for ERA5, the original plan for ERA5-Land was to provide an estimate of the uncertainty fields based on a dedicated 10-member ensemble run. The latter generated an ensemble of forcing fields that should, in principle, reproduce the space of uncertainty for the land surface fields. The first experiments demonstrated that the spread of the ensemble was clearly under dispersive, i.e. the uncertainty was unrealistically low. A reason for this is the low spread shown by the ensemble of ERA5 forcing fields.</p><p>As a result of these experiments we took the decision of not providing the uncertainty fields of ERA5-Land. The opposite would have assigned, for instance, unrealistically high confidence to ERA5-land fields in a data assimilation experiment.&nbsp;</p><p><span style="color: rgb(0,0,0);">Our recommendation is, for the time being, to use the uncertainty estimate of the corresponding ERA5 field, which should provide a second order approximation to the estimate of the real uncertainty.&nbsp;</span><span style="color: rgb(0,0,0);">Future experiments will also perturbe, among other, key land surface model parameters, therefore providing a more realistic spread of the ERA5-Land ensemble surface fields. </span></p></div></div></li><li><div id="expander-1858700761" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-1858700761" class="expand-control"><button type="button" id="expand-button-1858700761" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-1858700761"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Swapped value of the components of the total evapotranspiration</span></button></div><div role="region" id="expander-content-1858700761" class="expand-content expand-hidden" aria-labelledby="expand-button-1858700761"><ol><li><p><span>Three components of the total evapotranspiration have values swapped as follows: <br/></span></p><p><span>- variable &quot;<strong>Evaporation from bare soil</strong>&quot; (<a href="https://apps.ecmwf.int/codes/grib/param-db?id=228101" class="external-link" rel="nofollow"><span style="color: rgb(0,111,201);">mars parameter code </span><span style="color: rgb(0,111,201);">228101 (evabs)</span></a>) has the values corresponding to the &quot;<strong>Evaporation from vegetation transpiration</strong>&quot; (<a href="https://apps.ecmwf.int/codes/grib/param-db?id=228103" class="external-link" rel="nofollow"><span style="color: rgb(0,111,201);">mars parameter </span><span style="color: rgb(0,111,201);">228103 (evavt</span><span style="color: rgb(0,111,201);">)</span></a>),</span><br/><span>- variable &quot;<strong>Evaporation from open water surfaces excluding oceans</strong> (<a href="https://apps.ecmwf.int/codes/grib/param-db?id=228102" class="external-link" rel="nofollow"><span style="color: rgb(0,111,201);">mars parameter code 228102 (evaow</span>)</a>) has the values corresponding to the &quot;<strong>Evaporation from bare soil</strong>&quot; (<span style="color: rgb(0,111,201);"><a href="https://apps.ecmwf.int/codes/grib/param-db?id=228101" class="external-link" rel="nofollow">mars parameter code 228101 (evabs)</a></span>),<br/>- variable &quot;<strong>Evaporation from vegetation transpiration</strong>&quot; <a href="https://apps.ecmwf.int/codes/grib/param-db?id=228103" class="external-link" rel="nofollow">(<span style="color: rgb(0,111,201);">mars parameter code 228103 (evavt)</span></a>) has the values corresponding to the &quot;<strong>Evaporation from open water surfaces excluding oceans</strong>&quot; <a href="https://apps.ecmwf.int/codes/grib/param-db?id=228102" class="external-link" rel="nofollow">(<span style="color: rgb(0,111,201);">mars parameter code 228102 (evaow)</span></a>).</span></p></li></ol></div></div></li><li><div id="expander-1777365891" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-1777365891" class="expand-control"><button type="button" id="expand-button-1777365891" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-1777365891"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Low values of snow cover and snow depth on the eastern side of the Antarctic ice sheet</span></button></div><div role="region" id="expander-content-1777365891" class="expand-content expand-hidden" aria-labelledby="expand-button-1777365891"><p>Low values of snow cover and snow depth were found on the eastern side of the Antarctic ice sheet, as shown in Fig. 1. The issue is due to the application of an old glacier mask to the Antarctica, which excludes the patch shown in the figure as glacier. Inaccuracies in the glacier mask are due to errors in satellite measurements datasets.&nbsp;While, due to the lower horizontal resolution, in ERA5 this ice sheet part is a sea point, in ERA5-Land the area is categorised as land without an initial ice mass. Since the initialization doesn't consider a glacier there (estimated at a constant 10 m of snow water equivalent), the low amount of precipitation along with potential excess of sublimation makes them to obtain unrealistic low numbers there.</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" draggable="false" height="250" src="/download/attachments/140385202/snow-depth-water-equivalent-Antartica.png?version=1&amp;modificationDate=1601557503338&amp;api=v2" data-image-src="/download/attachments/140385202/snow-depth-water-equivalent-Antartica.png?version=1&amp;modificationDate=1601557503338&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="197691997" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="snow-depth-water-equivalent-Antartica.png" data-base-url="https://confluence.ecmwf.int" data-linked-resource-content-type="image/png" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121" alt=""/></span>&nbsp;</p><p>Fig 1: ERA-Land Snow depth (m of water equivalent) on 01-01-2015&nbsp;eastern side of the Antarctic ice sheet.</p></div></div></li><li><div id="expander-954192351" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-954192351" class="expand-control"><button type="button" id="expand-button-954192351" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-954192351"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Limited impact from sub-optimal tropical cyclones in the forcing from the ERA5 preliminary dataset for 1950-1978.</span></button></div><div role="region" id="expander-content-954192351" class="expand-content expand-hidden" aria-labelledby="expand-button-954192351"><p>From 1950-1978 ERA5-Land was forced by the preliminary ERA5 back extension which has a <a href="/pages/viewpage.action?pageId=197690025">sub-optimal representation for a number of tropical cyclones</a>.</p><p>The over-estimation of a number of tropical cyclones for this period affects some products over the oceans in the vicinity of tropical cyclone tracks. Over land much smaller impact is expected, and therefore, the effect on the ERA5-Land product from 1950-1978 is more limited.</p><p>This is supported by the figure below that plots, for each location, the minimum pressure from the ERA5 forcing (top panels) and the maximum daily accumulated total precipitation for ERA5-Land (lower panels) for the (preliminary) back extension (left panels) and&nbsp; for the period from the late 1970s to 2010 inclusive (right panels). Note that these show the most extreme situations,&nbsp; i.e., the absolute extremes in the about 30-year periods that were considered in each plot. Less extreme statistics, like 99, 95 (etc.) percentiles or mean distributions will show a much smaller impact of tropical cyclones.</p><p>From these panels it is seen that for the forcing from ERA5 (top panels), in general, local minimum pressure is similar between 1950-1978 and 1979-2010. There are of course sampling differences between the two, each about 30-year, periods. Large differences that are likely related to&nbsp; anomalously strong tropical cyclones are very localized, such as for some areas over North Australia, East Madagascar, Philippines and Northeast China. Note again that these affect a few cases only in the 29-year dataset.</p><p>The effect on the ERA5-Land precipitation is shown in the lower panels. Even for these extremes it is difficult to pin-point locations that could be affected by anomalous tropical cyclones.</p><p><br/>&nbsp;</p><div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/></colgroup><tbody><tr><th class="confluenceTh"><div class="content-wrapper"><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" draggable="false" height="250" src="/download/attachments/140385202/msl_min_ERA5_prelim_1950-1978.png?version=1&amp;modificationDate=1632821723789&amp;api=v2" data-image-src="/download/attachments/140385202/msl_min_ERA5_prelim_1950-1978.png?version=1&amp;modificationDate=1632821723789&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="235621187" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="msl_min_ERA5_prelim_1950-1978.png" data-base-url="https://confluence.ecmwf.int" data-linked-resource-content-type="image/png" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121" alt=""/></span></p></div></th><th class="confluenceTh"><div class="content-wrapper"><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" draggable="false" height="250" src="/download/attachments/140385202/msl_min_ERA5_1979-2010.png?version=1&amp;modificationDate=1632821734499&amp;api=v2" data-image-src="/download/attachments/140385202/msl_min_ERA5_1979-2010.png?version=1&amp;modificationDate=1632821734499&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="235621188" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="msl_min_ERA5_1979-2010.png" data-base-url="https://confluence.ecmwf.int" data-linked-resource-content-type="image/png" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121" alt=""/></span></p></div></th></tr><tr><td class="confluenceTd"><div class="content-wrapper"><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" draggable="false" height="250" src="/download/attachments/140385202/tp_max_era5_land_1950-1980.png?version=1&amp;modificationDate=1632821734510&amp;api=v2" data-image-src="/download/attachments/140385202/tp_max_era5_land_1950-1980.png?version=1&amp;modificationDate=1632821734510&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="235621189" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="tp_max_era5_land_1950-1980.png" data-base-url="https://confluence.ecmwf.int" data-linked-resource-content-type="image/png" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121" alt=""/></span></p></div></td><td class="confluenceTd"><div class="content-wrapper"><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" draggable="false" height="250" src="/download/attachments/140385202/tp_max_era5_land_1981-2010.png?version=1&amp;modificationDate=1632821734520&amp;api=v2" data-image-src="/download/attachments/140385202/tp_max_era5_land_1981-2010.png?version=1&amp;modificationDate=1632821734520&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="235621190" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="tp_max_era5_land_1981-2010.png" data-base-url="https://confluence.ecmwf.int" data-linked-resource-content-type="image/png" data-linked-resource-container-id="140385202" data-linked-resource-container-version="121" alt=""/></span></p></div></td></tr></tbody></table></div><p class="auto-cursor-target">Caption: locally minimum of 6-hourly pressure for ERA5 forcing data (top panels) and maximum daily total precipitation (lower panels) over the indicated period of time for the back extension (left panels) and for later periods (right panels). Numbers represent the averages for the locally extreme values over the indicated areas.</p></div></div></li><li><div id="expander-377169204" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-377169204" class="expand-control"><button type="button" id="expand-button-377169204" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-377169204"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Definition of Potential Evaporation (PEV) modified</span></button></div><div role="region" id="expander-content-377169204" class="expand-content expand-hidden" aria-labelledby="expand-button-377169204"><p>Note that on 18-11-2021 we modified the definition of Potential Evaporation (PEV) provided in the CDS catalogue entry for both, the hourly and the monthly fields. The reason is that until this date the definition of PEV was similar to that of the same field provided by ERA5, whereas in reality they are computed differently:&nbsp;&nbsp;</p><ul><li>&nbsp;<strong style="text-align: left;">PEV in ERA5</strong><span style="color: rgb(51,51,51);"><span>&nbsp;</span>is</span><span style="color: rgb(51,51,51);">&nbsp;computed for<span>&nbsp;</span><strong>agricultural</strong><span>&nbsp;</span>land as if it is well watered (<strong>no soil moisture stress</strong>)&nbsp; and assuming that the atmosphere is not affected by this artificial surface condition.&nbsp;</span></li><li><span style="color: rgb(51,51,51);">&nbsp;<strong>PEV in ERA5-Land</strong> is computed as an open water evaporation (<strong style="text-align: left;">Pan evaporation</strong>)&nbsp;and assuming that the atmosphere is not affected by this artificial surface condition.</span></li></ul></div></div></li><li><div id="expander-549583803" class="expand-container conf-macro output-block" data-hasbody="true" data-macro-name="expand"><div role="heading" aria-level="6" id="expander-control-549583803" class="expand-control"><button type="button" id="expand-button-549583803" class="aui-button aui-button-link aui-button-link-icon-text" aria-expanded="false" aria-controls="expander-content-549583803"><span class="expand-icon aui-icon aui-icon-small aui-iconfont-chevron-right" aria-hidden="true"></span><span class="expand-control-text conf-macro-render">Incorrect values of monthly averaged reanalysis of accumulated fields from September 2022 to February 2024</span></button></div><div role="region" id="expander-content-549583803" class="expand-content expand-hidden" aria-labelledby="expand-button-549583803"><p style="text-align: left;">An issue with the&nbsp;<a href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land-monthly-means?tab=overview" class="external-link" rel="nofollow">ERA5-Land monthly averaged data from 1950 to present</a>&nbsp;dataset was&nbsp;identified in January 2024<strong> on both CDS discs and MARS tapes. </strong>It affects the following part of the dataset:</p><p style="text-align: left;"><strong>Product:</strong> Monthly averaged reanalysis</p><p style="text-align: left;"><strong>Time period:</strong><span>&nbsp;</span>from September 2022 to February 2024<span>&nbsp;</span></p><p style="text-align: left;"><strong>Area:</strong>&nbsp;Global</p><p style="text-align: left;"><strong>Variables:</strong><span>&nbsp;</span>all accumulated variables (please refer to<span>&nbsp;</span><a class="external-link" href="https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#heading-Parameterlistings" rel="nofollow">Table 3 in ERA5-Land documentation</a>)</p><p style="text-align: left;">Incorrect data for period September 2022 to February 2024 is no longer available to download using the interactive CDS<span>&nbsp;</span><a href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land-monthly-means?tab=form" class="external-link" rel="nofollow">Download data form</a>&nbsp;over the web, but remains accessible for the time being via CDS API or direct MARS access.&nbsp;</p><p style="text-align: left;"><strong>Incorrect data from September 2022 to February 2024 will not be replaced on CDS discs nor MARS tapes.</strong>&nbsp;<strong>Instead users can&nbsp;<ins>recover the same (and correct) data using the product monthly averaged reanalysis by hour of day at 00:00.</ins></strong></p><p style="text-align: left;">A fix was implemented for ERA5-Land monthly averaged data stored on CDS discs in time for the release of March 2024 monthly averaged data (i.e. from March 2024 onwards).</p></div></div></li></ol><h2 id="ERA5Land:datadocumentation-Resolvedissues"><span>Resolved issues</span></h2><ol><li class="auto-cursor-target"><strong><strong style="text-align: left;">ERA5-Land-T rewritten 1st - 6th January 2025:<span> </span></strong></strong><span style="color: rgb(0,0,0);">At the turn of 2025, an unfortunate technical issue with the production of ERA5 resulted in a large part of satellite observations not being used. This led to small but systematic differences, impacting mainly humidity in the tropics, and in lesser extent other ERA5 parameters as well from the 1st of January 2025 onwards. The issue was resolved and ERA5T and ERA5-Land-T were rewritten with the correct data from 12 UTC 1</span><sup style="text-align: left;">st</sup><span style="color: rgb(0,0,0);"> January to 12 UTC 6th January 2025. The consolidated ERA5 and ERA5-Land will contain these corrected values.</span></li></ol><h2 id="ERA5Land:datadocumentation-HowtocitetheERA5-Landdataset">How to cite the ERA5-Land dataset</h2><p>In addition to the terms and conditions of the license(s), users<span> </span><strong>must</strong>:</p><ul><li>cite the CDS catalogue entry;</li><li>provide clear and visible attribution to the Copernicus programme and attribute each data product used;</li></ul><p><strong>Step 1</strong>: Check the<span style="letter-spacing: 0.0px;"> </span><a href="https://apps.ecmwf.int/datasets/licences/copernicus/" class="external-link" rel="nofollow">licence to use Copernicus Products</a><span style="letter-spacing: 0.0px;"> for attribution/reference clause.</span></p><p><strong>Step 2</strong>: Cite the CDS catalogue entry (as traceable source of data).  </p><p><strong>Step 3</strong>: Provide clear and visible attribution to the Copernicus programme and attribute each data product used (to accredit the creators of the data).<span> </span><span>Throughout the content of your publication, the dataset used is referred to as Author (YYYY).</span></p><p>The 3-steps procedure above is illustrated with this example:</p><p><span style="letter-spacing: 0.0px;"> </span><a href="/display/CKB/Use+Case+1%3A+ERA5-Land+hourly+data+from+1950+to+present">Use Case 1: ERA5-Land hourly data from 1950 to present</a></p><p>For complete details, please refer to<span> </span><a href="/display/CKB/How+to+acknowledge+and+cite+a+Climate+Data+Store+%28CDS%29+catalogue+entry+and+the+data+published+as+part+of+it">How to acknowledge and cite a Climate Data Store (CDS) catalogue entry and the data published as part of it</a>.</p><h2 id="ERA5Land:datadocumentation-Referencearticles">Reference articles</h2><p><span style="color: rgb(23,43,77);">J. Muñoz-Sabater, Dutra, E., Agustí-Panareda, A., Albergel, C., Arduini, G., Balsamo, G., Boussetta, S., Choulga, M., Harrigan, S., Hersbach, H., Martens, B., Miralles, D. G., Piles, M., Rodríguez-Fernández, N. J., Zsoter, E., Buontempo, C., and Thépaut, J.-N.: ERA5-Land: A state-of-the-art global reanalysis dataset for land applications, Earth Syst. Sci. Data,13, 4349–4383, 2021. </span><a href="https://doi.org/10.5194/essd-13-4349-2021" class="external-link" rel="nofollow">https://doi.org/10.5194/essd-13-4349-2021</a>.</p><p><a href="https://www.ecmwf.int/en/newsletter/159/news/first-era5-land-dataset-be-released-spring" class="external-link" rel="nofollow">ERA5-Land news </a></p><p>Further ERA5-Land references and related information are available from the <a href="https://www.ecmwf.int/search/site?search_api_fulltext=era5-land" class="external-link" rel="nofollow">ECMWF website</a>.</p><p><br/></p><div class="confluence-information-macro has-no-icon confluence-information-macro-information conf-macro output-block" data-hasbody="true" data-macro-name="info"><div class="confluence-information-macro-body"><p class="x_MsoNormal"><span style="color: rgb(122,134,154);"><sub><strong><em> <span class="x_MsoCommentReference">This document has been produced in the context of the Copernicus Climate Change Service (C3S).</span> </em></strong></sub></span></p><p class="x_MsoNormal"><span style="color: rgb(122,134,154);"><sub><strong><em> <span class="x_MsoCommentReference">The activities leading to these results have been contracted by the European Centre for Medium-Range Weather Forecasts, operator of C3S on behalf of the European Union (Delegation Agreement signed on 11/11/2014 and Contribution Agreement signed on 22/07/2021). All information in this document is provided &quot;as is&quot; and no guarantee or warranty is given that the information is fit for any particular purpose.</span> </em></strong></sub></span></p><p><em><span style="color: rgb(122,134,154);"><sub><strong> </strong></sub></span><span class="x_MsoCommentReference"><span style="color: rgb(122,134,154);"><sub><strong> </strong></sub></span><span class="x_x_MsoCommentReference"><span style="color: rgb(122,134,154);"><sub><strong> The users thereof use the information at their sole risk and liability. For the avoidance of all doubt , the European Commission and the European Centre for Medium - Range Weather Forecasts have no liability in respect of this document, which is merely representing the author's view.</strong></sub></span> </span> </span></em></p></div></div><h2 id="ERA5Land:datadocumentation-Relatedarticles">Related articles</h2><p><ul class="content-by-label conf-macro output-block" data-hasbody="false" data-macro-name="contentbylabel">
+        <li>
+        <div>
+                <span class="icon aui-icon content-type-page" title="Page">Page:</span>        </div>
+
+        <div class="details">
+                        <a href="/display/CKB/ERA5%3A+data+documentation">ERA5: data documentation</a>
+                
+                        
+                    </div>
+    </li>
+        <li>
+        <div>
+                <span class="icon aui-icon content-type-page" title="Page">Page:</span>        </div>
+
+        <div class="details">
+                        <a href="/display/CKB/Does+downloading+data+at+higher+resolution+improve+the+output">Does downloading data at higher resolution improve the output</a>
+                
+                        
+                    </div>
+    </li>
+        <li>
+        <div>
+                <span class="icon aui-icon content-type-page" title="Page">Page:</span>        </div>
+
+        <div class="details">
+                        <a href="/pages/viewpage.action?pageId=85402030">ERA5 terminology: analysis and forecast; time and steps; instantaneous and accumulated and mean rates and min/max parameters</a>
+                
+                        
+                    </div>
+    </li>
+        <li>
+        <div>
+                <span class="icon aui-icon content-type-page" title="Page">Page:</span>        </div>
+
+        <div class="details">
+                        <a href="/display/CKB/Essential+Climate+Variables+for+assessment+of+climate+variability+from+1979+to+present%3A+Product+user+guide">Essential Climate Variables for assessment of climate variability from 1979 to present: Product user guide</a>
+                
+                        
+                    </div>
+    </li>
+        <li>
+        <div>
+                <span class="icon aui-icon content-type-page" title="Page">Page:</span>        </div>
+
+        <div class="details">
+                        <a href="/display/CKB/The+family+of+ERA5+datasets">The family of ERA5 datasets</a>
+                
+                        
+                    </div>
+    </li>
+    </ul></p><p><br/></p>
+
+                
+        
+    
+        </div>
+
+                        
+    
+
+
+
+<div id="labels-section" class="pageSection group">
+    <div class="labels-section-content content-column" entityid="140385202" entitytype="page">
+	<div class="labels-content">
+		
+    <ul class="label-list label-list-right ">
+                    
+        <li class="aui-label " data-label-id="165838928"><a class="aui-label-split-main" href="/label/CKB/era5-land" rel="tag">era5-land</a></li><li class="aui-label " data-label-id="368149200"><a class="aui-label-split-main" href="/label/CKB/owned-single-by-daq" rel="tag">owned-single-by-daq</a></li>
+            </ul>
+
+    </div>
+</div>
+</div>
+        
+		
+            
+
+
+
+
+            
+        
+
+
+
+
+
+
+
+
+                        
+    
+<div id="comments-section" class="pageSection group">
+        
+    
+
+
+
+</div>
+        
+
+
+                
+    
+            
+</div>
+
+    
+
+    
+
+
+
+
+    
+    
+
+    
+    
+    
+
+
+    
+<div id="space-tools-web-items" class="hidden">
+                <div data-label="Overview" data-href="/spaces/viewspacesummary.action?key=CKB">Overview</div>
+            <div data-label="Community Forums" data-href="/plugins/forums/config/space/spaceForumList.action?key=CKB">Community Forums</div>
+            <div data-label="Content Tools" data-href="/pages/reorderpages.action?key=CKB">Content Tools</div>
+    </div>
+        
+
+
+
+                    
+        <div id="custom-content-footer">
+            <p><strong>Feedback:</strong> <span class="nobr"><a href="https://confluence.ecmwf.int/x/E7uBEQ" class="external-link" rel="nofollow">C3S User Satisfaction Survey<sup><img class="rendericon" src="/images/icons/linkext7.gif" height="7" width="7" align="absmiddle" alt="" border="0"/></sup></a></span> - <span class="nobr"><a href="https://confluence.ecmwf.int/x/CruBEQ" class="external-link" rel="nofollow">CAMS User Satisfaction Survey<sup><img class="rendericon" src="/images/icons/linkext7.gif" height="7" width="7" align="absmiddle" alt="" border="0"/></sup></a></span></p>
+
+<p><strong>Web:</strong> <span class="nobr"><a href="https://climate.copernicus.eu/help-and-support" class="external-link" rel="nofollow">C3S Help and  Support<sup><img class="rendericon" src="/images/icons/linkext7.gif" height="7" width="7" align="absmiddle" alt="" border="0"/></sup></a></span>  - <span class="nobr"><a href="https://atmosphere.copernicus.eu/help-and-support" class="external-link" rel="nofollow">CAMS Help and  Support<sup><img class="rendericon" src="/images/icons/linkext7.gif" height="7" width="7" align="absmiddle" alt="" border="0"/></sup></a></span></p>
+
+<p><span class="image-wrap" style="display: block; text-align: center"><img src="/download/attachments/55116796/logos.png?version=1&amp;modificationDate=1645117013188&amp;api=v2" vspace="2" width="800" style="border: 0px solid black" /></span></p>
+        </div>
+    
+            </main><!-- \#main -->
+            
+    
+    
+        
+            
+            
+
+<div id="footer" role="contentinfo">
+    <section class="footer-body">
+
+                                                    
+        
+
+        <ul id="poweredby">
+            <li class="noprint">Powered by <a href="https://www.atlassian.com/software/confluence" class="hover-footer-link" rel="nofollow">Atlassian Confluence</a> <span id='footer-build-information'>8.5.15</span> <span id='footer-cluster-node'>(confluence-0: 546f0bcc)</span></li>
+            <li class="print-only">Printed by Atlassian Confluence 8.5.15</li>
+            <li class="noprint"><a href="https://support.atlassian.com/confluence-server/" class="hover-footer-link" rel="nofollow">Report a bug</a></li>
+            <li class="noprint"><a href="https://www.atlassian.com/company" class="hover-footer-link" rel="nofollow">Atlassian News</a></li>
+        </ul>
+
+        
+
+        <div id="footer-logo"><a href="https://www.atlassian.com/" rel="nofollow">Atlassian</a></div>
+
+                    
+        
+    </section>
+</div>
+
+    
+</div>
+
+</div><!-- \#full-height-container -->
+</div><!-- \#page -->
+
+    <span style="display:none;" id="confluence-server-performance">{"serverDuration": 260, "requestCorrelationId": "da057a8b168e4c50"}</span>
+</body>
+</html>
+    
