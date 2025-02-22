@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import datetime as dt
+import os
 import time
 import logging
 from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
@@ -77,6 +78,11 @@ class RawDataAssembler:
         """Assemble the dataset using the specified data pipelines"""
         logger.info(f"Wildfire Incidence Data Columns in Assembler: {self.fire_dates.columns}")
         logger.info(f"Pipeline list: {pipelines}")
+        
+        ## Create output folder based on the real date of the method call
+        output_data_folder = f"output_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(output_data_folder, exist_ok=True)
+        
 
         # Generate a DataFrame with all dates (fire and non-fire) for the specified period
         self.all_dates_df = self._all_dates_generator(
@@ -149,7 +155,7 @@ class RawDataAssembler:
                         logger.warning(f"No monthly_data from CDS to integrate with HUMAN_ACTIVITY for {period_key}.")
                         continue
 
-                    ha_pipeline = pipeline['HUMAN_ACTIVITY']
+                    hap_pipeline = pipeline['HUMAN_ACTIVITY']
                     logger.info("HumanActivity pipeline found!")
 
                     # Fetch and integrate Human Activity data
@@ -159,11 +165,10 @@ class RawDataAssembler:
                 elif 'NED' in pipeline:
                     # NASA Earthdata pipeline assembly code here...
                     pass
-                    
+            
             # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
-                target_file = f"final_weather_data_{period_key}.csv"
-                try:
+                target_file = os.path.join(output_data_folder, f"fb_raw_data_{period_key}.csv")                try:
                     monthly_data.to_csv(target_file, index=False)
                     logger.info(f"Wrote monthly CSV for {period_key} -> '{target_file}'")
                 except Exception as e:

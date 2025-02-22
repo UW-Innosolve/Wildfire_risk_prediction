@@ -4,7 +4,7 @@ import time
 
 ## Import Pipeline classes
 # from cds_pipeline.CDS_pipeline import CdsPipeline
-from cds_pipeline.earthkit_pipeline import EkPipeline ## NOTE Change name
+from earthkit_pipeline.earthkit_pipeline import EkPipeline ## NOTE Change name
 # from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
 
 # Import Utility classes
@@ -12,7 +12,7 @@ import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_load
 import collection_utils.raw_data_assembly as raw_data_assembly
 
 import logging
-from cds_pipeline.cds_auth import CdsAuth
+from earthkit_pipeline.cds_auth import CdsAuth
 import cfgrib
 import eccodes
 
@@ -80,15 +80,15 @@ def main():
     #                         'surface_net_solar_radiation',
     #                         'surface_net_thermal_radiation',
     # ]
-    variant_cds_params = ["2t", "msl", "tvh"]
+    variant_cds_params = ["2t", "msl"]
     
-    # invariant_cds_params = ["tvh"]
+    invariant_cds_params = ["tvh"]
 
 
     ## Set CDS request parameters
     Ek_pipeline.set_request_parameters(
         var_params=variant_cds_params, 
-        # invar_params=invariant_cds_params, 
+        invar_params=invariant_cds_params, 
         lat_range=[49, 60], 
         long_range=[-120, -110], 
         grid_resolution=0.5
