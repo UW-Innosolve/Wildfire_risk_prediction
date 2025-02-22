@@ -3,8 +3,6 @@ import numpy as np
 import datetime as dt
 import time
 import logging
-# from cds_pipeline.CDS_pipeline import CdsPipeline
-# from cds_pipeline.earthkit_pipeline import CdsPipeline as cds_pipeline ## NOTE Change name
 from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
 
 # Configure logging
@@ -117,13 +115,13 @@ class RawDataAssembler:
             # Process each pipeline in sequence
             for pipeline in pipelines:
                 # 1) CDS pipeline
-                if 'CDS' in pipeline:
-                    cds_pipeline = pipeline['CDS']
-                    logger.info("CDS pipeline found!")
+                if 'EARTHKIT' in pipeline:
+                    ek_pipeline = pipeline['EARTHKIT']
+                    logger.info("EARTHKIT pipeline found!")
 
                     # Fetch weather data
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    weather_data = cds_pipeline.fetch_var_data(start_date, end_date)
+                    weather_data = ek_pipeline.fetch_var_data(start_date, end_date)
 
                     if weather_data is None or weather_data.empty:
                         logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
