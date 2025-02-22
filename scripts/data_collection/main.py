@@ -3,7 +3,8 @@
 import time
 
 ## Import Pipeline classes
-from cds_pipeline.CDS_pipeline import CdsPipeline
+# from cds_pipeline.CDS_pipeline import CdsPipeline
+from cds_pipeline.earthkit_pipeline import CdsPipeline ## NOTE Change name
 from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
 
 # Import Utility classes
@@ -15,7 +16,8 @@ from cds_pipeline.cds_auth import CdsAuth
 import cfgrib
 import eccodes
 
-
+## Global environment variable?
+# CDSAPI_KEY = "734d2638-ef39-4dc1-bc54-4842b788fff6"
 
 # Configure logging
 logging.basicConfig(
@@ -51,39 +53,42 @@ def main():
     
     
     ## Set CDS time-invariant variables (parameters)
-    invariant_cds_params = ['low_veg_cover', 
-                            'high_veg_cover', cl
-                            'low_veg_type', 
-                            'high_veg_type']
+    # invariant_cds_params = ['low_veg_cover', 
+    #                         'high_veg_cover', cl
+    #                         'low_veg_type', 
+    #                         'high_veg_type']
     
-    ## Set CDS time-variant variables
-    variant_cds_params = [  # Temperature and pressure
-                            '2m_temperature', 
-                            'surface_pressure',
-                            # Wind
-                            '10m_u_component_of_wind', 
-                            '10m_v_component_of_wind',
-                            # Water variables
-                            '2m_dewpoint_temperature', 
-                            'total_precipitation',
-                            'total_evaporation',
-                            # Leaf area index (vegetation)
-                            'leaf_area_index_low_vegetation',
-                            'leaf_area_index_high_vegetation',
-                            # Heat variables (NOTE: needs review and/or reduction)
-                            'surface_sensible_heat_flux',
-                            'surface_latent_heat_flux',
-                            'surface_solar_radiation_downwards',
-                            'surface_thermal_radiation_downwards',
-                            'surface_net_solar_radiation',
-                            'surface_net_thermal_radiation',
-    ]
+    # ## Set CDS time-variant variables
+    # variant_cds_params = [  # Temperature and pressure
+    #                         '2m_temperature', 
+    #                         'surface_pressure',
+    #                         # Wind
+    #                         '10m_u_component_of_wind', 
+    #                         '10m_v_component_of_wind',
+    #                         # Water variables
+    #                         '2m_dewpoint_temperature', 
+    #                         'total_precipitation',
+    #                         'total_evaporation',
+    #                         # Leaf area index (vegetation)
+    #                         'leaf_area_index_low_vegetation',
+    #                         'leaf_area_index_high_vegetation',
+    #                         # Heat variables (NOTE: needs review and/or reduction)
+    #                         'surface_sensible_heat_flux',
+    #                         'surface_latent_heat_flux',
+    #                         'surface_solar_radiation_downwards',
+    #                         'surface_thermal_radiation_downwards',
+    #                         'surface_net_solar_radiation',
+    #                         'surface_net_thermal_radiation',
+    # ]
+    variant_cds_params = ["2t", "msl", "tvh"]
+    
+    # invariant_cds_params = ["tvh"]
 
 
     ## Set CDS request parameters
     cds_pipeline.set_request_parameters(
         var_params=variant_cds_params, 
-        invar_params=invariant_cds_params, 
+        # invar_params=invariant_cds_params, 
         lat_range=[49, 60], 
         long_range=[-120, -110], 
         grid_resolution=0.5

@@ -3,7 +3,8 @@ import numpy as np
 import datetime as dt
 import time
 import logging
-from cds_pipeline.CDS_pipeline import CdsPipeline
+# from cds_pipeline.CDS_pipeline import CdsPipeline
+# from cds_pipeline.earthkit_pipeline import CdsPipeline as cds_pipeline ## NOTE Change name
 from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
 
 # Configure logging
