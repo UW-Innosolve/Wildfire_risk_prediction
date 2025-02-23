@@ -90,12 +90,13 @@ class EkPipeline:
         )
         
         self.ek_request_parameters = non_temporal_req_dict
-        
-        logger.info(f"ERAequest parameters set: {self.ek_request_parameters}")
 
     def process_grib_file(self, file_path):
         try:
-            ds = cfgrib.open_dataset(file_path)
+            # ds = cfgrib.open_dataset(file_path)
+            # ds_indices = ds.indexes
+            # logger.info(f"Dataset indexes: {ds_indices}")
+            ds = ds.sel(time=ds.time[0])
             logger.info("Successfully opened GRIB file: %s", file_path)
             
             return ds
@@ -146,6 +147,10 @@ class EkPipeline:
             else:
                 # If not a ZIP, try reading the file directly.
                 ds = xr.open_dataset(grib_file, engine='cfgrib')
+                
+                # ## NOTE: Hardcoded to select the first time step for now
+                # ds = ds.sel(time=ds.time[0])  # Select only the first time step
+                
                 df = ds.to_dataframe().reset_index()
                 df['date'] = pd.to_datetime(df['time']).dt.normalize()
                 df = df.drop(columns=['number'], errors='ignore')

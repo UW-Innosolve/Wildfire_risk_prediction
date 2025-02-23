@@ -4,10 +4,10 @@ import datetime as dt
 import os
 import time
 import logging
-from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
+# from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -80,7 +80,7 @@ class RawDataAssembler:
         logger.info(f"Pipeline list: {pipelines}")
         
         ## Create output folder based on the real date of the method call
-        output_data_folder = f"output_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        output_data_folder = f"fb_raw_output_datasets_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}"
         os.makedirs(output_data_folder, exist_ok=True)
         
 
@@ -103,6 +103,7 @@ class RawDataAssembler:
             logger.error(f"Grouping failed due to missing key: {e}")
             return
 
+        logger.debug("=====check point 1=====")
         # Iterate over each period (e.g., month)
         for period, batch in self.grouped_all_dates:
             # Start timing for this batch
@@ -117,7 +118,7 @@ class RawDataAssembler:
 
             # Initialize a DataFrame to hold the integrated data for this period
             monthly_data = None
-
+            logger.debug("=====check point 2=====")
             # Process each pipeline in sequence
             for pipeline in pipelines:
                 # 1) CDS pipeline
@@ -127,8 +128,9 @@ class RawDataAssembler:
 
                     # Fetch weather data
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    weather_data = ek_pipeline.fetch_var_data(start_date, end_date)
-
+                    logger.debug("=====check point 3=====")
+                    weather_data = ek_pipeline.ek_fetch_data(start_date, end_date)
+                    logger.debug("=====check point 4=====")
                     if weather_data is None or weather_data.empty:
                         logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
                         continue
@@ -142,12 +144,14 @@ class RawDataAssembler:
 
                     # Label fire days in weather data
                     logger.info("Labeling fire days in weather data...")
+                    logger.debug("=====check point 5=====")
                     weather_data['is_fire_day'] = weather_data.apply(self._is_fire_labeler, axis=1)
                     num_fire_days = weather_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
-
+                    logger.debug("=====check point 6=====")
                     # Store the resulting DataFrame in monthly_data
                     monthly_data = weather_data.copy()
+                    logger.debug("=====check point 7=====")
                 
                 # 2) HUMAN_ACTIVITY pipeline
                 elif 'HUMAN_ACTIVITY' in pipeline:
@@ -159,7 +163,7 @@ class RawDataAssembler:
                     logger.info("HumanActivity pipeline found!")
 
                     # Fetch and integrate Human Activity data
-                    monthly_data = hap.fetch_human_activity_monthly(monthly_data, period_key)
+                    monthly_data = hap_pipeline.fetch_human_activity_monthly(monthly_data, period_key)
                     logger.info(f"Integrated HumanActivity data into {period_key} => final shape={monthly_data.shape}")
                     
                 elif 'NED' in pipeline:
@@ -168,7 +172,8 @@ class RawDataAssembler:
             
             # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
-                target_file = os.path.join(output_data_folder, f"fb_raw_data_{period_key}.csv")                try:
+                target_file = os.path.join(output_data_folder, f"fb_raw_data_{period_key}.csv")
+                try:
                     monthly_data.to_csv(target_file, index=False)
                     logger.info(f"Wrote monthly CSV for {period_key} -> '{target_file}'")
                 except Exception as e:
