@@ -3,23 +3,22 @@
 import time
 
 ## Import Pipeline classes
-from cds_pipeline.CDS_pipeline import CdsPipeline
-from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
+from earthkit_pipeline.earthkit_pipeline import EkPipeline
+from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline
+# from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
 
 # Import Utility classes
 import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_loader
 import collection_utils.raw_data_assembly as raw_data_assembly
 
 import logging
-from cds_pipeline.cds_auth import CdsAuth
+from earthkit_pipeline.cds_auth import CdsAuth
 import cfgrib
 import eccodes
 
-
-
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
     handlers=[
         logging.FileHandler("pipeline.log"),
@@ -27,9 +26,6 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
-# NEW IMPORT for the Human Activity Pipeline
-# from human_activity_pipeline import HumanActivityPipeline
 
 def main():
     ## WILDFIRE INCIDENCE DATA
@@ -46,61 +42,75 @@ def main():
 
     ## CDS PIPELINE
     ## Initialize CDS pipeline
-    cds_key = CdsAuth().get_cds_key(cred_file_path="/Users/jromero/Documents/GitHub/Wildfire_risk_prediction/scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
-    cds_pipeline = CdsPipeline(cds_key)
+    cds_key = CdsAuth().get_cds_key(cred_file_path="scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
+    ek_pipeline = EkPipeline(cds_key)
     
-    
-    ## Set CDS time-invariant variables (parameters)
-    invariant_cds_params = ['low_veg_cover', 
-                            'high_veg_cover', cl
-                            'low_veg_type', 
-                            'high_veg_type']
-    
-    ## Set CDS time-variant variables
+    ## Set CDS era5 pipeline parameters
     variant_cds_params = [  # Temperature and pressure
-                            '2m_temperature', 
-                            'surface_pressure',
+                            '2t',      # 2m_temperature 
+                            'sp',       # surface_pressure
                             # Wind
-                            '10m_u_component_of_wind', 
-                            '10m_v_component_of_wind',
+                            '10u',      # 10m_u_component_of_wind', 
+                            '10v',      # 10m_v_component_of_wind',
                             # Water variables
-                            '2m_dewpoint_temperature', 
-                            'total_precipitation',
-                            'total_evaporation',
+                            '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
+                            # NOTE: precipitation accumulations need to be repaired
+                            # 'tp',       # total_precipitation',
+                            # 'e',        # total_evaporation',
                             # Leaf area index (vegetation)
-                            'leaf_area_index_low_vegetation',
-                            'leaf_area_index_high_vegetation',
-                            # Heat variables (NOTE: needs review and/or reduction)
-                            'surface_sensible_heat_flux',
-                            'surface_latent_heat_flux',
-                            'surface_solar_radiation_downwards',
-                            'surface_thermal_radiation_downwards',
-                            'surface_net_solar_radiation',
-                            'surface_net_thermal_radiation',
+                            'lai_lv',   # leaf_area_index_low_vegetation',
+                            'lai_hv'   # leaf_area_index_high_vegetation',
+                            # Heat variables (NOTE: needs to be repaired, if the values are useful)
+                            # 'sshf',      # surface_sensible_heat_flux',
+                            # 'slhf',      # surface_latent_heat_flux',
+                            # 'ssrd',      # surface_solar_radiation_downwards',
+                            # 'strd',      # surface_thermal_radiation_downwards',
+                            # 'ssr',       # surface_net_solar_radiation
+                            # 'str',       # surface_net_thermal_radiation
+    ]    
+    
+    invariant_cds_params = [ # Vegetation cover and type
+                            'tvl', # low_veg_cover
+                            'tvh', # high_veg_cover
+                            'cvl', # low_veg_type
+                            'cvh'  # high_veg_type
+                             # Lakes and rivers
+                            'cl',  # lake_cover
+                            'lsm', # land_sea_mask
+                             # Topography
+                            'z'    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
     ]
 
 
     ## Set CDS request parameters
-    cds_pipeline.set_request_parameters(
+    ek_pipeline.set_request_parameters(
         var_params=variant_cds_params, 
         invar_params=invariant_cds_params, 
         lat_range=[49, 60], 
         long_range=[-120, -110], 
-        grid_resolution=0.5
+        grid_resolution=0.35
     )
+    
+    # Create OAPI pipeline object
+    # oapi_pipeline = HumanActivityPipeline() 
+    # NOTE: Creating the pipeline object, before passing it to the pipeline list
+    #       is prefered to avoid the pipeline object being overwritten by the next pipeline object.
+    #       However, human activity pipeline currently relies on earthkit data existing already.
+    # TODO: Correct human activity pipeline to be able to run independently of earthkit data.
+    
     
     ## RAW DATA ASSEMBLY
     ## Create pipelines list
     pipelines = [
-        {'CDS': cds_pipeline},
-        # {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+        {'EARTHKIT': ek_pipeline},
+        {'HUMAN_ACTIVITY': HumanActivityPipeline()},
     ]
 
     ## Initialize the raw data assembler
     raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
         wildfire_incidence_data, 
-        start_date='2006-01-01', 
-        end_date='2023-12-31', 
+        start_date='2014-01-01', 
+        end_date='2015-12-31', 
         resample_interval='4D',
         grouping_period_size='M',
         latitude_tolerance=1.0,

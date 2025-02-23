@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
 import datetime as dt
+import os
 import time
 import logging
-from cds_pipeline.CDS_pipeline import CdsPipeline
-from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
+# from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline as hap
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -78,6 +78,11 @@ class RawDataAssembler:
         """Assemble the dataset using the specified data pipelines"""
         logger.info(f"Wildfire Incidence Data Columns in Assembler: {self.fire_dates.columns}")
         logger.info(f"Pipeline list: {pipelines}")
+        
+        ## Create output folder based on the real date of the method call
+        output_data_folder = f"fb_raw_output_datasets_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(output_data_folder, exist_ok=True)
+        
 
         # Generate a DataFrame with all dates (fire and non-fire) for the specified period
         self.all_dates_df = self._all_dates_generator(
@@ -98,6 +103,7 @@ class RawDataAssembler:
             logger.error(f"Grouping failed due to missing key: {e}")
             return
 
+        logger.debug("=====check point 1=====")
         # Iterate over each period (e.g., month)
         for period, batch in self.grouped_all_dates:
             # Start timing for this batch
@@ -112,18 +118,19 @@ class RawDataAssembler:
 
             # Initialize a DataFrame to hold the integrated data for this period
             monthly_data = None
-
+            logger.debug("=====check point 2=====")
             # Process each pipeline in sequence
             for pipeline in pipelines:
                 # 1) CDS pipeline
-                if 'CDS' in pipeline:
-                    cds_pipeline = pipeline['CDS']
-                    logger.info("CDS pipeline found!")
+                if 'EARTHKIT' in pipeline:
+                    ek_pipeline = pipeline['EARTHKIT']
+                    logger.info("EARTHKIT pipeline found!")
 
                     # Fetch weather data
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    weather_data = cds_pipeline.fetch_var_data(start_date, end_date)
-
+                    logger.debug("=====check point 3=====")
+                    weather_data = ek_pipeline.ek_fetch_data(start_date, end_date)
+                    logger.debug("=====check point 4=====")
                     if weather_data is None or weather_data.empty:
                         logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
                         continue
@@ -137,12 +144,14 @@ class RawDataAssembler:
 
                     # Label fire days in weather data
                     logger.info("Labeling fire days in weather data...")
+                    logger.debug("=====check point 5=====")
                     weather_data['is_fire_day'] = weather_data.apply(self._is_fire_labeler, axis=1)
                     num_fire_days = weather_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
-
+                    logger.debug("=====check point 6=====")
                     # Store the resulting DataFrame in monthly_data
                     monthly_data = weather_data.copy()
+                    logger.debug("=====check point 7=====")
                 
                 # 2) HUMAN_ACTIVITY pipeline
                 elif 'HUMAN_ACTIVITY' in pipeline:
@@ -150,20 +159,20 @@ class RawDataAssembler:
                         logger.warning(f"No monthly_data from CDS to integrate with HUMAN_ACTIVITY for {period_key}.")
                         continue
 
-                    ha_pipeline = pipeline['HUMAN_ACTIVITY']
+                    hap_pipeline = pipeline['HUMAN_ACTIVITY']
                     logger.info("HumanActivity pipeline found!")
 
                     # Fetch and integrate Human Activity data
-                    monthly_data = hap.fetch_human_activity_monthly(monthly_data, period_key)
+                    monthly_data = hap_pipeline.fetch_human_activity_monthly(monthly_data, period_key)
                     logger.info(f"Integrated HumanActivity data into {period_key} => final shape={monthly_data.shape}")
                     
                 elif 'NED' in pipeline:
                     # NASA Earthdata pipeline assembly code here...
                     pass
-                    
+            
             # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
-                target_file = f"final_weather_data_{period_key}.csv"
+                target_file = os.path.join(output_data_folder, f"fb_raw_data_{period_key}.csv")
                 try:
                     monthly_data.to_csv(target_file, index=False)
                     logger.info(f"Wrote monthly CSV for {period_key} -> '{target_file}'")
