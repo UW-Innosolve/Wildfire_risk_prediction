@@ -128,8 +128,12 @@ class RawDataAssembler:
 
                     # Fetch weather data
                     logger.info(f"Starting request for weather data from {start_date} to {end_date}")
+                    print(f"Batch head: {batch['date'].head()}")
                     logger.debug("=====check point 3=====")
-                    weather_data = ek_pipeline.ek_fetch_data(start_date, end_date)
+                    
+                    weather_data = ek_pipeline.ek_fetch_data(batch['date'])
+                    
+                    
                     logger.debug("=====check point 4=====")
                     if weather_data is None or weather_data.empty:
                         logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
@@ -235,18 +239,24 @@ class RawDataAssembler:
 
         # Convert fire_start_date to Timestamp
         fire_dates['fire_start_date'] = pd.to_datetime(fire_dates['fire_start_date']).dt.normalize()
-        # fire_dates['fire_start_date'] = fire_dates['fire_start_date'].dt.normalize() 
-        ## NOTE: the normalization in the line above.
 
         # Perform the union operation and sort the values
-        all_dates = pd.Series(list(set(all_dates).union(fire_dates['fire_start_date']))).sort_values()
-
+        final_unioned_dates = pd.Series(list(set(all_dates).union(fire_dates['fire_start_date']))).sort_values().dt.normalize()
+        
         # Ensure all dates are within the range start_date to end_date
-        all_dates = all_dates[(all_dates >= pd.Timestamp(start_date)) & (all_dates <= pd.Timestamp(end_date))]
+        final_unioned_dates = final_unioned_dates[(final_unioned_dates >= pd.Timestamp(start_date)) & (final_unioned_dates <= pd.Timestamp(end_date))]
 
         # Create DataFrame for all dates without fire day labels (labeling will be done later)
-        all_dates_df = pd.DataFrame({'date': all_dates})
-        logger.info(f"all_dates count (constructed from fire_dates + every nth (interval) day): {len(all_dates_df)}")
-        logger.debug(f"Sample all_dates:\n{all_dates_df.head()}")
+        final_unioned_dates_df = pd.DataFrame({'date': final_unioned_dates})
+        logger.info(f"final_unioned_dates_df count (constructed from fire_dates + every nth (interval) day): {len(final_unioned_dates)}")
+        logger.info(f"Sample all_dates:\n{final_unioned_dates_df.head()}")
 
-        return all_dates_df
+        print(f"final_unioned_dates_df: {final_unioned_dates_df}")
+        print(f"final_unioned_dates_df shape: {final_unioned_dates_df.shape}")
+        print(f"final_unioned_dates_df columns: {final_unioned_dates_df.columns}")
+        print(f"final_unioned_dates_df dtypes: {final_unioned_dates_df.dtypes}")
+        print(f"final_unioned_dates_df info: {final_unioned_dates_df.info()}")
+        print(f"final_unioned_dates_df head: {final_unioned_dates_df.head()}")
+        print(f"final_unioned_dates_df tail: {final_unioned_dates_df.tail()}")
+
+        return final_unioned_dates_df ## Return the final DataFrame containing timestamps for all dates

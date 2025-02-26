@@ -55,7 +55,7 @@ def main():
                             # Water variables
                             '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
                             # NOTE: precipitation accumulations need to be repaired
-                            # 'tp',       # total_precipitation',
+                            'tp',       # total_precipitation',
                             # 'e',        # total_evaporation',
                             # Leaf area index (vegetation)
                             'lai_lv',   # leaf_area_index_low_vegetation',
@@ -73,7 +73,7 @@ def main():
                             'tvl', # low_veg_cover
                             'tvh', # high_veg_cover
                             'cvl', # low_veg_type
-                            'cvh'  # high_veg_type
+                            'cvh',  # high_veg_type
                              # Lakes and rivers
                             'cl',  # lake_cover
                             'lsm', # land_sea_mask

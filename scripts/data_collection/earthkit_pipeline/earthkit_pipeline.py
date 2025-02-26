@@ -30,6 +30,8 @@ class EkPipeline:
         self.var_params = []
         self.ek_request_parameters = {}
         self.key = key
+        # Set the CDS API key in the environment
+        os.environ['CDSAPI_KEY'] = self.key
         logger.info("""Earthkit Pipeline has been initialized.
                     The following methods must be called before an API call can be made:
                         - set_variant_variables(self, var_variables)
@@ -91,6 +93,9 @@ class EkPipeline:
         
         self.ek_request_parameters = non_temporal_req_dict
 
+
+    #NOTE: THIS METHOD IS NOT USED IN THE CURRENT IMPLEMENTATION
+    ## TODO: use this method for grib files
     def process_grib_file(self, file_path):
         try:
             # ds = cfgrib.open_dataset(file_path)
@@ -137,7 +142,7 @@ class EkPipeline:
                     z.extract(grib_names[0], os.path.dirname(grib_file))
                     logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
                     # Attempt to read the extracted GRIB file.
-                    ds = xr.open_dataset(extracted_file, engine='cfgrib')
+                    ds = xr.open_dataset(extracted_file, engine= "earthkit")
                     df = ds.to_dataframe().reset_index()
                     df['date'] = pd.to_datetime(df['time']).dt.normalize()
                     df = df.drop(columns=['number'], errors='ignore')
@@ -146,7 +151,7 @@ class EkPipeline:
                     return df
             else:
                 # If not a ZIP, try reading the file directly.
-                ds = xr.open_dataset(grib_file, engine='cfgrib')
+                ds = xr.open_dataset(grib_file, engine= "earthkit")
                 
                 # ## NOTE: Hardcoded to select the first time step for now
                 # ds = ds.sel(time=ds.time[0])  # Select only the first time step
@@ -165,7 +170,7 @@ class EkPipeline:
     ##          - fetch time-variant and time-invariant weather data from the ERA5 dataset using the CDS API (via Earthkit)
     ##          - invariant variables must be set before calling this method, method cannot be called without at least one invariant variable set
     ##          - variant variables must be set before calling this method, method cannot be called without at least one variant variable set
-    def ek_fetch_data(self, start_date, end_date):
+    def ek_fetch_data(self, batch_dates):
         """Fetch weather data from the CDS API using the specified request parameters.
         
         This function downloads the data to a temporary file, logs the file size for debugging,
@@ -179,9 +184,13 @@ class EkPipeline:
             raise ValueError("Time-variant variables have not been set. Please call set_variant_variables first.")
 
         try:
-            dates = pd.date_range(start=start_date, end=end_date, freq='D').to_list()
+            ## Convert batch_dates to list of date strings
+            batch_timestamps = pd.to_datetime(batch_dates)
+            batch_dates_only_str = pd.DataFrame({'date': batch_timestamps.astype(str)})  # Convert to string if needed
+            batch_dates_only_list = batch_dates_only_str['date'].tolist()
+            
             time_params_dict = dict(
-                date = dates,
+                date = batch_dates_only_list,
                 time = ['12:00'] ## NOTE: Hardcoded to noon for now
                 )
 
@@ -192,9 +201,6 @@ class EkPipeline:
             # Set up temporary file to store the GRIB data
             with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp_file:
                 target_file = tmp_file.name
-
-            # Set the CDS API key in the environment
-            os.environ['CDSAPI_KEY'] = self.key
             
             # Make the API call to retrieve the data and store it in the file
             # Note Earthkit is used to handle the API call (which is a wrapper for cdsapi)
