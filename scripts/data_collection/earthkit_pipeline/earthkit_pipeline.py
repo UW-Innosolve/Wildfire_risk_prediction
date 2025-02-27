@@ -26,10 +26,17 @@ logger = logging.getLogger(__name__)
 
 class EkPipeline:
     def __init__(self, key):
-        self.var_params = []
-        self.var_params = []
-        self.ek_request_parameters = {}
+        # Set the CDS API key in the environment
         self.key = key
+        os.environ['CDSAPI_KEY'] = self.key
+        
+        self.cds_time_var_params = []
+        self.cds_time_invar_params = []
+        self.cds_accum_params = [] ## NOTE: Accumulation parameters must be handled separately.
+        
+        self.ek_req_call_1 = {} ## First earthkit call (time-variant and time-invariant parameters)
+        self.ek_req_call_2 = {} ## Second earthkit call (accumulation parameters)
+        
         # Set the CDS API key in the environment
         os.environ['CDSAPI_KEY'] = self.key
         logger.info("""Earthkit Pipeline has been initialized.
@@ -45,21 +52,28 @@ class EkPipeline:
     ##          - mutates self.var_variables
     def _set_var_params(self, var_params):
         """Set the time-variant variables for the CDS era5 request"""
-        self.var_params = var_params
+        self.cds_time_var_params = var_params
         logger.info(f"Time-variant variables set: {self.var_params}")
     
     ## set_invariant_variables method
     ##          - set the time-invariant variables for the CDS API request
     ##          - must be called before fetch_weather_data method
     ##          - input parameters: invar_variables (list of time-invariant parameters from url list below)
-    ##          - NOTE: invar_variables must a list containing a subset of the following variables:
-    ##              - land_sea_mask, low_veg_cover, high_veg_cover, soil_type, low_veg_type, high_veg_type
-    ##          - mutates self.invar_variables
     ##          - private method
     def _set_invar_params(self, invar_params):
         """Set the time-invariant variables for the CDS era5 request"""
-        self.invar_params = invar_params
+        self.cds_time_invar_params = invar_params
         logger.info(f"Time-invariant variables set: {self.invar_params}")
+    
+    ## set_accum_params method
+    ##          - set the accumulation variables for the CDS API request
+    ##          - must be called before fetch_weather_data method
+    ##          - input parameters: accum_params (list of accumulation variables from the CDS API)
+    ##          - private method
+    def _set_accum_params(self, accum_params):
+        """Set the accumulation variables for the CDS era5 request"""
+        self.cds_accum_params = accum_params
+        logger.info(f"Accumulation variables set: {self.accum_params}")
 
     ## set_request_parameters method
     ##          - set the parameters for the CDS API request including latitude range, longitude range, and grid resolution
@@ -68,7 +82,7 @@ class EkPipeline:
     ##          - input parameters: var_variables, invar_variables, lat_range, long_range, grid_resolution
     ##          - mutates self.ek_request_parameters
     ##          - mutates self.var_params and self.invar_params
-    def set_request_parameters(self, var_params, invar_params, lat_range, long_range, grid_resolution):
+    def set_cds_request_parameters(self, var_params, invar_params, accum_params, lat_range, long_range, grid_resolution):
         """Set the parameters for the CDS API request including time-variant variables, time-invariant variables, latitude range, longitude range, and grid resolution
             input parameters:
                 - var_variables: list of time-variant variables from the CDS API
@@ -79,23 +93,41 @@ class EkPipeline:
     
         self._set_var_params(var_params)
         self._set_invar_params(invar_params)
+        self._set_accum_params(accum_params)
         
-        combined_params = var_params + invar_params
-        logger.info(f"Combined parameters set: {combined_params}")
+        ## Time variant and invariant parameters can be combined into a single list
+        ##  - Earthkit is capable of handling both variant and invariant parameters together in on call
+        ##  - Accumulation parameters must be handled separately
+        var_and_invar_params_list = self.cds_time_var_params + self.cds_time_invar_params
+        accum_params_list = self.cds_accum_params
         
-        non_temporal_req_dict = dict(
-            variable = combined_params, ## NOTE: Earthkit is capable of handling variant and invariant parameter requests
+        ## Non-temporal request parameters for the first earthkit call
+        ## First call will be for the variant and invariant parameters
+        var_and_invar_param_req_dict = dict(
+            variable = var_and_invar_params_list,
             product_type = "reanalysis",
             area = [lat_range[1], long_range[0], lat_range[0], long_range[1]],  # [north, west, south, east]
             grid = [grid_resolution, grid_resolution]
+            time = ['12:00']
             ## NOTE: Dates and times are set in the fetch_var_data method
         )
         
-        self.ek_request_parameters = non_temporal_req_dict
+        ## Non-temporal request parameters for the second earthkit call
+        ## Second call will be for the accumulation parameters
+        accum_params_req_dict = dict(
+            variable = accum_params_list, ## NOTE: Earthkit is capable of handling variant and invariant parameter requests
+            product_type = "reanalysis",
+            area = [lat_range[1], long_range[0], lat_range[0], long_range[1]],  # [north, west, south, east]
+            grid = [grid_resolution, grid_resolution]
+            # NOTE: No explicit time parameter is set for accumulation parameters
+        )
+        
+        self.ek_req_call_1 = var_and_invar_param_req_dict
+        self.ek_req_call_2 = accum_params_req_dict
 
 
     #NOTE: THIS METHOD IS NOT USED IN THE CURRENT IMPLEMENTATION
-    ## TODO: use this method for grib files
+    ## TODO: use this method for grib files if necessary/useful
     def process_grib_file(self, file_path):
         try:
             # ds = cfgrib.open_dataset(file_path)
@@ -108,6 +140,7 @@ class EkPipeline:
             # Process the dataset
         except Exception as e:
             logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
+
 
     ## _read_grib_to_dataframe method
     ##          - read the GRIB file into a DataFrame
@@ -191,46 +224,82 @@ class EkPipeline:
             
             time_params_dict = dict(
                 date = batch_dates_only_list,
-                time = ['12:00'] ## NOTE: Hardcoded to noon for now
                 )
 
             # Merge cds_request_parameters and dates dictionaries
-            request_parameters = {**self.ek_request_parameters, **time_params_dict}
-            logger.info(f"Fetching weather data with parameters (temporal included): {request_parameters}")
+            call_1_params = {**self.ek_req_call_1, **time_params_dict}
+            call_2_params = {**self.ek_req_call_2, **time_params_dict}
             
-            # Set up temporary file to store the GRIB data
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp_file:
-                target_file = tmp_file.name
+            # Create two separate temp files
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp1, \
+                 tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp2:
+                call_1_file = tmp1.name
+                call_2_file = tmp2.name 
+                
             
-            # Make the API call to retrieve the data and store it in the file
-            # Note Earthkit is used to handle the API call (which is a wrapper for cdsapi)
-            ds = earthkit.data.from_source(
+            # Make the CDS API call 1 for time-variant and time-invariant parameters
+            logger.info(f"Making CDS API call 1 for time-variant and time-invariant parameters: {call_1_params}")
+            call_1_ds = earthkit.data.from_source(
                 "cds",
                 "reanalysis-era5-single-levels",
-                request_parameters,
+                call_1_params,
             )
-            
-            logger.info(f"CDS Client Response: {ds}")
-            
-            if ds is None:
-                logger.error("Dataset is empty. No data was retrieved.")
+            if call_1_ds is None:
+                logger.error("CDS call 1 dataset is empty. No data was retrieved.")
                 return None
+            call_2_ds.save(call_1_file)
+            file_1_size = os.path.getsize(call_1_file)
+            logger.info(f"""Weather data retrieved and saved to '{call_1_file}',
+                            File type {type(call_1_file)} and size {file_1_size} bytes""")
             
-            ds.save(target_file)
-            file_size = os.path.getsize(target_file)
-            logger.info(f"""Weather data retrieved and saved to '{target_file}',
-                            File type {type(target_file)} and size {file_size} bytes""")
-
-            # Read the GRIB file into a DataFrame
-            df = self._read_grib_to_dataframe(target_file)
-            if df is None:
-                logger.error("Failed to parse the GRIB file into a DataFrame.")
+            # Make the CDS API call 2 for accumulation parameters
+            logger.info(f"Making CDS API call 2 for accumulation parameters: {call_2_params}")
+            call_2_ds = earthkit.data.from_source(
+                "cds",
+                "reanalysis-era5-single-levels",
+                call_2_params
+            )
+            if call_2_ds is None:
+                logger.error("CDS call 2 dataset is empty. No data was retrieved.")
                 return None
+            call_2_ds.save(call_2_file)
+            file_2_size = os.path.getsize(call_2_file)
+            logger.info(f"""Weather data retrieved and saved to '{call_2_file}',
+                            File type {type(call_2_file)} and size {file_2_size} bytes""")
             
-            # Filter weather data to ensure it's within the correct date range
-            df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
+            ###################################
+            # ds_xr = xr.open_dataset("my_data.grib", engine= "earthkit")
+            # df = ds_xr.to_dataframe()
+            ###################################
+            
+            # ds.save(target_file)
+            # file_size = os.path.getsize(target_file)
+            # logger.info(f"""Weather data retrieved and saved to '{target_file}',
+            #                 File type {type(target_file)} and size {file_size} bytes""")
 
-            # # Convert weather_df 'date' to pandas datetime type for matching purposes
+            # Read the GRIB files into a DataFrame
+            data_df_1 = self._read_grib_to_dataframe(call_1_file)
+            if data_df_1 is None: logger.error("Failed to parse the GRIB file into a DataFrame.")
+            
+            data_df_2 = self._read_grib_to_dataframe(call_2_file)
+            if data_df_2 is None: logger.error("Failed to parse the GRIB file into a DataFrame.")
+        
+            
+            # if df is None:
+            #     logger.error("Failed to parse the GRIB file into a DataFrame.")
+            #     return None
+        
+            ##################################################
+            ## NOTE: Here is where the dataframes are merged
+            ##  - data_df_1 and data_df_2 are merged on 'date' column (after removing time component)
+        
+        
+            ##################################################
+        
+            # # Filter weather data to ensure it's within the correct date range (old)
+            # df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
+
+            # Convert weather_df 'date' to pandas datetime type for matching purposes
             df['date'] = pd.to_datetime(df['date']).dt.normalize()
 
             os.remove(target_file)  # Remove the temporary file

@@ -47,19 +47,19 @@ def main():
     
     ## Set CDS era5 pipeline parameters
     variant_cds_params = [  # Temperature and pressure
-                            '2t',      # 2m_temperature 
-                            'sp',       # surface_pressure
-                            # Wind
-                            '10u',      # 10m_u_component_of_wind', 
-                            '10v',      # 10m_v_component_of_wind',
-                            # Water variables
-                            '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
+                            # '2t',      # 2m_temperature 
+                            # 'sp',       # surface_pressure
+                            # # Wind
+                            # '10u',      # 10m_u_component_of_wind', 
+                            # '10v',      # 10m_v_component_of_wind',
+                            # # Water variables
+                            # '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
                             # NOTE: precipitation accumulations need to be repaired
                             'tp',       # total_precipitation',
                             # 'e',        # total_evaporation',
                             # Leaf area index (vegetation)
-                            'lai_lv',   # leaf_area_index_low_vegetation',
-                            'lai_hv'   # leaf_area_index_high_vegetation',
+                            # 'lai_lv',   # leaf_area_index_low_vegetation',
+                            # 'lai_hv'   # leaf_area_index_high_vegetation',
                             # Heat variables (NOTE: needs to be repaired, if the values are useful)
                             # 'sshf',      # surface_sensible_heat_flux',
                             # 'slhf',      # surface_latent_heat_flux',
@@ -70,20 +70,20 @@ def main():
     ]    
     
     invariant_cds_params = [ # Vegetation cover and type
-                            'tvl', # low_veg_cover
-                            'tvh', # high_veg_cover
-                            'cvl', # low_veg_type
-                            'cvh',  # high_veg_type
-                             # Lakes and rivers
-                            'cl',  # lake_cover
-                            'lsm', # land_sea_mask
-                             # Topography
-                            'z'    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
+                            # 'tvl', # low_veg_cover
+                            # 'tvh', # high_veg_cover
+                            # 'cvl', # low_veg_type
+                            # 'cvh',  # high_veg_type
+                            #  # Lakes and rivers
+                            # 'cl',  # lake_cover
+                            # 'lsm', # land_sea_mask
+                            #  # Topography
+                            # 'z'    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
     ]
 
 
     ## Set CDS request parameters
-    ek_pipeline.set_request_parameters(
+    ek_pipeline.set_cds_request_parameters(
         var_params=variant_cds_params, 
         invar_params=invariant_cds_params, 
         lat_range=[49, 60], 

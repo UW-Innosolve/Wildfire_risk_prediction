@@ -131,16 +131,15 @@ class RawDataAssembler:
                     print(f"Batch head: {batch['date'].head()}")
                     logger.debug("=====check point 3=====")
                     
-                    weather_data = ek_pipeline.ek_fetch_data(batch['date'])
-                    
+                    ek_data = ek_pipeline.ek_fetch_data(batch['date'])
                     
                     logger.debug("=====check point 4=====")
-                    if weather_data is None or weather_data.empty:
+                    if ek_data is None or ek_data.empty:
                         logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
                         continue
 
                     # Check if 'date' column exists
-                    if 'date' not in weather_data.columns:
+                    if 'date' not in ek_data.columns:
                         logger.error("Weather data does not contain 'date' column. Skipping this batch.")
                         continue
 
@@ -149,12 +148,12 @@ class RawDataAssembler:
                     # Label fire days in weather data
                     logger.info("Labeling fire days in weather data...")
                     logger.debug("=====check point 5=====")
-                    weather_data['is_fire_day'] = weather_data.apply(self._is_fire_labeler, axis=1)
-                    num_fire_days = weather_data['is_fire_day'].sum()
+                    ek_data['is_fire_day'] = ek_data.apply(self._is_fire_labeler, axis=1)
+                    num_fire_days = ek_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
                     logger.debug("=====check point 6=====")
                     # Store the resulting DataFrame in monthly_data
-                    monthly_data = weather_data.copy()
+                    monthly_data = ek_data.copy()
                     logger.debug("=====check point 7=====")
                 
                 # 2) HUMAN_ACTIVITY pipeline
@@ -249,14 +248,6 @@ class RawDataAssembler:
         # Create DataFrame for all dates without fire day labels (labeling will be done later)
         final_unioned_dates_df = pd.DataFrame({'date': final_unioned_dates})
         logger.info(f"final_unioned_dates_df count (constructed from fire_dates + every nth (interval) day): {len(final_unioned_dates)}")
-        logger.info(f"Sample all_dates:\n{final_unioned_dates_df.head()}")
-
-        print(f"final_unioned_dates_df: {final_unioned_dates_df}")
-        print(f"final_unioned_dates_df shape: {final_unioned_dates_df.shape}")
-        print(f"final_unioned_dates_df columns: {final_unioned_dates_df.columns}")
-        print(f"final_unioned_dates_df dtypes: {final_unioned_dates_df.dtypes}")
-        print(f"final_unioned_dates_df info: {final_unioned_dates_df.info()}")
-        print(f"final_unioned_dates_df head: {final_unioned_dates_df.head()}")
-        print(f"final_unioned_dates_df tail: {final_unioned_dates_df.tail()}")
+        logger.debug(f"Sample all_dates:\n{final_unioned_dates_df.head()}")
 
         return final_unioned_dates_df ## Return the final DataFrame containing timestamps for all dates
