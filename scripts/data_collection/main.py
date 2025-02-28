@@ -46,43 +46,63 @@ def main():
     ek_pipeline = EkPipeline(cds_key)
     
     ## Set CDS era5 pipeline parameters
-    variant_cds_params = [  # Temperature and pressure
-                            '2t',      # 2m_temperature 
-                            'sp',       # surface_pressure
+    variant_cds_params = [  # Variant variables
+                            # Temperature and pressure
+                            '2t',      # 2m_temperature
                             # Wind
                             '10u',      # 10m_u_component_of_wind', 
                             '10v',      # 10m_v_component_of_wind',
                             # # Water variables
-                            # '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
-                            # NOTE: precipitation accumulations need to be repaired
-                            
+                            '2d',      # 2m_dewpoint_temperature',                             
                             # Leaf area index (vegetation)
-                            # 'lai_lv',   # leaf_area_index_low_vegetation',
-                            # 'lai_hv'   # leaf_area_index_high_vegetation',
-                            # Heat variables (NOTE: needs to be repaired, if the values are useful)
-                            # 'sshf',      # surface_sensible_heat_flux',
-                            # 'slhf',      # surface_latent_heat_flux',
-                            # 'ssrd',      # surface_solar_radiation_downwards',
-                            # 'strd',      # surface_thermal_radiation_downwards',
-                            # 'ssr',       # surface_net_solar_radiation
-                            # 'str',       # surface_net_thermal_radiation
+                            'lai_lv',   # leaf_area_index_low_vegetation',
+                            'lai_hv'   # leaf_area_index_high_vegetation',
+                            # Soil Water Layer
+                            'swvl1', # volumetric_soil_water_layer_1',
+                            'swvl2', # volumetric_soil_water_layer_2',
+                            'swvl3', # volumetric_soil_water_layer_3',
+                            'swvl4', # volumetric_soil_water_layer_4',
+                            # Soil temperature
+                            'stl1', # soil_temperature_level_1',
+                            'stl2', # soil_temperature_level_2',
+                            'stl3', # soil_temperature_level_3',
+                            'stl4', # soil_temperature_level_4',
+                            # Pressure levels
+                            'sp', # surface_pressure',
+                            # Forest albedo
+                            'fal', # forest_albedo',
+                            # Skin reservoir content
+                            'src', # skin_reservoir_content',
+                            
     ]    
     
-    invariant_cds_params = [ # Vegetation cover and type
-                            # 'tvl', # low_veg_cover
-                            # 'tvh', # high_veg_cover
-                            # 'cvl', # low_veg_type
-                            # 'cvh',  # high_veg_type
-                            #  # Lakes and rivers
-                            # 'cl',  # lake_cover
-                            # 'lsm', # land_sea_mask
-                            #  # Topography
-                            'z'    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
+    invariant_cds_params = [ # Invariant variables
+                            # Vegetation cover and type
+                            'tvl', # low_veg_cover
+                            'tvh', # high_veg_cover
+                            'cvl', # low_veg_type
+                            'cvh',  # high_veg_type
+                             # Lakes and rivers
+                            'cl',  # lake_cover
+                            'lsm', # land_sea_mask
+                             # Topography
+                            'z',    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
+                            'slt' # Soil type
     ]
     
-    accumulated_cds_params = [ # Accumulated variables
-                              'tp',       # total_precipitation',
-                              'e']        # total_evaporation',
+    accumulated_cds_params = [  # Accumulated variables
+                                'tp',       # total_precipitation',
+                                # Evaopration variables
+                                'e',        # evaporation',
+                                'pev',      # potential_evaporation',
+                                # Heat and radiation variables
+                                'sshf',      # surface_sensible_heat_flux',
+                                'slhf',      # surface_latent_heat_flux',
+                                'ssrd',      # surface_solar_radiation_downwards',
+                                'strd',      # surface_thermal_radiation_downwards',
+                                'ssr',       # surface_net_solar_radiation
+                                'str',       # surface_net_thermal_radiation
+    ]
 
 
     ## Set CDS request parameters
@@ -107,14 +127,14 @@ def main():
     ## Create pipelines list
     pipelines = [
         {'EARTHKIT': ek_pipeline},
-        {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+        # {'HUMAN_ACTIVITY': HumanActivityPipeline()},
     ]
 
     ## Initialize the raw data assembler
     raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
         wildfire_incidence_data, 
         start_date='2014-01-01', 
-        end_date='2014-12-31', 
+        end_date='2015-12-31', 
         resample_interval='4D',
         grouping_period_size='M',
         latitude_tolerance=1.0,

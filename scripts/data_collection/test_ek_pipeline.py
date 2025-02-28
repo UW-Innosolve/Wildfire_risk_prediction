@@ -59,23 +59,4 @@ ds = earthkit.data.from_source(
 ds.save("my_data.grib")
 ds_xr = xr.open_dataset("my_data.grib", engine= "earthkit")
 df = ds_xr.to_dataframe()
-print(df)
-print(type(df))
-print(df.columns)
-print(df.index)
-print(df.shape)
-print(df.describe())
-print(df.info())
-
-col_1 = df.columns[0]
-col_2 = df.columns[1]
-
-print(col_1[0])
-print(col_1[1])
-print(type(col_1))
-
-print(col_2[0])
-print(col_2[1])
-print(type(col_2))
-
 df.to_csv("var_invar_stuff.csv")

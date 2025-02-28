@@ -47,6 +47,7 @@ class EkPipeline:
                         - set_invariant_variables(self, invar_variables)
                         - set_request_parameters(self, var_variables, invar_variables, lat_range, long_range, grid_resolution)""")
 
+
     ## set_var_params method
     ##          - set the time-variant variables for the CDS API request
     ##          - must be called before fetch_weather_data method
@@ -56,6 +57,7 @@ class EkPipeline:
         """Set the time-variant variables for the CDS era5 request"""
         self.cds_time_var_params = var_params
         logger.info(f"Time-variant variables set: {self.cds_time_var_params}")
+    
     
     ## set_invariant_variables method
     ##          - set the time-invariant variables for the CDS API request
@@ -67,6 +69,7 @@ class EkPipeline:
         self.cds_time_invar_params = invar_params
         logger.info(f"Time-invariant variables set: {self.cds_time_invar_params}")
     
+    
     ## set_accum_params method
     ##          - set the accumulation variables for the CDS API request
     ##          - must be called before fetch_weather_data method
@@ -76,6 +79,7 @@ class EkPipeline:
         """Set the accumulation variables for the CDS era5 request"""
         self.cds_accum_params = accum_params
         logger.info(f"Accumulation variables set: {self.cds_accum_params}")
+        
 
     ## set_request_parameters method
     ##          - set the parameters for the CDS API request including latitude range, longitude range, and grid resolution
@@ -125,81 +129,10 @@ class EkPipeline:
         )
         
         self.ek_req_call_1 = var_and_invar_param_req_dict
-        self.ek_req_call_2 = accum_params_req_dict
-
-
-    #NOTE: THIS METHOD IS NOT USED IN THE CURRENT IMPLEMENTATION
-    ## TODO: use this method for grib files if necessary/useful
-    def process_grib_file(self, file_path):
-        try:
-            # ds = cfgrib.open_dataset(file_path)
-            # ds_indices = ds.indexes
-            # logger.info(f"Dataset indexes: {ds_indices}")
-            ds = ds.sel(time=ds.time[0])
-            logger.info("Successfully opened GRIB file: %s", file_path)
-            
-            return ds
-            # Process the dataset
-        except Exception as e:
-            logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
-
-
-    # ## _read_grib_to_dataframe method
-    # ##          - read the GRIB file into a DataFrame
-    # ##          - input: grib_file
-    # ##          - output: df (pandas DataFrame)
-    # ##          - private method
-    # def _read_grib_to_dataframe(self, grib_file):
-    #     """Read the GRIB file into a DataFrame with enhanced error handling.
-        
-    #     If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
-    #     this function logs an error or attempts to unzip it before parsing.
-    #     """
-
-    #     try:
-    #         # Log the downloaded file size for debugging.
-    #         file_size = os.path.getsize(grib_file)
-    #         logger.info(f"Downloaded file size: {file_size} bytes")
-    #         if file_size < 10000:  # adjust threshold as needed; 10KB is an example threshold
-    #             logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
-    #             raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
-            
-    #         ## TODO: Make this neater, since the same code is repeated
-    #         # If the file is actually a zip archive, unzip it first.
-    #         if zipfile.is_zipfile(grib_file):
-    #             logger.info("Downloaded file is a ZIP archive. Unzipping...")
-    #             with zipfile.ZipFile(grib_file, 'r') as z:
-    #                 # Assume the ZIP contains one GRIB file; take the first.
-    #                 grib_names = z.namelist()
-    #                 if not grib_names:
-    #                     raise ValueError("ZIP archive is empty.")
-    #                 # Extract the first file to a temporary location.
-    #                 extracted_file = os.path.join(os.path.dirname(grib_file), grib_names[0])
-    #                 z.extract(grib_names[0], os.path.dirname(grib_file))
-    #                 logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
-    #                 # Attempt to read the extracted GRIB file.
-    #                 ds = xr.open_dataset(extracted_file, engine= "earthkit")
-    #                 df = ds.to_dataframe().reset_index()
-    #                 df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
-    #                 df = df.drop(columns=['number'], errors='ignore')
-    #                 logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
-    #                 os.remove(extracted_file)  # Cleanup the extracted file.
-    #                 return df
-    #         else:
-    #             # If not a ZIP, try reading the file directly.
-    #             ds = xr.open_dataset(grib_file, engine= "earthkit")                
-    #             df = ds.to_dataframe().reset_index()
-    #             df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
-    #             df = df.drop(columns=['number'], errors='ignore')
-    #             logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
-    #             return df
-
-    #     except Exception as e:
-    #         logger.error(f"Error reading GRIB file '{grib_file}': {e}")
-    #         return None
+        self.ek_req_call_2 = accum_params_req_dict  
         
         
-            ## _grib_to_df method
+    ## _grib_to_df method
     ##          - read the GRIB file into a DataFrame, handles archive files and small files
     ##          - input: grib_file
     ##          - output: df (pandas DataFrame)
@@ -238,28 +171,15 @@ class EkPipeline:
                     file = extracted_file
             
             # Then read the file directly.
-            logger.info("============1============")
-            ds = xr.open_dataset(file, engine= "earthkit")     
-            logger.info("============2============")           
+            ds = xr.open_dataset(file, engine= "earthkit")
             df = ds.to_dataframe().reset_index()
-            logger.info("============3============")
-            print(type(df))
-            print(df.head())
-            print(df.columns)
-            print(df.index)
-            print(df.shape)
-            # df['date'] = pd.to_datetime(df['date']).dt.normalize()
-            logger.info("============4============")
-            # df = df.drop(columns=['number'], errors='ignore')
-            logger.info("============5============")
             logger.info(f"GRIB file '{file}' successfully read into DataFrame.")
-            logger.info("============6============")
-            print(df.head())
             return df
         
         except Exception as e:
             logger.error(f"Error reading GRIB file '{grib_file}': {e}")
             return None
+
 
     ## ek_fetch_data method
     ##          - fetch time-variant and time-invariant weather data from the ERA5 dataset using the CDS API (via Earthkit)
@@ -326,57 +246,36 @@ class EkPipeline:
             file_2_size = os.path.getsize(call_2_file)
             logger.info(f"""Weather data retrieved and saved to '{call_2_file}',
                             File type {type(call_2_file)} and size {file_2_size} bytes""")
-            
-            ###################################
-            # ds_xr = xr.open_dataset("my_data.grib", engine= "earthkit")
-            # df = ds_xr.to_dataframe()
-            ###################################
-            
-            # ds.save(target_file)
-            # file_size = os.path.getsize(target_file)
-            # logger.info(f"""Weather data retrieved and saved to '{target_file}',
-            #                 File type {type(target_file)} and size {file_size} bytes""")
 
-            # Read the GRIB files into a DataFrame
+            # Read the GRIB files into a DataFrame using _grib_to_df
             data_df_1 = self._grib_to_df(call_1_file)
-            if data_df_1 is None: logger.error("Failed to parse the GRIB file into a DataFrame.")
+            if data_df_1 is None: logger.error("Failed to parse the GRIB file, from ek call 1, into a DataFrame.")
             
             data_df_2 = self._grib_to_df(call_2_file)
-            if data_df_2 is None: logger.error("Failed to parse the GRIB file into a DataFrame.")
+            if data_df_2 is None: logger.error("Failed to parse the GRIB file from ek call 2, into a DataFrame.")
         
-            
-            # if df is None:
-            #     logger.error("Failed to parse the GRIB file into a DataFrame.")
-            #     return None
-        
-            ##################################################
-            ## NOTE: Here is where the dataframes are merged
-            ##  - data_df_1 and data_df_2 are merged on 'date' column (after removing time component)
-        
-            # seperation of the date (without time) as the new index
+            # seperation of the date (without time) as the new primary index
+            ##NOTE: data_df_1 (for variant and invariant parameters) is referenced at time 1200
             data_df_1['date'] = pd.to_datetime(data_df_1['forecast_reference_time']).dt.normalize()
+            
+            ##NOTE: data_df_2 (for accumulation parameters) is referenced at time 0600
             data_df_2['date'] = pd.to_datetime(data_df_2['forecast_reference_time']).dt.normalize()
             
-            print("head?")
-            print(data_df_1.head())
-            print(data_df_2.head())
-            
-            logger.info("============7============")
-            # merge the two dataframes on the 'date' column, sorted by date
             # Drop forecast_reference_time before merging
             data_df_1 = data_df_1.drop(columns=['forecast_reference_time'], errors='ignore')
-            data_df_2 = data_df_2.drop(columns=['forecast_reference_time'], errors='ignore')
+            data_df_2 = data_df_2.drop(columns=['forecast_reference_time'], errors='ignore')  
 
             # Merge on 'date', 'latitude', and 'longitude'
             ek_df = (
                 pd.merge(data_df_1, data_df_2, on=['date', 'latitude', 'longitude'], how='left')
-                .sort_values(['date', 'latitude', 'longitude'])  # Sort for clarity
+                .sort_values(['date', 'latitude', 'longitude'])
             )
             
             # Move 'date' to the first column
             cols = ['date'] + [col for col in ek_df.columns if col != 'date']
             ek_df = ek_df[cols]
-    
+
+            # Reset the index and save in calling object
             self.ek_dataset = ek_df.reset_index(drop=True)
             
             # Cleanup the temporary files

@@ -103,7 +103,6 @@ class RawDataAssembler:
             logger.error(f"Grouping failed due to missing key: {e}")
             return
 
-        logger.debug("=====check point 1=====")
         # Iterate over each period (e.g., month)
         for period, batch in self.grouped_all_dates:
             # Start timing for this batch
@@ -117,9 +116,7 @@ class RawDataAssembler:
             period_key = period.strftime('%Y%m')
 
             # Initialize a DataFrame to hold the integrated data for this period
-            monthly_data = None
-            logger.debug("=====check point 2=====")
-            # Process each pipeline in sequence
+            monthly_data = None            # Process each pipeline in sequence
             for pipeline in pipelines:
                 # 1) CDS pipeline
                 if 'EARTHKIT' in pipeline:
@@ -142,11 +139,12 @@ class RawDataAssembler:
 
                     logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {ek_data.shape}")
 
-                    # Label fire days in weather data
+                    # Label fire days in weather data and count the number of fire days
                     logger.info("Labeling fire days in weather data...")
                     ek_data['is_fire_day'] = ek_data.apply(self._is_fire_labeler, axis=1)
                     num_fire_days = ek_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
+                    
                     # Store the resulting DataFrame in monthly_data
                     monthly_data = ek_data.copy()
                 
