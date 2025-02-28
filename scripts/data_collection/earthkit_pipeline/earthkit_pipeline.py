@@ -144,56 +144,119 @@ class EkPipeline:
             logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
 
 
-    ## _read_grib_to_dataframe method
-    ##          - read the GRIB file into a DataFrame
+    # ## _read_grib_to_dataframe method
+    # ##          - read the GRIB file into a DataFrame
+    # ##          - input: grib_file
+    # ##          - output: df (pandas DataFrame)
+    # ##          - private method
+    # def _read_grib_to_dataframe(self, grib_file):
+    #     """Read the GRIB file into a DataFrame with enhanced error handling.
+        
+    #     If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
+    #     this function logs an error or attempts to unzip it before parsing.
+    #     """
+
+    #     try:
+    #         # Log the downloaded file size for debugging.
+    #         file_size = os.path.getsize(grib_file)
+    #         logger.info(f"Downloaded file size: {file_size} bytes")
+    #         if file_size < 10000:  # adjust threshold as needed; 10KB is an example threshold
+    #             logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
+    #             raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
+            
+    #         ## TODO: Make this neater, since the same code is repeated
+    #         # If the file is actually a zip archive, unzip it first.
+    #         if zipfile.is_zipfile(grib_file):
+    #             logger.info("Downloaded file is a ZIP archive. Unzipping...")
+    #             with zipfile.ZipFile(grib_file, 'r') as z:
+    #                 # Assume the ZIP contains one GRIB file; take the first.
+    #                 grib_names = z.namelist()
+    #                 if not grib_names:
+    #                     raise ValueError("ZIP archive is empty.")
+    #                 # Extract the first file to a temporary location.
+    #                 extracted_file = os.path.join(os.path.dirname(grib_file), grib_names[0])
+    #                 z.extract(grib_names[0], os.path.dirname(grib_file))
+    #                 logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
+    #                 # Attempt to read the extracted GRIB file.
+    #                 ds = xr.open_dataset(extracted_file, engine= "earthkit")
+    #                 df = ds.to_dataframe().reset_index()
+    #                 df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
+    #                 df = df.drop(columns=['number'], errors='ignore')
+    #                 logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
+    #                 os.remove(extracted_file)  # Cleanup the extracted file.
+    #                 return df
+    #         else:
+    #             # If not a ZIP, try reading the file directly.
+    #             ds = xr.open_dataset(grib_file, engine= "earthkit")                
+    #             df = ds.to_dataframe().reset_index()
+    #             df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
+    #             df = df.drop(columns=['number'], errors='ignore')
+    #             logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
+    #             return df
+
+    #     except Exception as e:
+    #         logger.error(f"Error reading GRIB file '{grib_file}': {e}")
+    #         return None
+        
+        
+            ## _grib_to_df method
+    ##          - read the GRIB file into a DataFrame, handles archive files and small files
     ##          - input: grib_file
     ##          - output: df (pandas DataFrame)
     ##          - private method
-    def _read_grib_to_dataframe(self, grib_file):
+    def _grib_to_df(self, grib_file):
         """Read the GRIB file into a DataFrame with enhanced error handling.
         
         If the file is very small (indicating an error page or incomplete file) or is a ZIP archive,
         this function logs an error or attempts to unzip it before parsing.
         """
+        
+        file = grib_file
+        logger.info(f"Reading GRIB file '{file}' into DataFrame...")
 
         try:
             # Log the downloaded file size for debugging.
             file_size = os.path.getsize(grib_file)
-            logger.info(f"Downloaded file size: {file_size} bytes")
-            if file_size < 10000:  # adjust threshold as needed; 10KB is an example threshold
-                logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
+            if file_size < 5000:  #
+                logger.error(f"File size {file_size} bytes is too small (<5kB); likely not a valid GRIB file.")
                 raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
             
-            ## TODO: Make this neater, since the same code is repeated
             # If the file is actually a zip archive, unzip it first.
             if zipfile.is_zipfile(grib_file):
                 logger.info("Downloaded file is a ZIP archive. Unzipping...")
                 with zipfile.ZipFile(grib_file, 'r') as z:
                     # Assume the ZIP contains one GRIB file; take the first.
                     grib_names = z.namelist()
+                    if len(grib_names) > 1:
+                        logger.warning(f"ZIP archive contains multiple files: {grib_names}. Using the first.")
                     if not grib_names:
                         raise ValueError("ZIP archive is empty.")
                     # Extract the first file to a temporary location.
                     extracted_file = os.path.join(os.path.dirname(grib_file), grib_names[0])
                     z.extract(grib_names[0], os.path.dirname(grib_file))
                     logger.info(f"Extracted {grib_names[0]} from ZIP archive.")
-                    # Attempt to read the extracted GRIB file.
-                    ds = xr.open_dataset(extracted_file, engine= "earthkit")
-                    df = ds.to_dataframe().reset_index()
-                    df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
-                    df = df.drop(columns=['number'], errors='ignore')
-                    logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
-                    os.remove(extracted_file)  # Cleanup the extracted file.
-                    return df
-            else:
-                # If not a ZIP, try reading the file directly.
-                ds = xr.open_dataset(grib_file, engine= "earthkit")                
-                df = ds.to_dataframe().reset_index()
-                df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
-                df = df.drop(columns=['number'], errors='ignore')
-                logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
-                return df
-
+                    file = extracted_file
+            
+            # Then read the file directly.
+            logger.info("============1============")
+            ds = xr.open_dataset(file, engine= "earthkit")     
+            logger.info("============2============")           
+            df = ds.to_dataframe().reset_index()
+            logger.info("============3============")
+            print(type(df))
+            print(df.head())
+            print(df.columns)
+            print(df.index)
+            print(df.shape)
+            # df['date'] = pd.to_datetime(df['date']).dt.normalize()
+            logger.info("============4============")
+            # df = df.drop(columns=['number'], errors='ignore')
+            logger.info("============5============")
+            logger.info(f"GRIB file '{file}' successfully read into DataFrame.")
+            logger.info("============6============")
+            print(df.head())
+            return df
+        
         except Exception as e:
             logger.error(f"Error reading GRIB file '{grib_file}': {e}")
             return None
@@ -206,7 +269,7 @@ class EkPipeline:
         """Fetch weather data from the CDS API using the specified request parameters.
         
         This function downloads the data to a temporary file, logs the file size for debugging,
-        and then attempts to read the file using _read_grib_to_dataframe. It cleans up the temporary
+        and then attempts to read the file using _grib_to_df. It cleans up the temporary
         file afterward.
         """
         # Ensure all required parameters have been set
@@ -219,13 +282,13 @@ class EkPipeline:
             batch_dates_only_str = pd.DataFrame({'date': batch_timestamps.astype(str)})  # Convert to string if needed
             batch_dates_only_list = batch_dates_only_str['date'].tolist()
             
-            time_params_dict = dict(
+            dates_dict = dict(
                 date = batch_dates_only_list,
                 )
 
             # Merge cds_request_parameters and dates dictionaries
-            call_1_params = {**self.ek_req_call_1, **time_params_dict}
-            call_2_params = {**self.ek_req_call_2, **time_params_dict}
+            call_1_params = {**self.ek_req_call_1, **dates_dict}
+            call_2_params = {**self.ek_req_call_2, **dates_dict}
             
             # Create two separate temp files
             with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp1, \
@@ -275,10 +338,10 @@ class EkPipeline:
             #                 File type {type(target_file)} and size {file_size} bytes""")
 
             # Read the GRIB files into a DataFrame
-            data_df_1 = self._read_grib_to_dataframe(call_1_file)
+            data_df_1 = self._grib_to_df(call_1_file)
             if data_df_1 is None: logger.error("Failed to parse the GRIB file into a DataFrame.")
             
-            data_df_2 = self._read_grib_to_dataframe(call_2_file)
+            data_df_2 = self._grib_to_df(call_2_file)
             if data_df_2 is None: logger.error("Failed to parse the GRIB file into a DataFrame.")
         
             
@@ -294,26 +357,33 @@ class EkPipeline:
             data_df_1['date'] = pd.to_datetime(data_df_1['forecast_reference_time']).dt.normalize()
             data_df_2['date'] = pd.to_datetime(data_df_2['forecast_reference_time']).dt.normalize()
             
+            print("head?")
+            print(data_df_1.head())
+            print(data_df_2.head())
+            
+            logger.info("============7============")
             # merge the two dataframes on the 'date' column, sorted by date
-            ek_df = pd.merge(data_df_1, data_df_2, on='date', how='left').sort_values('date')
-    
-            # Filter weather data to ensure it's within the correct date range
-            start_date = batch_dates[0]
-            end_date = batch_dates[-1]
-            self.ek_dataset = ek_df[(ek_df['date'] >= pd.Timestamp(start_date)) & (ek_df['date'] <= pd.Timestamp(end_date))]
+            # Drop forecast_reference_time before merging
+            data_df_1 = data_df_1.drop(columns=['forecast_reference_time'], errors='ignore')
+            data_df_2 = data_df_2.drop(columns=['forecast_reference_time'], errors='ignore')
 
+            # Merge on 'date', 'latitude', and 'longitude'
+            ek_df = (
+                pd.merge(data_df_1, data_df_2, on=['date', 'latitude', 'longitude'], how='left')
+                .sort_values(['date', 'latitude', 'longitude'])  # Sort for clarity
+            )
+            
+            # Move 'date' to the first column
+            cols = ['date'] + [col for col in ek_df.columns if col != 'date']
+            ek_df = ek_df[cols]
+    
+            self.ek_dataset = ek_df.reset_index(drop=True)
+            
+            # Cleanup the temporary files
             os.remove(call_1_file)  # Remove the temporary file
             os.remove(call_2_file)  # Remove the temporary file
             logger.info(f"Temporary GRIB files '{call_1_file}' and '{call_2_file}' have been removed.")
             
-            ##################################################
-
-            # Convert weather_df 'date' to pandas datetime type for matching purposes
-            # df['date'] = pd.to_datetime(df['date']).dt.normalize()
-
-            # os.remove(target_file)  # Remove the temporary file
-            # logger.info(f"Temporary file '{target_file}' has been removed.")
-
             return self.ek_dataset
 
         except requests.exceptions.HTTPError as e:
@@ -323,12 +393,12 @@ class EkPipeline:
         except Exception as e:
             logger.error(f"Error during data retrieval: {e}")
             # Ensure the temporary file is deleted in case of an error
-            if 'target_file' in locals() and os.path.exists(call_1_file):
+            if 'call_1_file' in locals() and os.path.exists(call_1_file):
                 os.remove(call_1_file)
                 logger.info(f"""Temporary GRIB file '{call_1_file}' has been removed due to an error.""")
                 return None
             
-            if 'target_file' in locals() and os.path.exists(call_2_file):
+            if 'call_2_file' in locals() and os.path.exists(call_2_file):
                 os.remove(call_2_file)
                 logger.info(f"""Temporary GRIB file '{call_2_file}' has been removed due to an error.""")
                 return None
