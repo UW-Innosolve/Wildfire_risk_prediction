@@ -12,7 +12,7 @@ import zipfile
 import earthkit.data
 
 
-from collection_utils.raw_data_assembly import RawDataAssembler
+# from collection_utils.raw_data_assembly import RawDataAssembler
 
 
 ## CDS_pipeline class
@@ -37,6 +37,8 @@ class EkPipeline:
         self.ek_req_call_1 = {} ## First earthkit call (time-variant and time-invariant parameters)
         self.ek_req_call_2 = {} ## Second earthkit call (accumulation parameters)
         
+        self.ek_dataset = None
+        
         # Set the CDS API key in the environment
         os.environ['CDSAPI_KEY'] = self.key
         logger.info("""Earthkit Pipeline has been initialized.
@@ -53,7 +55,7 @@ class EkPipeline:
     def _set_var_params(self, var_params):
         """Set the time-variant variables for the CDS era5 request"""
         self.cds_time_var_params = var_params
-        logger.info(f"Time-variant variables set: {self.var_params}")
+        logger.info(f"Time-variant variables set: {self.cds_time_var_params}")
     
     ## set_invariant_variables method
     ##          - set the time-invariant variables for the CDS API request
@@ -63,7 +65,7 @@ class EkPipeline:
     def _set_invar_params(self, invar_params):
         """Set the time-invariant variables for the CDS era5 request"""
         self.cds_time_invar_params = invar_params
-        logger.info(f"Time-invariant variables set: {self.invar_params}")
+        logger.info(f"Time-invariant variables set: {self.cds_time_invar_params}")
     
     ## set_accum_params method
     ##          - set the accumulation variables for the CDS API request
@@ -73,7 +75,7 @@ class EkPipeline:
     def _set_accum_params(self, accum_params):
         """Set the accumulation variables for the CDS era5 request"""
         self.cds_accum_params = accum_params
-        logger.info(f"Accumulation variables set: {self.accum_params}")
+        logger.info(f"Accumulation variables set: {self.cds_accum_params}")
 
     ## set_request_parameters method
     ##          - set the parameters for the CDS API request including latitude range, longitude range, and grid resolution
@@ -107,7 +109,7 @@ class EkPipeline:
             variable = var_and_invar_params_list,
             product_type = "reanalysis",
             area = [lat_range[1], long_range[0], lat_range[0], long_range[1]],  # [north, west, south, east]
-            grid = [grid_resolution, grid_resolution]
+            grid = [grid_resolution, grid_resolution],
             time = ['12:00']
             ## NOTE: Dates and times are set in the fetch_var_data method
         )
@@ -162,6 +164,7 @@ class EkPipeline:
                 logger.error(f"File size {file_size} bytes is too small; likely not a valid GRIB file.")
                 raise ValueError("Downloaded file is too small, may be an error page or truncated file.")
             
+            ## TODO: Make this neater, since the same code is repeated
             # If the file is actually a zip archive, unzip it first.
             if zipfile.is_zipfile(grib_file):
                 logger.info("Downloaded file is a ZIP archive. Unzipping...")
@@ -177,20 +180,16 @@ class EkPipeline:
                     # Attempt to read the extracted GRIB file.
                     ds = xr.open_dataset(extracted_file, engine= "earthkit")
                     df = ds.to_dataframe().reset_index()
-                    df['date'] = pd.to_datetime(df['time']).dt.normalize()
+                    df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
                     df = df.drop(columns=['number'], errors='ignore')
                     logger.info(f"GRIB file '{extracted_file}' successfully read into DataFrame.")
                     os.remove(extracted_file)  # Cleanup the extracted file.
                     return df
             else:
                 # If not a ZIP, try reading the file directly.
-                ds = xr.open_dataset(grib_file, engine= "earthkit")
-                
-                # ## NOTE: Hardcoded to select the first time step for now
-                # ds = ds.sel(time=ds.time[0])  # Select only the first time step
-                
+                ds = xr.open_dataset(grib_file, engine= "earthkit")                
                 df = ds.to_dataframe().reset_index()
-                df['date'] = pd.to_datetime(df['time']).dt.normalize()
+                df['date'] = pd.to_datetime(df['date']).dt.normalize() ##NOTE
                 df = df.drop(columns=['number'], errors='ignore')
                 logger.info(f"GRIB file '{grib_file}' successfully read into DataFrame.")
                 return df
@@ -211,10 +210,8 @@ class EkPipeline:
         file afterward.
         """
         # Ensure all required parameters have been set
-        if not self.ek_request_parameters:
-            raise ValueError("Request parameters have not been set. Please call set_request_parameters first.")
-        elif not self.var_params:
-            raise ValueError("Time-variant variables have not been set. Please call set_variant_variables first.")
+        if not self.cds_time_var_params or not self.cds_time_invar_params or not self.cds_accum_params:
+            raise ValueError("Request parameters (variant, invariant, and accumulated) have not been set. Please call set_request_parameters first.")
 
         try:
             ## Convert batch_dates to list of date strings
@@ -247,7 +244,7 @@ class EkPipeline:
             if call_1_ds is None:
                 logger.error("CDS call 1 dataset is empty. No data was retrieved.")
                 return None
-            call_2_ds.save(call_1_file)
+            call_1_ds.save(call_1_file)
             file_1_size = os.path.getsize(call_1_file)
             logger.info(f"""Weather data retrieved and saved to '{call_1_file}',
                             File type {type(call_1_file)} and size {file_1_size} bytes""")
@@ -293,19 +290,31 @@ class EkPipeline:
             ## NOTE: Here is where the dataframes are merged
             ##  - data_df_1 and data_df_2 are merged on 'date' column (after removing time component)
         
-        
+            # seperation of the date (without time) as the new index
+            data_df_1['date'] = pd.to_datetime(data_df_1['forecast_reference_time']).dt.normalize()
+            data_df_2['date'] = pd.to_datetime(data_df_2['forecast_reference_time']).dt.normalize()
+            
+            # merge the two dataframes on the 'date' column, sorted by date
+            ek_df = pd.merge(data_df_1, data_df_2, on='date', how='left').sort_values('date')
+    
+            # Filter weather data to ensure it's within the correct date range
+            start_date = batch_dates[0]
+            end_date = batch_dates[-1]
+            self.ek_dataset = ek_df[(ek_df['date'] >= pd.Timestamp(start_date)) & (ek_df['date'] <= pd.Timestamp(end_date))]
+
+            os.remove(call_1_file)  # Remove the temporary file
+            os.remove(call_2_file)  # Remove the temporary file
+            logger.info(f"Temporary GRIB files '{call_1_file}' and '{call_2_file}' have been removed.")
+            
             ##################################################
-        
-            # # Filter weather data to ensure it's within the correct date range (old)
-            # df = df[(df['date'] >= pd.Timestamp(start_date)) & (df['date'] <= pd.Timestamp(end_date))]
 
             # Convert weather_df 'date' to pandas datetime type for matching purposes
-            df['date'] = pd.to_datetime(df['date']).dt.normalize()
+            # df['date'] = pd.to_datetime(df['date']).dt.normalize()
 
-            os.remove(target_file)  # Remove the temporary file
-            logger.info(f"Temporary file '{target_file}' has been removed.")
+            # os.remove(target_file)  # Remove the temporary file
+            # logger.info(f"Temporary file '{target_file}' has been removed.")
 
-            return df
+            return self.ek_dataset
 
         except requests.exceptions.HTTPError as e:
             logger.error(f"HTTP Error during data retrieval: {e}")
@@ -314,7 +323,12 @@ class EkPipeline:
         except Exception as e:
             logger.error(f"Error during data retrieval: {e}")
             # Ensure the temporary file is deleted in case of an error
-            if 'target_file' in locals() and os.path.exists(target_file):
-                os.remove(target_file)
-                logger.info(f"""Temporary GRIB file '{target_file}' has been removed due to an error.""")
+            if 'target_file' in locals() and os.path.exists(call_1_file):
+                os.remove(call_1_file)
+                logger.info(f"""Temporary GRIB file '{call_1_file}' has been removed due to an error.""")
+                return None
+            
+            if 'target_file' in locals() and os.path.exists(call_2_file):
+                os.remove(call_2_file)
+                logger.info(f"""Temporary GRIB file '{call_2_file}' has been removed due to an error.""")
                 return None

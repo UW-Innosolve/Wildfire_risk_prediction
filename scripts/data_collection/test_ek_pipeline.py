@@ -8,6 +8,8 @@ import os
 # Set the API key
 os.environ['CDSAPI_KEY'] = "734d2638-ef39-4dc1-bc54-4842b788fff6"
 
+#TODO: Add actual tests for the pipeline, one for each parameter type (variant, invariant, and accumulated)
+
 ds = earthkit.data.from_source(
     "cds",
     "reanalysis-era5-single-levels",
@@ -20,18 +22,18 @@ ds = earthkit.data.from_source(
                  # Water variables
                 #  '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
                 # NOTE: precipitation accumulations need to be repaired
-                  'tp',       # total_precipitation',
-                  'e',        # total_evaporation',
+                #   'tp',       # total_precipitation',
+                #   'e',        # total_evaporation',
                 # Leaf area index (vegetation)
                  'lai_lv',   # leaf_area_index_low_vegetation',
                  'lai_hv'   # leaf_area_index_high_vegetation',
                 # # Heat variables (NOTE: needs to be repaired, if the values are useful)
-                 'sshf',      # surface_sensible_heat_flux',
-                 'slhf',      # surface_latent_heat_flux',
-                 'ssrd',      # surface_solar_radiation_downwards',
-                 'strd',      # surface_thermal_radiation_downwards',
-                 'ssr',       # surface_net_solar_radiation
-                 'str',       # surface_net_thermal_radiation
+                #  'sshf',      # surface_sensible_heat_flux',
+                #  'slhf',      # surface_latent_heat_flux',
+                #  'ssrd',      # surface_solar_radiation_downwards',
+                #  'strd',      # surface_thermal_radiation_downwards',
+                #  'ssr',       # surface_net_solar_radiation
+                #  'str',       # surface_net_thermal_radiation
                  'tvl', # low_veg_cover
                  'tvh', # high_veg_cover
                  'cvl', # low_veg_type
@@ -48,7 +50,7 @@ ds = earthkit.data.from_source(
     date=['2012-05-10',
           "2012-05-11",
           "2012-05-12"],
-    # time=["12:00"]
+    time=["12:00"]
     )
 
 # lat_range=[49, 60], 
@@ -57,4 +59,23 @@ ds = earthkit.data.from_source(
 ds.save("my_data.grib")
 ds_xr = xr.open_dataset("my_data.grib", engine= "earthkit")
 df = ds_xr.to_dataframe()
-df.to_csv("evaporationstuff.csv")
+print(df)
+print(type(df))
+print(df.columns)
+print(df.index)
+print(df.shape)
+print(df.describe())
+print(df.info())
+
+col_1 = df.columns[0]
+col_2 = df.columns[1]
+
+print(col_1[0])
+print(col_1[1])
+print(type(col_1))
+
+print(col_2[0])
+print(col_2[1])
+print(type(col_2))
+
+df.to_csv("var_invar_stuff.csv")

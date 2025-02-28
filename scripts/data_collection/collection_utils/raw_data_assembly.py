@@ -127,15 +127,12 @@ class RawDataAssembler:
                     logger.info("EARTHKIT pipeline found!")
 
                     # Fetch weather data
-                    logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    print(f"Batch head: {batch['date'].head()}")
-                    logger.debug("=====check point 3=====")
-                    
+                    logger.info(f"Starting request for earthkit data from {start_date} to {end_date}")
+                    print(batch.head())
                     ek_data = ek_pipeline.ek_fetch_data(batch['date'])
                     
-                    logger.debug("=====check point 4=====")
                     if ek_data is None or ek_data.empty:
-                        logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
+                        logger.error(f"Failed to fetch earthkit data for period {period_key}. Skipping.")
                         continue
 
                     # Check if 'date' column exists
@@ -143,18 +140,15 @@ class RawDataAssembler:
                         logger.error("Weather data does not contain 'date' column. Skipping this batch.")
                         continue
 
-                    logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {weather_data.shape}")
+                    logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {ek_data.shape}")
 
                     # Label fire days in weather data
                     logger.info("Labeling fire days in weather data...")
-                    logger.debug("=====check point 5=====")
                     ek_data['is_fire_day'] = ek_data.apply(self._is_fire_labeler, axis=1)
                     num_fire_days = ek_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
-                    logger.debug("=====check point 6=====")
                     # Store the resulting DataFrame in monthly_data
                     monthly_data = ek_data.copy()
-                    logger.debug("=====check point 7=====")
                 
                 # 2) HUMAN_ACTIVITY pipeline
                 elif 'HUMAN_ACTIVITY' in pipeline:

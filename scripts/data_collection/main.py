@@ -47,16 +47,15 @@ def main():
     
     ## Set CDS era5 pipeline parameters
     variant_cds_params = [  # Temperature and pressure
-                            # '2t',      # 2m_temperature 
-                            # 'sp',       # surface_pressure
-                            # # Wind
-                            # '10u',      # 10m_u_component_of_wind', 
-                            # '10v',      # 10m_v_component_of_wind',
+                            '2t',      # 2m_temperature 
+                            'sp',       # surface_pressure
+                            # Wind
+                            '10u',      # 10m_u_component_of_wind', 
+                            '10v',      # 10m_v_component_of_wind',
                             # # Water variables
                             # '2m_dewpoint_temperature',      # 2m_dewpoint_temperature', 
                             # NOTE: precipitation accumulations need to be repaired
-                            'tp',       # total_precipitation',
-                            # 'e',        # total_evaporation',
+                            
                             # Leaf area index (vegetation)
                             # 'lai_lv',   # leaf_area_index_low_vegetation',
                             # 'lai_hv'   # leaf_area_index_high_vegetation',
@@ -78,14 +77,19 @@ def main():
                             # 'cl',  # lake_cover
                             # 'lsm', # land_sea_mask
                             #  # Topography
-                            # 'z'    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
+                            'z'    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
     ]
+    
+    accumulated_cds_params = [ # Accumulated variables
+                              'tp',       # total_precipitation',
+                              'e']        # total_evaporation',
 
 
     ## Set CDS request parameters
     ek_pipeline.set_cds_request_parameters(
         var_params=variant_cds_params, 
         invar_params=invariant_cds_params, 
+        accum_params=accumulated_cds_params,
         lat_range=[49, 60], 
         long_range=[-120, -110], 
         grid_resolution=0.35
@@ -110,7 +114,7 @@ def main():
     raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
         wildfire_incidence_data, 
         start_date='2014-01-01', 
-        end_date='2015-12-31', 
+        end_date='2014-12-31', 
         resample_interval='4D',
         grouping_period_size='M',
         latitude_tolerance=1.0,
