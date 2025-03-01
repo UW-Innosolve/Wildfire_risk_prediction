@@ -127,7 +127,7 @@ def main():
     ## Create pipelines list
     pipelines = [
         {'EARTHKIT': ek_pipeline},
-        # {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+        # {'HUMAN_ACTIVITY': HumanActivityPipeline()}
     ]
 
     ## Initialize the raw data assembler

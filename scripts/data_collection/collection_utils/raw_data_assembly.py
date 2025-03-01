@@ -125,7 +125,6 @@ class RawDataAssembler:
 
                     # Fetch weather data
                     logger.info(f"Starting request for earthkit data from {start_date} to {end_date}")
-                    print(batch.head())
                     ek_data = ek_pipeline.ek_fetch_data(batch['date'])
                     
                     if ek_data is None or ek_data.empty:
