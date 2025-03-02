@@ -145,7 +145,7 @@ class RawDataAssembler:
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
                     
                     # Store the resulting DataFrame in monthly_data
-                    monthly_data = ek_data.copy()
+                    monthly_data_ek = ek_data.copy()
                 
                 # 2) HUMAN_ACTIVITY pipeline
                 elif 'HUMAN_ACTIVITY' in pipeline:
@@ -163,6 +163,13 @@ class RawDataAssembler:
                 elif 'NED' in pipeline:
                     # NASA Earthdata pipeline assembly code here...
                     pass
+                
+                elif 'AB_LIGHTNING' in pipeline:
+                    logger.info("AB_LIGHTNING pipeline found!")
+                    abltng = pipeline['AB_LIGHTNING']
+                    monthly_data_abltng = abltng.get_ltng_data(batch['date']).copy()
+                    
+            
             
             # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
