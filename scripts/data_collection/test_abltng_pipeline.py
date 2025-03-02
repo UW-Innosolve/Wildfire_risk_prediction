@@ -1,5 +1,5 @@
 import os
-from ab_lightning_pipeline.ab_lightning_pipeline import AbLightningPipeline
+from ablightning_pipeline.ab_lightning_pipeline import AbLightningPipeline
 
 data_dir = "scripts/data_collection/static_datasets/ablightning_historical"
 
