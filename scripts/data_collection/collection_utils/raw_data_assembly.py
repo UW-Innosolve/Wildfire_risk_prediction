@@ -103,7 +103,6 @@ class RawDataAssembler:
             logger.error(f"Grouping failed due to missing key: {e}")
             return
 
-        logger.debug("=====check point 1=====")
         # Iterate over each period (e.g., month)
         for period, batch in self.grouped_all_dates:
             # Start timing for this batch
@@ -117,9 +116,7 @@ class RawDataAssembler:
             period_key = period.strftime('%Y%m')
 
             # Initialize a DataFrame to hold the integrated data for this period
-            monthly_data = None
-            logger.debug("=====check point 2=====")
-            # Process each pipeline in sequence
+            monthly_data = None            # Process each pipeline in sequence
             for pipeline in pipelines:
                 # 1) CDS pipeline
                 if 'EARTHKIT' in pipeline:
@@ -127,31 +124,29 @@ class RawDataAssembler:
                     logger.info("EARTHKIT pipeline found!")
 
                     # Fetch weather data
-                    logger.info(f"Starting request for weather data from {start_date} to {end_date}")
-                    logger.debug("=====check point 3=====")
-                    weather_data = ek_pipeline.ek_fetch_data(start_date, end_date)
-                    logger.debug("=====check point 4=====")
-                    if weather_data is None or weather_data.empty:
-                        logger.error(f"Failed to fetch weather data for period {period_key}. Skipping.")
+                    logger.info(f"Starting request for earthkit data from {start_date} to {end_date}")
+                    print(batch.head())
+                    ek_data = ek_pipeline.ek_fetch_data(batch['date'])
+                    
+                    if ek_data is None or ek_data.empty:
+                        logger.error(f"Failed to fetch earthkit data for period {period_key}. Skipping.")
                         continue
 
                     # Check if 'date' column exists
-                    if 'date' not in weather_data.columns:
+                    if 'date' not in ek_data.columns:
                         logger.error("Weather data does not contain 'date' column. Skipping this batch.")
                         continue
 
-                    logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {weather_data.shape}")
+                    logger.info(f"Processing weather data from {start_date} to {end_date}, Data shape: {ek_data.shape}")
 
-                    # Label fire days in weather data
+                    # Label fire days in weather data and count the number of fire days
                     logger.info("Labeling fire days in weather data...")
-                    logger.debug("=====check point 5=====")
-                    weather_data['is_fire_day'] = weather_data.apply(self._is_fire_labeler, axis=1)
-                    num_fire_days = weather_data['is_fire_day'].sum()
+                    ek_data['is_fire_day'] = ek_data.apply(self._is_fire_labeler, axis=1)
+                    num_fire_days = ek_data['is_fire_day'].sum()
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
-                    logger.debug("=====check point 6=====")
+                    
                     # Store the resulting DataFrame in monthly_data
-                    monthly_data = weather_data.copy()
-                    logger.debug("=====check point 7=====")
+                    monthly_data = ek_data.copy()
                 
                 # 2) HUMAN_ACTIVITY pipeline
                 elif 'HUMAN_ACTIVITY' in pipeline:
@@ -235,18 +230,16 @@ class RawDataAssembler:
 
         # Convert fire_start_date to Timestamp
         fire_dates['fire_start_date'] = pd.to_datetime(fire_dates['fire_start_date']).dt.normalize()
-        # fire_dates['fire_start_date'] = fire_dates['fire_start_date'].dt.normalize() 
-        ## NOTE: the normalization in the line above.
 
         # Perform the union operation and sort the values
-        all_dates = pd.Series(list(set(all_dates).union(fire_dates['fire_start_date']))).sort_values()
-
+        final_unioned_dates = pd.Series(list(set(all_dates).union(fire_dates['fire_start_date']))).sort_values().dt.normalize()
+        
         # Ensure all dates are within the range start_date to end_date
-        all_dates = all_dates[(all_dates >= pd.Timestamp(start_date)) & (all_dates <= pd.Timestamp(end_date))]
+        final_unioned_dates = final_unioned_dates[(final_unioned_dates >= pd.Timestamp(start_date)) & (final_unioned_dates <= pd.Timestamp(end_date))]
 
         # Create DataFrame for all dates without fire day labels (labeling will be done later)
-        all_dates_df = pd.DataFrame({'date': all_dates})
-        logger.info(f"all_dates count (constructed from fire_dates + every nth (interval) day): {len(all_dates_df)}")
-        logger.debug(f"Sample all_dates:\n{all_dates_df.head()}")
+        final_unioned_dates_df = pd.DataFrame({'date': final_unioned_dates})
+        logger.info(f"final_unioned_dates_df count (constructed from fire_dates + every nth (interval) day): {len(final_unioned_dates)}")
+        logger.debug(f"Sample all_dates:\n{final_unioned_dates_df.head()}")
 
-        return all_dates_df
+        return final_unioned_dates_df ## Return the final DataFrame containing timestamps for all dates
