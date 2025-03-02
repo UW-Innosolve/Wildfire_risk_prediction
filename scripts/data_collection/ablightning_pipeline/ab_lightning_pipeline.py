@@ -89,8 +89,8 @@ class AbLightningPipeline:
     max_date = final_ltng_df['date'].max()
     min_date = final_ltng_df['date'].min()
     batch_dated_raw_ltng_df = raw_ltng_df[
-      (raw_ltng_df['date'] >= pd.to_datetime(min_date)) &
-      (raw_ltng_df['date'] <= pd.to_datetime(max_date))]
+      (pd.to_datetime(raw_ltng_df['date']) >= pd.to_datetime(min_date)) &
+      (pd.to_datetime(raw_ltng_df['date']) <= pd.to_datetime(max_date))]
     
     # Iterate over each lightning event in the batch
     for _, row in batch_dated_raw_ltng_df.iterrows():
