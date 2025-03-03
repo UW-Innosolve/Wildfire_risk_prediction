@@ -5,6 +5,7 @@ import time
 ## Import Pipeline classes
 from earthkit_pipeline.earthkit_pipeline import EkPipeline
 from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline
+from ablightning_pipeline.ab_lightning_pipeline import AbLightningPipeline
 # from earthdata_pipeline.nasa_earthdata_pipeline import NasaEarthdataPipeline as ned
 
 # Import Utility classes
@@ -18,7 +19,7 @@ import eccodes
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.info,
     format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
     handlers=[
         logging.FileHandler("pipeline.log"),
@@ -36,11 +37,16 @@ def main():
 
     ## wildfire_incidence_data
     wildfire_incidence_data = wildfire_loader.ab_fire_incidents
+    
+    ## Set query parameters (to be used by all pipelines)
+    query_area = {'latitude_range': [49, 60], 'longitude_range': [-120, -110]}
+    query_period = {'start_date': '2014-01-01', 'end_date': '2014-01-15'}
+    query_grid_resolution = 0.35
 
     # Debug: Print columns to verify 'fire_start_date' exists
-    logger.info(f"Wildfire Incidence Data Columns in main: {wildfire_incidence_data.columns}")
+    logger.debug(f"Wildfire Incidence Data Columns in main: {wildfire_incidence_data.columns}")
 
-    ## CDS PIPELINE
+    ## EARTHKIT PIPELINE ############################################################
     ## Initialize CDS pipeline
     cds_key = CdsAuth().get_cds_key(cred_file_path="scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
     ek_pipeline = EkPipeline(cds_key)
@@ -110,11 +116,22 @@ def main():
         var_params=variant_cds_params, 
         invar_params=invariant_cds_params, 
         accum_params=accumulated_cds_params,
-        lat_range=[49, 60], 
-        long_range=[-120, -110], 
-        grid_resolution=0.35
+        lat_range=query_area['latitude_range'],
+        long_range=query_area['longitude_range'],
+        grid_resolution=query_grid_resolution
     )
     
+    ## AB LIGHTNING PIPELINE ############################################################
+    
+    abltng = AbLightningPipeline("scripts/data_collection/static_datasets/ablightning_historical")
+    abltng.set_ab_ltng_params(
+        lat_range=query_area['latitude_range'],
+        lon_range=query_area['longitude_range'],
+        grid_resolution=query_grid_resolution
+    )
+    
+    ## HUMAN ACTIVITY PIPELINE ############################################################
+
     # Create OAPI pipeline object
     # oapi_pipeline = HumanActivityPipeline() 
     # NOTE: Creating the pipeline object, before passing it to the pipeline list
@@ -122,19 +139,25 @@ def main():
     #       However, human activity pipeline currently relies on earthkit data existing already.
     # TODO: Correct human activity pipeline to be able to run independently of earthkit data.
     
+    ## NASA EARTHDATA PIPELINE ############################################################
+    
+    
+    
+    ########################################################################################
     
     ## RAW DATA ASSEMBLY
-    ## Create pipelines list
+    ## Pipeline object list
     pipelines = [
         {'EARTHKIT': ek_pipeline},
-        # {'HUMAN_ACTIVITY': HumanActivityPipeline()},
+        {'AB_LIGHTNING': abltng},
+        # {'HUMAN_ACTIVITY': HumanActivityPipeline()}
     ]
 
     ## Initialize the raw data assembler
     raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
         wildfire_incidence_data, 
-        start_date='2014-01-01', 
-        end_date='2015-12-31', 
+        start_date=query_period['start_date'], 
+        end_date=query_period['end_date'], 
         resample_interval='4D',
         grouping_period_size='M',
         latitude_tolerance=1.0,
@@ -143,6 +166,7 @@ def main():
 
     ## Assemble the dataset
     raw_data_assembly_instance.assemble_dataset(pipelines)
+    ## Note raw data assembly saves monthly csv data to folder in root directory
 
 
 if __name__ == "__main__":
