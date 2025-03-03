@@ -193,6 +193,13 @@ class RawDataAssembler:
                 
             logger.info(pipeline_outputs_list)
             
+            # Guard against floating point errors in latitude and longitude
+            decimal_places = 2 # Set based on grid resolution
+            for df in pipeline_outputs_list:
+                df['latitude'] = df['latitude'].round(decimal_places)
+                df['longitude'] = df['longitude'].round(decimal_places)
+            
+            
             # Merge all pipeline outputs
             if pipeline_outputs_list:
                 monthly_data = pipeline_outputs_list[0]
