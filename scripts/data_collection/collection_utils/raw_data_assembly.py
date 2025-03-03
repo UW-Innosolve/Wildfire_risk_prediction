@@ -125,7 +125,6 @@ class RawDataAssembler:
 
                     # Fetch weather data
                     logger.info(f"Starting request for earthkit data from {start_date} to {end_date}")
-                    print(batch.head())
                     ek_data = ek_pipeline.ek_fetch_data(batch['date'])
                     
                     if ek_data is None or ek_data.empty:
@@ -146,7 +145,7 @@ class RawDataAssembler:
                     logger.info(f"Number of fire days found in this batch: {num_fire_days}")
                     
                     # Store the resulting DataFrame in monthly_data
-                    monthly_data = ek_data.copy()
+                    monthly_data_ek = ek_data.copy()
                 
                 # 2) HUMAN_ACTIVITY pipeline
                 elif 'HUMAN_ACTIVITY' in pipeline:
@@ -161,9 +160,55 @@ class RawDataAssembler:
                     monthly_data = hap_pipeline.fetch_human_activity_monthly(monthly_data, period_key)
                     logger.info(f"Integrated HumanActivity data into {period_key} => final shape={monthly_data.shape}")
                     
+                    # monthly_data_hap = monthly_data.copy() TODO: Correctly set monthly_data_hap to output of fetch_human_activity_monthly
+
                 elif 'NED' in pipeline:
                     # NASA Earthdata pipeline assembly code here...
+                    # monthly_data_ned = None
                     pass
+                
+                elif 'AB_LIGHTNING' in pipeline:
+                    logger.info("AB_LIGHTNING pipeline found!")
+                    abltng = pipeline['AB_LIGHTNING']
+                    monthly_data_abltng = abltng.get_ltng_data(batch['date']).copy()
+            
+            pipeline_outputs_list = []        
+            
+            # Append all pipeline outputs to the list
+            if monthly_data_ek is not None and not monthly_data_ek.empty:
+                logger.info("Earthkit data obtained, passing for assembly.")
+                pipeline_outputs_list.append(monthly_data_ek)
+                
+            # if monthly_data_hap is not None and not monthly_data_hap.empty:
+            #     pipeline_outputs_list.append(monthly_data_hap)
+            
+            # if monthly_data_ned is not None and not monthly_data_ned.empty:
+            #     pipeline_outputs_list.append(monthly_data_ned)
+            
+            if monthly_data_abltng is not None and not monthly_data_abltng.empty:
+                logger.info("AB Lightning data obtained passing for assembly.")
+                print(monthly_data_abltng.head())
+                pipeline_outputs_list.append(monthly_data_abltng)
+                
+            logger.info(f"Number of pipeline outputs to merge: {len(pipeline_outputs_list)}")
+            
+            # Guard against floating point errors in latitude and longitude
+            decimal_places = 2 # Set based on grid resolution
+            for df in pipeline_outputs_list:
+                df['latitude'] = df['latitude'].round(decimal_places)
+                df['longitude'] = df['longitude'].round(decimal_places)
+            
+            
+            # Merge all pipeline outputs
+            if pipeline_outputs_list:
+                monthly_data = pipeline_outputs_list[0]
+            if len(pipeline_outputs_list) > 1:
+                for additional_pipeline_output in pipeline_outputs_list[1:]:
+                    monthly_data = pd.merge(monthly_data,
+                                            additional_pipeline_output,
+                                            on=['date', 'latitude', 'longitude'], how='outer')
+            
+            logger.info(f"Final data shape for {period_key}: {monthly_data.shape}")
             
             # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
