@@ -4,7 +4,7 @@ import logging
 import os
 
 # Configure logging
-logging.basicConfig(level=logging.info)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class AbLightningPipeline:
@@ -117,7 +117,6 @@ class AbLightningPipeline:
   def get_ltng_data(self, batch_dates):
     self.final_lightning_df = pd.DataFrame(columns=['date', 'latitude', 'longitude', 'lightning_count', 'absv_strength_sum', 'multiplicity_sum'])
     for date in batch_dates:
-      logger.info(f"Generating empty grid values for date: {date}")
       self.final_lightning_df = pd.concat([self.final_lightning_df, pd.DataFrame({'date': date,
                                                                                   'latitude': self.grid['latitude'],
                                                                                   'longitude': self.grid['longitude'],

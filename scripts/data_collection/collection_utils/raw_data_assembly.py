@@ -160,8 +160,8 @@ class RawDataAssembler:
                     monthly_data = hap_pipeline.fetch_human_activity_monthly(monthly_data, period_key)
                     logger.info(f"Integrated HumanActivity data into {period_key} => final shape={monthly_data.shape}")
                     
-                    # monthly_data_hap = monthly_data.copy() NOTE: Correctly set monthly_data_hap to output of fetch_human_activity_monthly
-                    
+                    # monthly_data_hap = monthly_data.copy() TODO: Correctly set monthly_data_hap to output of fetch_human_activity_monthly
+
                 elif 'NED' in pipeline:
                     # NASA Earthdata pipeline assembly code here...
                     # monthly_data_ned = None
@@ -176,8 +176,7 @@ class RawDataAssembler:
             
             # Append all pipeline outputs to the list
             if monthly_data_ek is not None and not monthly_data_ek.empty:
-                logger.info("Earthkit data obtained.")
-                print(monthly_data_ek.head())
+                logger.info("Earthkit data obtained, passing for assembly.")
                 pipeline_outputs_list.append(monthly_data_ek)
                 
             # if monthly_data_hap is not None and not monthly_data_hap.empty:
@@ -187,11 +186,11 @@ class RawDataAssembler:
             #     pipeline_outputs_list.append(monthly_data_ned)
             
             if monthly_data_abltng is not None and not monthly_data_abltng.empty:
-                logger.info("AB Lightning data obtained.")
+                logger.info("AB Lightning data obtained passing for assembly.")
                 print(monthly_data_abltng.head())
                 pipeline_outputs_list.append(monthly_data_abltng)
                 
-            logger.info(pipeline_outputs_list)
+            logger.info(f"Number of pipeline outputs to merge: {len(pipeline_outputs_list)}")
             
             # Guard against floating point errors in latitude and longitude
             decimal_places = 2 # Set based on grid resolution
@@ -208,8 +207,8 @@ class RawDataAssembler:
                     monthly_data = pd.merge(monthly_data,
                                             additional_pipeline_output,
                                             on=['date', 'latitude', 'longitude'], how='outer')
-                    
-            print(monthly_data.head())
+            
+            logger.info(f"Final data shape for {period_key}: {monthly_data.shape}")
             
             # After all pipelines are processed for this period, write the final CSV
             if monthly_data is not None and not monthly_data.empty:
