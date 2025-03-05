@@ -1,8 +1,9 @@
 # main.py
 
 import time
+import logging
 
-## Import Pipeline classes
+# Import Pipeline classes
 from earthkit_pipeline.earthkit_pipeline import EkPipeline
 from oapi_pipeline.human_activity_pipeline import HumanActivityPipeline
 from ablightning_pipeline.ab_lightning_pipeline import AbLightningPipeline
@@ -12,14 +13,13 @@ from ablightning_pipeline.ab_lightning_pipeline import AbLightningPipeline
 import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_loader
 import collection_utils.raw_data_assembly as raw_data_assembly
 
-import logging
 from earthkit_pipeline.cds_auth import CdsAuth
 import cfgrib
 import eccodes
 
-# Configure logging
+# Configure logging: Log to both file (pipeline.log) and the console.
 logging.basicConfig(
-    level=logging.info,
+    level=logging.INFO,
     format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
     handlers=[
         logging.FileHandler("pipeline.log"),
@@ -29,145 +29,148 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def main():
-    ## WILDFIRE INCIDENCE DATA
+    # ------------------------------------------------------
+    # 1. Load Wildfire Incidence Data
+    # ------------------------------------------------------
     wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2023.xlsx"
-
-    ## Load wildfire incidence data
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
-
-    ## wildfire_incidence_data
     wildfire_incidence_data = wildfire_loader.ab_fire_incidents
-    
-    ## Set query parameters (to be used by all pipelines)
-    query_area = {'latitude_range': [49, 60], 'longitude_range': [-120, -110]}
-    query_period = {'start_date': '2014-01-01', 'end_date': '2014-01-15'}
-    query_grid_resolution = 0.35
-
-    # Debug: Print columns to verify 'fire_start_date' exists
+    # Log the number of incidents loaded.
     logger.debug(f"Wildfire Incidence Data Columns in main: {wildfire_incidence_data.columns}")
 
-    ## EARTHKIT PIPELINE ############################################################
-    ## Initialize CDS pipeline
-    cds_key = CdsAuth().get_cds_key(cred_file_path="scripts/data_collection/credentials.JSON") # Get CDS API key from credentials file
-    ek_pipeline = EkPipeline(cds_key)
-    
-    ## Set CDS era5 pipeline parameters
-    variant_cds_params = [  # Variant variables
-                            # Temperature and pressure
-                            '2t',      # 2m_temperature
-                            # Wind
-                            '10u',      # 10m_u_component_of_wind', 
-                            '10v',      # 10m_v_component_of_wind',
-                            # # Water variables
-                            '2d',      # 2m_dewpoint_temperature',                             
-                            # Leaf area index (vegetation)
-                            'lai_lv',   # leaf_area_index_low_vegetation',
-                            'lai_hv'   # leaf_area_index_high_vegetation',
-                            # Soil Water Layer
-                            'swvl1', # volumetric_soil_water_layer_1',
-                            'swvl2', # volumetric_soil_water_layer_2',
-                            'swvl3', # volumetric_soil_water_layer_3',
-                            'swvl4', # volumetric_soil_water_layer_4',
-                            # Soil temperature
-                            'stl1', # soil_temperature_level_1',
-                            'stl2', # soil_temperature_level_2',
-                            'stl3', # soil_temperature_level_3',
-                            'stl4', # soil_temperature_level_4',
-                            # Pressure levels
-                            'sp', # surface_pressure',
-                            # Forest albedo
-                            'fal', # forest_albedo',
-                            # Skin reservoir content
-                            'src', # skin_reservoir_content',
-                            
-    ]    
-    
-    invariant_cds_params = [ # Invariant variables
-                            # Vegetation cover and type
-                            'tvl', # low_veg_cover
-                            'tvh', # high_veg_cover
-                            'cvl', # low_veg_type
-                            'cvh',  # high_veg_type
-                             # Lakes and rivers
-                            'cl',  # lake_cover
-                            'lsm', # land_sea_mask
-                             # Topography
-                            'z',    # Geopotential (proportional to elevation, not linearly due to oblong shape of Earth)
-                            'slt' # Soil type
-    ]
-    
-    accumulated_cds_params = [  # Accumulated variables
-                                'tp',       # total_precipitation',
-                                # Evaopration variables
-                                'e',        # evaporation',
-                                'pev',      # potential_evaporation',
-                                # Heat and radiation variables
-                                'sshf',      # surface_sensible_heat_flux',
-                                'slhf',      # surface_latent_heat_flux',
-                                'ssrd',      # surface_solar_radiation_downwards',
-                                'strd',      # surface_thermal_radiation_downwards',
-                                'ssr',       # surface_net_solar_radiation
-                                'str',       # surface_net_thermal_radiation
-    ]
+    # ------------------------------------------------------
+    # 2. Define Shared Query Parameters (for all pipelines)
+    # ------------------------------------------------------
+    # Define the geographic bounds (latitude and longitude ranges)
+    query_area = {
+        'latitude_range': [49, 60],
+        'longitude_range': [-120, -110]
+    }
+    # Define the temporal period for data retrieval
+    query_period = {
+        'start_date': '2014-01-01',
+        'end_date': '2014-01-15'
+    }
+    # Define the grid resolution (in degrees)
+    query_grid_resolution = 0.35
 
+    # ------------------------------------------------------
+    # 3. Pipeline Configuration: Enable/Disable Pipelines
+    # ------------------------------------------------------
+    # Set each flag to True or False to control which pipeline is initialized.
+    pipeline_config = {
+        "EARTHKIT": True,         # For CDS ERA5 reanalysis data
+        "AB_LIGHTNING": False,      # For Alberta Lightning data
+        "HUMAN_ACTIVITY": True,    # For Human Activity data (OSM-based)
+        # "NED": False,           # Example for NASA Earthdata pipeline (if available)
+    }
 
-    ## Set CDS request parameters
-    ek_pipeline.set_cds_request_parameters(
-        var_params=variant_cds_params, 
-        invar_params=invariant_cds_params, 
-        accum_params=accumulated_cds_params,
-        lat_range=query_area['latitude_range'],
-        long_range=query_area['longitude_range'],
-        grid_resolution=query_grid_resolution
-    )
-    
-    ## AB LIGHTNING PIPELINE ############################################################
-    
-    abltng = AbLightningPipeline("scripts/data_collection/static_datasets/ablightning_historical")
-    abltng.set_ab_ltng_params(
-        lat_range=query_area['latitude_range'],
-        lon_range=query_area['longitude_range'],
-        grid_resolution=query_grid_resolution
-    )
-    
-    ## HUMAN ACTIVITY PIPELINE ############################################################
+    # We'll build a list of pipeline dictionaries. Each dictionary will have one key representing the pipeline type.
+    pipelines = []
 
-    # Create OAPI pipeline object
-    # oapi_pipeline = HumanActivityPipeline() 
-    # NOTE: Creating the pipeline object, before passing it to the pipeline list
-    #       is prefered to avoid the pipeline object being overwritten by the next pipeline object.
-    #       However, human activity pipeline currently relies on earthkit data existing already.
-    # TODO: Correct human activity pipeline to be able to run independently of earthkit data.
-    
-    ## NASA EARTHDATA PIPELINE ############################################################
-    
-    
-    
-    ########################################################################################
-    
-    ## RAW DATA ASSEMBLY
-    ## Pipeline object list
-    pipelines = [
-        {'EARTHKIT': ek_pipeline},
-        {'AB_LIGHTNING': abltng},
-        # {'HUMAN_ACTIVITY': HumanActivityPipeline()}
-    ]
+    # ------------------------------------------------------
+    # 4. Initialize the EARTHKIT Pipeline (CDS ERA5 Data)
+    # ------------------------------------------------------
+    if pipeline_config["EARTHKIT"]:
+        # Retrieve the CDS API key from credentials.json via the CdsAuth class.
+        cds_key = CdsAuth().get_cds_key(cred_file_path="scripts/data_collection/credentials.JSON")
+        ek_pipeline = EkPipeline(cds_key)
+        # Define the variables for the CDS request:
+        # - Variant parameters (time-dependent)
+        variant_cds_params = [
+            '2t',      # 2m_temperature
+            '10u',     # 10m_u_component_of_wind
+            '10v',     # 10m_v_component_of_wind
+            '2d',      # 2m_dewpoint_temperature
+            'lai_lv',  # Leaf area index for low vegetation
+            'lai_hv',  # Leaf area index for high vegetation
+            'swvl1', 'swvl2', 'swvl3', 'swvl4',  # Soil water layers
+            'stl1', 'stl2', 'stl3', 'stl4',       # Soil temperature levels
+            'sp',      # Surface pressure
+            'fal',     # Forest albedo
+            'src'      # Skin reservoir content
+        ]
+        # - Invariant parameters (time-independent)
+        invariant_cds_params = [
+            'tvl', 'tvh',  # Vegetation cover (low and high)
+            'cvl', 'cvh',  # Vegetation type (low and high)
+            'cl',          # Lake cover
+            'lsm',         # Land-sea mask
+            'z',           # Geopotential (proportional to elevation)
+            'slt'          # Soil type
+        ]
+        # - Accumulated parameters (e.g., precipitation)
+        accumulated_cds_params = [
+            'tp',   # Total precipitation
+            'e',    # Evaporation
+            'pev',  # Potential evaporation
+            'sshf', # Surface sensible heat flux
+            'slhf', # Surface latent heat flux
+            'ssrd', # Surface solar radiation downwards
+            'strd', # Surface thermal radiation downwards
+            'ssr',  # Surface net solar radiation
+            'str'   # Surface net thermal radiation
+        ]
+        # Set the request parameters in Earthkit.
+        ek_pipeline.set_cds_request_parameters(
+            var_params=variant_cds_params,
+            invar_params=invariant_cds_params,
+            accum_params=accumulated_cds_params,
+            lat_range=query_area['latitude_range'],
+            long_range=query_area['longitude_range'],
+            grid_resolution=query_grid_resolution
+        )
+        # Add this pipeline to our list with the key "EARTHKIT".
+        pipelines.append({"EARTHKIT": ek_pipeline})
 
-    ## Initialize the raw data assembler
-    raw_data_assembly_instance = raw_data_assembly.RawDataAssembler(
-        wildfire_incidence_data, 
-        start_date=query_period['start_date'], 
-        end_date=query_period['end_date'], 
+    # ------------------------------------------------------
+    # 5. Initialize the AB LIGHTNING Pipeline
+    # ------------------------------------------------------
+    if pipeline_config["AB_LIGHTNING"]:
+        abltng = AbLightningPipeline("scripts/data_collection/static_datasets/ablightning_historical")
+        abltng.set_ab_ltng_params(
+            lat_range=query_area['latitude_range'],
+            lon_range=query_area['longitude_range'],
+            grid_resolution=query_grid_resolution
+        )
+        pipelines.append({"AB_LIGHTNING": abltng})
+
+    # ------------------------------------------------------
+    # 6. Initialize the HUMAN ACTIVITY Pipeline
+    # ------------------------------------------------------
+    if pipeline_config["HUMAN_ACTIVITY"]:
+        oapi_pipeline = HumanActivityPipeline()
+        oapi_pipeline.set_osm_params(
+            lat_range=query_area['latitude_range'],
+            lon_range=query_area['longitude_range'],
+            grid_resolution=query_grid_resolution
+        )
+        pipelines.append({"HUMAN_ACTIVITY": oapi_pipeline})
+
+    # (Optional) Initialize additional pipelines here, e.g., NASA Earthdata.
+    # if pipeline_config["NED"]:
+    #     ned_pipeline = NasaEarthdataPipeline(...)
+    #     pipelines.append({"NED": ned_pipeline})
+
+    logger.info(f"Pipeline list: {pipelines}")
+
+    # ------------------------------------------------------
+    # 7. Raw Data Assembly: Integrate Data from Active Pipelines
+    # ------------------------------------------------------
+    raw_data_assembler = raw_data_assembly.RawDataAssembler(
+        wildfire_incidence_data,
+        start_date=query_period['start_date'],
+        end_date=query_period['end_date'],
         resample_interval='4D',
         grouping_period_size='M',
         latitude_tolerance=1.0,
         longitude_tolerance=1.0
     )
 
-    ## Assemble the dataset
-    raw_data_assembly_instance.assemble_dataset(pipelines)
-    ## Note raw data assembly saves monthly csv data to folder in root directory
-
+    # The assembler will loop over each grouped period (e.g., monthly)
+    # and merge the outputs from each active pipeline.
+    raw_data_assembler.assemble_dataset(pipelines)
+    # Note: The assembled data is saved as monthly CSV files in an output folder.
 
 if __name__ == "__main__":
     main()

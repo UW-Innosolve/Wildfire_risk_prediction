@@ -1,207 +1,208 @@
-# human_activity_pipeline.py
-
 import requests
 import logging
+import numpy as np
 import pandas as pd
-import os
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging for the Human Activity pipeline.
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class HumanActivityPipeline:
     """
-    Pipeline to fetch human activity data from the Overpass API, focusing on:
-      - railways
-      - industrial land (landuse=industrial)
-      - power lines (power=line)
-
-    Now we do ONE bounding box per monthly batch to reduce calls/caching:
-      - We compute the bounding box from all lat/lons in that batch.
-      - We store a single CSV in the cache like 'osm_200601.csv'.
-      - We parse the Overpass result and store all found OSM features so we can
-        quickly look up which rail/power/industrial features are near each lat/lon.
+    Human Activity Pipeline that retrieves infrastructure data (e.g., railways, power lines,
+    highways, aerodromes, waterways) from OpenStreetMap via the Overpass API. It generates a
+    spatial grid for a specified geographic area and computes counts of each feature category
+    per grid cell.
+    
+    The output is designed to be merged with other datasets (e.g., weather data) that provide
+    a 'date', 'latitude', and 'longitude' column. If no external (e.g., CDS) data is available,
+    a default date–grid combination is created.
     """
-
-    def __init__(self):
-        self.overpass_url = "https://overpass-api.de/api/interpreter"
-        self.cache_dir = "osm_cache"
-        os.makedirs(self.cache_dir, exist_ok=True)
-
-        logger.info("HumanActivityPipeline initialized.")
-
-    def _cache_filename(self, period_key):
+    
+    def __init__(self, osm_data_path=None):
         """
-        Cache file is monthly-based, e.g., 'osm_200601.csv' for Jan 2006,
-        storing all OSM features in that bounding box.
+        Optionally provide an osm_data_path (CSV) containing pre-collected OSM data.
+        If not provided, the pipeline uses Overpass API queries to retrieve features.
         """
-        return os.path.join(self.cache_dir, f"osm_{period_key}.csv")
-
-    def _save_cache(self, filename, df):
-        df.to_csv(filename, index=False)
-
-    def _load_cache(self, filename):
-        if os.path.exists(filename):
-            return pd.read_csv(filename)
-        return None
-
-    def _fetch_overpass_data(self, south, west, north, east):
-        """
-        Single Overpass call for bounding box: (south, west, north, east).
-        Query railways, industrial landuse, power=line.
-        """
-        bbox = f"{south},{west},{north},{east}"
-
-        overpass_query = f"""
-        [out:json];
-        (
-          node["railway"]({bbox});
-          way["railway"]({bbox});
-          node["landuse"="industrial"]({bbox});
-          way["landuse"="industrial"]({bbox});
-          node["power"="line"]({bbox});
-          way["power"="line"]({bbox});
-        );
-        out center;
-        """
-
-        try:
-            response = requests.get(self.overpass_url, params={'data': overpass_query}, timeout=60)
-            response.raise_for_status()
-            data = response.json()
-            elements = data.get('elements', [])
-            return pd.DataFrame(elements)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Overpass API request failed: {e}")
-            return pd.DataFrame()
-
-    def fetch_human_activity_monthly(self, monthly_df, period_key):
-        """
-        For the entire monthly DataFrame (with columns lat/lon),
-        compute bounding box, check cache, fetch Overpass once,
-        then for each point, count how many rail/power/industrial features
-        are "close" to it within a small radius.
-
-        Alternatively, if you want to do an EXACT lat/lon approach, you can do
-        geometry-based checks, but here we do a simple tag-based approach:
-           - We'll store OSM elements as raw, then do a naive lat/lon proximity
-             to each point (like a 0.05 deg tolerance).
-
-        If this is too coarse, you can do row-level bounding boxes for each point
-        but it will defeat the purpose of monthly caching.
-        """
-        # 1) bounding box from monthly_df lat/lon
-       
-        lat_min = pd.DataFrame(monthly_df['latitude']).min()
-        lat_max = pd.DataFrame(monthly_df['latitude']).max()
-        lon_min = pd.DataFrame(monthly_df['longitude']).min()
-        lon_max = pd.DataFrame(monthly_df['longitude']).max()
-        
-        # lat_min = monthly_df['latitude'].min()
-        # lat_max = monthly_df['latitude'].max()
-        # lon_min = monthly_df['longitude'].min()
-        # lon_max = monthly_df['longitude'].max()
-        
-
-        # 2) see if we have a monthly cache
-        cache_file = self._cache_filename(period_key)
-        osm_df = self._load_cache(cache_file)
-        if osm_df is None:
-            logger.info(f"No monthly cache found for {period_key}. Querying Overpass with bounding box.")
-            osm_df = self._fetch_overpass_data(lat_min, lon_min, lat_max, lon_max)
-            if not osm_df.empty:
-                self._save_cache(cache_file, osm_df)
-                logger.info(f"Cached monthly Overpass data -> {cache_file}")
-            else:
-                logger.warning(f"No OSM data returned for this bounding box: lat=[{lat_min}, {lat_max}], lon=[{lon_min}, {lon_max}]")
-                # We'll store an empty df so we don't re-query
-                empty_df = pd.DataFrame(columns=['id','type','lat','lon','tags'])
-                self._save_cache(cache_file, empty_df)
-                return monthly_df  # no data, just return monthly_df as-is
+        self.osm_data_path = osm_data_path
+        self.osm_data = None
+        if osm_data_path is not None:
+            try:
+                self.osm_data = pd.read_csv(osm_data_path)
+                logger.info(f"OSM data loaded from '{osm_data_path}'.")
+            except Exception as e:
+                logger.error(f"Error loading OSM data from '{osm_data_path}': {e}")
+                self.osm_data = None
         else:
-            logger.info(f"Loaded monthly OSM data from {cache_file}")
+            logger.info("No OSM data file provided; using Overpass API queries for features.")
+        
+        # These parameters will be set via set_osm_params.
+        self.lat_range = None
+        self.lon_range = None
+        self.grid_resolution = None
+        self.grid = None
+        
+        # Dictionary to hold fetched OSM features for each category.
+        self.osm_features = {}
+        # Define the categories to query and their corresponding Overpass filter syntax.
+        self.categories = {
+            "railway": '["railway"="rail"]',
+            "power_line": '["power"="line"]',
+            "highway": '["highway"~"^(motorway|trunk|primary|secondary)$"]',
+            "aeroway": '["aeroway"="aerodrome"]',
+            "waterway": '["waterway"]'
+        }
+    
+    def set_osm_params(self, lat_range, lon_range, grid_resolution):
+        """
+        Set the geographic parameters for generating the spatial grid.
+        
+        Args:
+            lat_range (list or tuple): [min_lat, max_lat]
+            lon_range (list or tuple): [min_lon, max_lon]
+            grid_resolution (float): resolution (in degrees) of each grid cell.
+        """
+        self.lat_range = lat_range
+        self.lon_range = lon_range
+        self.grid_resolution = grid_resolution
+        self.grid = self._generate_grid(lat_range, lon_range, grid_resolution)
+        logger.info(f"HumanActivityPipeline grid generated with {len(self.grid)} cells.")
 
-        # 3) parse OSM features: we keep them as raw
-        # Then for each row in monthly_df, we do a small lat-lon check or skip it entirely.
-        # Because we've a single bounding box for the entire month, the user might want
-        # a smaller local tolerance to decide if there's a railway/power/industrial "nearby."
-
-        # We'll define a small tolerance (0.05 deg) so we only count OSM features that are
-        # "close" to each row's lat/lon. Adjust as you see fit.
-        osm_df = osm_df.dropna(subset=['lat','lon'])  # keep valid positions
-
-        def has_tag(r, key, val):
-            t = r.get('tags', {})
-            return (isinstance(t, dict) and t.get(key) == val)
-
-        # Let's store for each OSM element:
-        #   'feature_type' in { 'railway', 'industrial', 'power_line' }
-        # We'll keep 'lat','lon' for each, so we can do distance checks.
-        processed_elements = []
-        for _, elem in osm_df.iterrows():
-            tags = elem.get('tags', {})
-            if not isinstance(tags, dict):
-                continue
-
-            lat_ = elem.get('lat')
-            lon_ = elem.get('lon')
-
-            # check if it's a railway
-            if 'railway' in tags:
-                processed_elements.append({
-                    'lat': lat_,
-                    'lon': lon_,
-                    'feature_type': 'railway'
-                })
-            elif tags.get('landuse') == 'industrial':
-                processed_elements.append({
-                    'lat': lat_,
-                    'lon': lon_,
-                    'feature_type': 'industrial'
-                })
-            elif tags.get('power') == 'line':
-                processed_elements.append({
-                    'lat': lat_,
-                    'lon': lon_,
-                    'feature_type': 'power_line'
-                })
-
-        if not processed_elements:
-            logger.warning(f"Overpass bounding box found 0 relevant elements for {period_key}.")
-            return monthly_df
-
-        processed_osm = pd.DataFrame(processed_elements)
-        logger.info(f"Parsed Overpass data for {period_key}: total OSM rows={len(osm_df)}, relevant features={len(processed_osm)}")
-
-        # We'll define a lat/lon tolerance for "nearby" (like 0.05 deg).
-        # Each monthly row checks how many rail/industrial/power lines are near it
-        #  in that bounding box.
-        def count_features_for_row(row):
-            lat0, lon0 = row['latitude'], row['longitude']
-            tolerance = 0.05
-            # filter processed_osm to only those within ±0.05 deg
-            nearby = processed_osm[
-                (processed_osm['lat'].between(lat0 - tolerance, lat0 + tolerance)) &
-                (processed_osm['lon'].between(lon0 - tolerance, lon0 + tolerance))
-            ]
-            # count each feature type
-            railway_count = (nearby['feature_type'] == 'railway').sum()
-            industrial_count = (nearby['feature_type'] == 'industrial').sum()
-            power_line_count = (nearby['feature_type'] == 'power_line').sum()
-            return pd.Series([railway_count, industrial_count, power_line_count])
-
-        # We'll do a single pass and store these counts in columns
-        # We'll also track how many had non-zero features to reduce logging spam
-        found_features = 0
-        total_rows = len(monthly_df)
-
-        # We'll do an apply
-        monthly_df[['railway_count','industrial_count','power_line_count']] = monthly_df.apply(
-            lambda row: count_features_for_row(row), axis=1
+    def _generate_grid(self, lat_range, lon_range, grid_resolution):
+        """
+        Generate a spatial grid (DataFrame) covering the specified area.
+        
+        Returns:
+            pd.DataFrame: DataFrame with columns 'latitude' and 'longitude' for grid cell corners.
+        """
+        # Ensure the range covers the endpoint by adding grid_resolution.
+        lat_values = np.arange(lat_range[0], lat_range[1] + grid_resolution, grid_resolution)
+        lon_values = np.arange(lon_range[0], lon_range[1] + grid_resolution, grid_resolution)
+        grid = pd.DataFrame(
+            [(lat, lon) for lat in lat_values for lon in lon_values],
+            columns=['latitude', 'longitude']
         )
+        return grid
 
-        found_features = ( (monthly_df['railway_count']>0) | 
-                           (monthly_df['industrial_count']>0) |
-                           (monthly_df['power_line_count']>0) ).sum()
+    def _simulate_human_activity(self, lat, lon):
+        """
+        Simulate a human activity index based on distance from the center of the area.
+        (This function is a placeholder and can be replaced with real data queries.)
+        """
+        center_lat = (self.lat_range[0] + self.lat_range[1]) / 2
+        center_lon = (self.lon_range[0] + self.lon_range[1]) / 2
+        distance = np.sqrt((lat - center_lat) ** 2 + (lon - center_lon) ** 2)
+        max_distance = np.sqrt(((self.lat_range[1] - self.lat_range[0]) / 2) ** 2 +
+                               ((self.lon_range[1] - self.lon_range[0]) / 2) ** 2)
+        activity = 100 * (1 - distance / max_distance)
+        return max(activity, 0)
 
-        logger.info(f"[{period_key}] OSM results: {found_features} / {total_rows} rows have at least one OSM feature near them.")
-        return monthly_df
+    def fetch_infrastructure_data(self):
+        """
+        Fetch infrastructure features from OpenStreetMap using the Overpass API for each defined category.
+        Fetched data are stored in self.osm_features as DataFrames with columns 'lat' and 'lon'.
+        """
+        if self.lat_range is None or self.lon_range is None:
+            raise ValueError("OSM parameters not set. Call set_osm_params before fetching data.")
+            
+        # Define the bounding box in the format: south,west,north,east.
+        bbox = f"{self.lat_range[0]},{self.lon_range[0]},{self.lat_range[1]},{self.lon_range[1]}"
+        overpass_url = "http://overpass-api.de/api/interpreter"
+        
+        for category, osm_filter in self.categories.items():
+            query = f"""
+            [out:json];
+            (
+              node{osm_filter}({bbox});
+              way{osm_filter}({bbox});
+              relation{osm_filter}({bbox});
+            );
+            out center;
+            """
+            try:
+                logger.info(f"Querying Overpass for category '{category}' with filter {osm_filter}")
+                response = requests.get(overpass_url, params={'data': query}, timeout=60)
+                data = response.json()
+                elements = data.get('elements', [])
+                coords = []
+                for element in elements:
+                    if 'lat' in element and 'lon' in element:
+                        coords.append((element['lat'], element['lon']))
+                    elif 'center' in element:
+                        coords.append((element['center']['lat'], element['center']['lon']))
+                df = pd.DataFrame(coords, columns=['lat', 'lon'])
+                logger.info(f"Fetched {len(df)} features for category '{category}'.")
+                self.osm_features[category] = df
+            except Exception as e:
+                logger.error(f"Error fetching OSM data for category '{category}': {e}")
+                self.osm_features[category] = pd.DataFrame(columns=['lat', 'lon'])
+
+    def _compute_infrastructure_counts(self):
+        """
+        For each grid cell in the generated grid, compute the count of OSM features for each category.
+        
+        Returns:
+            pd.DataFrame: The grid DataFrame augmented with count columns (e.g., 'railway_count').
+        """
+        infrastructure_counts = self.grid.copy()
+        for category, features_df in self.osm_features.items():
+            counts = []
+            for idx, row in self.grid.iterrows():
+                count = features_df[
+                    (features_df['lat'] >= row['latitude']) &
+                    (features_df['lat'] < row['latitude'] + self.grid_resolution) &
+                    (features_df['lon'] >= row['longitude']) &
+                    (features_df['lon'] < row['longitude'] + self.grid_resolution)
+                ].shape[0]
+                counts.append(count)
+            infrastructure_counts[f"{category}_count"] = counts
+        return infrastructure_counts
+
+    def fetch_human_activity_monthly(self, monthly_data, period_key):
+        """
+        Integrate OSM infrastructure data into the monthly dataset.
+        
+        Steps:
+          1. If infrastructure data hasn't been fetched, query it via the Overpass API.
+          2. Compute counts of features per grid cell.
+          3. Create a DataFrame for all combinations of the unique dates in monthly_data and grid cells.
+          4. Merge the infrastructure counts with this date grid.
+          5. Finally, merge the result with monthly_data.
+          
+        Args:
+            monthly_data (pd.DataFrame): DataFrame that must include 'date', 'latitude', and 'longitude' columns.
+            period_key (str): Identifier for the current period (e.g., "201401").
+            
+        Returns:
+            pd.DataFrame: Merged DataFrame with additional infrastructure count columns.
+        """
+        if self.grid is None:
+            raise ValueError("OSM parameters not set. Please call set_osm_params before fetching data.")
+
+        # Fetch OSM infrastructure data if not already done.
+        if not self.osm_features:
+            self.fetch_infrastructure_data()
+
+        # Compute counts per grid cell.
+        infra_counts = self._compute_infrastructure_counts()
+
+        # Round coordinates in both datasets to avoid floating point mismatches.
+        monthly_data['latitude'] = monthly_data['latitude'].round(2)
+        monthly_data['longitude'] = monthly_data['longitude'].round(2)
+        infra_counts['latitude'] = infra_counts['latitude'].round(2)
+        infra_counts['longitude'] = infra_counts['longitude'].round(2)
+
+        # Create a DataFrame of all combinations of unique dates and grid cells.
+        unique_dates = monthly_data['date'].unique()
+        date_grid = pd.DataFrame([
+            (d, row['latitude'], row['longitude']) 
+            for d in unique_dates 
+            for idx, row in infra_counts.iterrows()
+        ], columns=['date', 'latitude', 'longitude'])
+
+        # Merge the infrastructure counts with the date grid.
+        merged_infra = pd.merge(date_grid, infra_counts, on=['latitude', 'longitude'], how='left')
+        # Merge with the original monthly_data.
+        merged = pd.merge(monthly_data, merged_infra, on=['date', 'latitude', 'longitude'], how='outer')
+        logger.info(f"Infrastructure data integrated: merged shape is {merged.shape}.")
+        return merged
