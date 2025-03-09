@@ -6,6 +6,7 @@ class FbSurfaceFeatures():
     self.raw_data = raw_data_df
     self.surface_features = None
     
+    
   def vegetation(self):
     '''
     Fuel type catagories (preliminary):
@@ -41,8 +42,23 @@ class FbSurfaceFeatures():
       else:
         self.surface_features['fuel_high'] = 0
     
+    
   def soil(self):
-    pass
+    """
+    Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
+    """
+    bins = {
+        1: "Coarse",
+        2: "Coarse",
+        3: "Medium",
+        4: "Medium",
+        5: "Medium",
+        6: "Organic",
+        7: "Organic"
+    }
+    
+    self.raw_data["slt"] = self.df["soil_catagorical"].map(bins)
+    
     
   def surface_depth_waterheat(self):
     '''
