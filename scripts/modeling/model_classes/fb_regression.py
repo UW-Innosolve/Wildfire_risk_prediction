@@ -6,7 +6,14 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 class FbRegressionModel(BaseModel):
   def __init__(self, input_df):
     self.x_data = input_df
-  
+    
+    ## init hyperparams for lin:
+    
+    ## init hyperparams for poly:
+
+    ## init hyperparams for log:
+
+
   def config_lin_reg(self):
     pass
   
