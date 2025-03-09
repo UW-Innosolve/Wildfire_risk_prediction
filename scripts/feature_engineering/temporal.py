@@ -94,6 +94,6 @@ class FbTemporalFeatures():
   # NOTE: Temporal features are catagorical, must be onehotted later.
   def features(self, seasonal=True, fire_season=True):
     if seasonal:
-      seasonal()
+      self.seasonal()
     if fire_season:
-      fire_seasonal()
+      self.fire_seasonal()
