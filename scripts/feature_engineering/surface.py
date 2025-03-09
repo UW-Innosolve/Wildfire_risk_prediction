@@ -59,7 +59,7 @@ class FbSurfaceFeatures():
     
     self.raw_data["slt"] = self.df["soil_catagorical"].map(bins)
     
-    
+    ## NOTE: take only sum of temperature volumes in final feature set
   def surface_depth_waterheat(self):
     '''
     layer 1: 0 - 7cm
