@@ -1,9 +1,9 @@
 
-class surface_eng() {
-  def __init__(self, input_df):
-    '''
-    input_df contains all params
-    '''
+class FbSurfaceFeatures():
+  def __init__(self, raw_data_df):
+    self.raw_data = raw_data_df
+    self.surface_features = None
+    
   def vegetation(self):
     pass
     
@@ -15,4 +15,3 @@ class surface_eng() {
     
   def topography():
     ## elevation and slope
-}

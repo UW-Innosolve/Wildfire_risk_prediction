@@ -1,13 +1,10 @@
 
 
-class WeatherFeatures() {
-  def __init__(self):
+class FbWeatherFeatures() {
+  def __init__(self, raw_data_df):
     pass
     
   def lightning_features(self):
-    pass
-    
-  def _lightning_index(self):
     pass
     
   def atmospheric_features(self):
