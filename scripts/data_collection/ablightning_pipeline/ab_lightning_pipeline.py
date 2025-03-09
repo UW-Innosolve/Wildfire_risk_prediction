@@ -95,7 +95,7 @@ class AbLightningPipeline:
     # Iterate over each lightning event in the batch
     for _, row in batch_dated_raw_ltng_df.iterrows():
       lat, lon = row['latitude'], row['longitude']
-      logger.info(f"Processing lightning event at lat: {lat}, lon: {lon}, from date: {row['date_group']}")
+      logger.debug(f"Processing lightning event at lat: {lat}, lon: {lon}, from date: {row['date_group']}")
       # Find the grid cell that this lightning event belongs to
       grid_cell = self.grid[(self.grid['latitude'] <= lat) & (self.grid['latitude'] + self.grid_resolution > lat) &
                 (self.grid['longitude'] <= lon) & (self.grid['longitude'] + self.grid_resolution > lon)]

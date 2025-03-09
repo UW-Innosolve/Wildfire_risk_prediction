@@ -93,3 +93,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+## NOTE:
+## Final model should use a sliding window approach, possibly expanding window approach
+## Possibly train a seperate model for each timeframe of prediction/forecast (ie. how many days in the future)
+## Possibly train a model that predicts the full set of 5 days (ie. a list with days 1-5)
