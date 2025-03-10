@@ -97,3 +97,15 @@ class FbSurfaceFeatures():
     self.y_slope = np.gradient(self.elevation, self.raw_data['latitude'])
     self.surface_features['elevation', 'x_slope', 'y_slope'] = self.elevation, self.x_slope, self.y_slope
     
+  def features(self, vegetation=True, soil=True, surface_depth_waterheat=True, topography=True):
+    if vegetation:
+      self.vegetation()
+    if soil:
+      self.soil()
+    if surface_depth_waterheat:
+      self.surface_depth_waterheat()
+    if topography:
+      self.topography()
+  
+    return self.surface_features
+    

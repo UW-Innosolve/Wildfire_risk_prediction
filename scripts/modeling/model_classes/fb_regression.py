@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-## Inluding linear, polynomial, and logisitc regression modeling.
-## consider other models.
+## Regression model class
+## Includes Linear, Polynomial, Logistic, and Ridge regression models
 class FbRegressionModel(BaseModel):
   def __init__(self):
     logger.info("Initializing FbRegressionModel")

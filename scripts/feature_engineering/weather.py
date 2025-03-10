@@ -49,5 +49,9 @@ class FbWeatherFeatures():
     self.data_features["ltng_strength_ratio"] = self.raw_data["lightning_count"] / self.raw_data["absv_strength_sum"]
     
     
-  def get_weather_features(self):
+  def features(self, lightning=True, atmospheric=True):
+    if lightning:
+      self.lightning_features()
+    if atmospheric:
+      self.atmospheric_features()
     return self.data_features
