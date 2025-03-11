@@ -1,10 +1,11 @@
 import numpy as np
+import pandas as pd
 
 
 class FbSurfaceFeatures():
   def __init__(self, raw_data_df):
     self.raw_data = raw_data_df
-    self.surface_features = None
+    self.surface_features = pd.DataFrame()
     
     
   def vegetation(self):

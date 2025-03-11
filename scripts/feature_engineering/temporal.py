@@ -91,21 +91,13 @@ class FbTemporalFeatures():
 
     self.temporal_features['fire_season'] = fire_seasons
     
-  def rolling_precipitation(self, window=7):
-    '''
-    Rolling precipitation feature takes the sum of total precipitation over a given window.
-    '''
-    self.temporal_features["rolling_precipitation"] = self.raw_data["tp"].rolling(window=window).sum()
-    
     
   # NOTE: seasonal features are catagorical, must be onehotted later.
-  def features(self, seasonal=True, fire_season=True, rolling_precipitation=True):
+  def features(self, seasonal=True, fire_season=True):
     if seasonal:
       self.seasonal()
     if fire_season:
       self.fire_seasonal()
-    if rolling_precipitation:
-      self.rolling_precipitation()
     
     return self.temporal_features
       
