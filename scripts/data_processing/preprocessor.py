@@ -13,7 +13,8 @@ class Preprocessor:
         """
         self.data_dir = data_dir
         self.data = None
-        self.scaler = StandardScaler()  # Standardize features for improved model performance
+        self.scaler_ss = StandardScaler()  # Standardize features for improved model performance
+        self.scale_features_minmax = MinMaxScaler()  # Normalize features for algorithms that require it
 
     def load_data(self):
         """
@@ -61,20 +62,14 @@ class Preprocessor:
         """
         Scale features using MinMax.
         """
-        pass
+        self.data[feature_list] = self.scale_features_minmax.fit_transform(self.data[feature_list])
+        return self.data
     
     def onehot_cat_features(self, feature_list):
-        pass
-    
-    def feature_engineering(self):
         """
-        Add or transform features.
-            - Extract 'month' from 'date'.
-            - Additional feature transformations can be added here.
+        One-hot encode categorical features.
         """
-        if 'date' in self.data.columns:
-            self.data['month'] = self.data['date'].dt.month
-        # (Additional feature engineering for lightning proxies/human activity can be inserted here)
+        self.data[feature_list] = pd.get_dummies(self.data[feature_list], columns=feature_list, drop_first=True)
         return self.data
 
     def apply_smote(self, X, y):

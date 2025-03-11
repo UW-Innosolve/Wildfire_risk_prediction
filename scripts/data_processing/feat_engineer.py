@@ -4,6 +4,7 @@ from ..feature_engineering.temporal import FbTemporalFeatures
 from ..feature_engineering.spatial import FbSpatialFeatures
 from ..feature_engineering.weather import FbWeatherFeatures
 from ..feature_engineering.surface import FbSurfaceFeatures
+from ..feature_engineering.cwfdrs import FbCwfdrsFeatures
 
 class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbSurfaceFeatures):
   def __init__(self, raw_data_df):
@@ -12,7 +13,8 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     
   def apply_features(self, 
             temporal=True, spatial=True,
-            weather=True, surface=True):
+            weather=True, surface=True,
+            cwfdrs=True):
     if temporal:
       temporal_feats = FbTemporalFeatures.features
       self.data_features = self.data_features + temporal_feats
@@ -28,6 +30,10 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     if surface:
       surface_feats = FbSurfaceFeatures.features
       self.data_features = self.data_features + surface_feats
+      
+    if cwfdrs:
+      cwfdrs_feats = FbCwfdrsFeatures.features
+      self.data_features = self.data_features + cwfdrs_feats
     
     
     

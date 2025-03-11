@@ -4,73 +4,73 @@ import numpy as np
 import pandas as pd
 
 class FbCwfdrsFeatures():
-    def __init__(self, raw_data_df):
-        """
-        Initialize the class with raw input data (Pandas DataFrame).
-        Convert it to an xarray.Dataset for processing.
-        """
-        self.raw_data = raw_data_df
-        self.cwfdrs_inputs = self._convert_to_xarray(raw_data_df)
-        self.cwfdrs_features = pd.DataFrame()
+  def __init__(self, raw_data_df):
+    """
+    Initialize the class with raw input data (Pandas DataFrame).
+    Convert it to an xarray.Dataset for processing.
+    """
+    self.raw_data = raw_data_df
+    self.cwfdrs_inputs = self._convert_to_xarray(raw_data_df)
+    self.cwfdrs_features = pd.DataFrame()
 
-    def _convert_to_xarray(self, df):
-        """
-        Convert the Pandas DataFrame into an xarray.Dataset.
-        Assumes 'date', 'latitude', and 'longitude' columns exist.
-        """
-        return df.set_index(["date", "latitude", "longitude"]).to_xarray()
+  def _convert_to_xarray(self, df):
+    """
+    Convert the Pandas DataFrame into an xarray.Dataset.
+    Assumes 'date', 'latitude', and 'longitude' columns exist.
+    """
+    return df.set_index(["date", "latitude", "longitude"]).to_xarray()
 
-    def config_features(self):
-        """Define the feature names for the dataset."""
-        self.cwfdrs_features = ['drought_code',
-                                'duff_moisture_code',
-                                'fine_fuel_moisture_code',
-                                'initial_spread_index',
-                                'build_up_index',
-                                'fire_weather_index']
+  def config_features(self):
+    """Define the feature names for the dataset."""
+    self.cwfdrs_features = ['drought_code',
+                            'duff_moisture_code',
+                            'fine_fuel_moisture_code',
+                            'initial_spread_index',
+                            'build_up_index',
+                            'fire_weather_index']
 
-    def compute_cwfdrs(self):
-        """
-        Calculate the Canadian Fire Weather Danger Rating System (CWFDRS) indices.
-        """
-        # Convert temperature to Celsius
-        self.cwfdrs_inputs["tas"] = self.cwfdrs_inputs["2t"] - 273.15  # Kelvin to Celsius
+  def compute_cwfdrs(self):
+    """
+    Calculate the Canadian Fire Weather Danger Rating System (CWFDRS) indices.
+    """
+    # Convert temperature to Celsius
+    self.cwfdrs_inputs["tas"] = self.cwfdrs_inputs["2t"] - 273.15  # Kelvin to Celsius
 
-        # Compute relative humidity from dew point temperature
-        self.cwfdrs_inputs["hurs"] = cwfdrs.relative_humidity(
-            tas=self.cwfdrs_inputs["tas"],
-            tdps=self.cwfdrs_inputs["2d"] - 273.15
-        )
+    # Compute relative humidity from dew point temperature
+    self.cwfdrs_inputs["hurs"] = cwfdrs.relative_humidity(
+        tas=self.cwfdrs_inputs["tas"],
+        tdps=self.cwfdrs_inputs["2d"] - 273.15
+    )
 
-        # Compute wind speed from U/V vector components
-        self.cwfdrs_inputs["sfcWind"] = cwfdrs.wind_speed(
-            u=self.cwfdrs_inputs["10u"],
-            v=self.cwfdrs_inputs["10v"]
-        )
+    # Compute wind speed from U/V vector components
+    self.cwfdrs_inputs["sfcWind"] = cwfdrs.wind_speed(
+        u=self.cwfdrs_inputs["10u"],
+        v=self.cwfdrs_inputs["10v"]
+    )
 
-        # Assign precipitation
-        self.cwfdrs_inputs["pr"] = self.cwfdrs_inputs["sf"]  # Precipitation in mm/day
+    # Assign precipitation
+    self.cwfdrs_inputs["pr"] = self.cwfdrs_inputs["sf"]  # Precipitation in mm/day
 
-        # Extract latitude (assumed to be constant across dataset)
-        self.cwfdrs_inputs["lat"] = self.cwfdrs_inputs["latitude"]
+    # Extract latitude (assumed to be constant across dataset)
+    self.cwfdrs_inputs["lat"] = self.cwfdrs_inputs["latitude"]
 
-        # Compute Fire Weather Indices
-        fire_indices = cwfdrs.cffwis_indices(
-            tas=self.cwfdrs_inputs["tas"],
-            pr=self.cwfdrs_inputs["pr"],
-            hurs=self.cwfdrs_inputs["hurs"],
-            sfcWind=self.cwfdrs_inputs["sfcWind"],
-            lat=self.cwfdrs_inputs["lat"],
-            overwintering=True,
-            dry_start="CFS"
-        )
+    # Compute Fire Weather Indices
+    fire_indices = cwfdrs.cffwis_indices(
+        tas=self.cwfdrs_inputs["tas"],
+        pr=self.cwfdrs_inputs["pr"],
+        hurs=self.cwfdrs_inputs["hurs"],
+        sfcWind=self.cwfdrs_inputs["sfcWind"],
+        lat=self.cwfdrs_inputs["lat"],
+        overwintering=True,
+        dry_start="CFS"
+    )
 
-        # Convert back to Pandas DataFrame
-        self.cwfdrs_features = fire_indices.to_dataframe().reset_index()
-        
-    def get_features(self):
-        """Return the computed CWFDRS features."""
-        return self.cwfdrs_features
+    # Convert back to Pandas DataFrame
+    self.cwfdrs_features = fire_indices.to_dataframe().reset_index()
+      
+  def get_features(self):
+    """Return the computed CWFDRS features."""
+    return self.cwfdrs_features
 
 # from xclim.indices import cwfdrs
 # import xarray as xr
