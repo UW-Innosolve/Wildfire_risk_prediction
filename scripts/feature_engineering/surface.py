@@ -42,6 +42,8 @@ class FbSurfaceFeatures():
         self.surface_features['fuel_high'] = 1
       else:
         self.surface_features['fuel_high'] = 0
+        
+      
     
     
   def soil(self):
@@ -86,10 +88,16 @@ class FbSurfaceFeatures():
     # Resample at an evenly spaced interval of 17cm
     resampled_stl = np.interp(resampled_depths, np.arange(0, 289, 1), continuous_curve_temp)
     
+    daily_swvl_sum = resampled_swvl.sum()
+    daily_stl_sum = resampled_stl.sum()
     ## NOTE: Resampled water and temperature values are not included in the current feature set
     # self.surface_features['resampled_swvl', 'resampled_stl'] = resampled_swvl, resampled_stl
-    self.surface_features['soil_temp_to_water'] = resampled_stl / resampled_swvl
+    # self.surface_features['surface_water_heat'] = resampled_stl / resampled_swvl
     
+    self.surface_water_sum = daily_swvl_sum
+    self.surface_heat_sum = daily_stl_sum
+    self.surface_features['daily_water_sum', 'daily_temp_sum'] = daily_swvl_sum, daily_stl_sum
+    self.surface_features['surface_water_heat'] = resampled_stl / resampled_swvl
     
   def topography(self):
     grav_accel = 9.8067
@@ -98,15 +106,6 @@ class FbSurfaceFeatures():
     self.y_slope = np.gradient(self.elevation, self.raw_data['latitude'])
     self.surface_features['elevation', 'x_slope', 'y_slope'] = self.elevation, self.x_slope, self.y_slope
     
-  def features(self, vegetation=True, soil=True, surface_depth_waterheat=True, topography=True):
-    if vegetation:
-      self.vegetation()
-    if soil:
-      self.soil()
-    if surface_depth_waterheat:
-      self.surface_depth_waterheat()
-    if topography:
-      self.topography()
-  
+  def get_features(self):
     return self.surface_features
     

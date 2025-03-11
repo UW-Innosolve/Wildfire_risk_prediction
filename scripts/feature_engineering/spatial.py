@@ -14,9 +14,10 @@ class FbSpatialFeatures():
         """
         random_state= 42
         kmeans = KMeans(n_clusters=n_clusters, random_state=random_state)
-        self.spatial_features['cluster'] = kmeans.fit_predict(self.df[['lat', 'lon']])
-        return self.spatial_features
+        clustering = pd.DataFrame()
+        clustering[f'clusters_{n_clusters}'] = kmeans.fit_predict(self.df[['lat', 'lon']])
+        self.spatial_features = self.spatial_features + clustering
     
-    def features(self):
-        return self.kmeans_cluster(self.input_df)
+    def get_features(self):
+        return self.spatial_features
       

@@ -14,7 +14,6 @@ class FbCwfdrsFeatures():
     self.cwfdrs_features = pd.DataFrame()
     
     self.config_features()
-    
     self.compute_cwfdrs()
 
   def _convert_to_xarray(self, df):
@@ -72,7 +71,7 @@ class FbCwfdrsFeatures():
     # Convert back to Pandas DataFrame
     self.cwfdrs_features = fire_indices.to_dataframe().reset_index()
       
-  def features(self):
+  def get_features(self):
     """Return the computed CWFDRS features."""
     return self.cwfdrs_features
 

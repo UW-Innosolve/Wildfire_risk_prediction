@@ -100,4 +100,7 @@ class FbTemporalFeatures():
       self.fire_seasonal()
     
     return self.temporal_features
+  
+  def get_features(self):
+    return self.temporal_features
       

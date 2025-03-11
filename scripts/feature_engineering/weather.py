@@ -63,3 +63,6 @@ class FbWeatherFeatures():
       self.rolling_precipitation()
     return self.weather_features
   
+  def get_features(self):
+    return self.weather_features
+  

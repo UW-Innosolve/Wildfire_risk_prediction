@@ -3,7 +3,7 @@ import glob
 import pandas as pd
 from datetime import datetime
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from imblearn.over_sampling import SMOTE
 
 class Preprocessor:
@@ -55,22 +55,22 @@ class Preprocessor:
         Scale features using StandardScaler.
          - This is important for models like KNN and Logistic Regression.
         """
-        self.data[feature_list] = self.scaler.fit_transform(self.data[feature_list])
-        return self.data
+        data_ss = self.scaler.fit_transform(self.data[feature_list])
+        return data_ss
     
     def scale_features_minmax(self, feature_list):
         """
         Scale features using MinMax.
         """
-        self.data[feature_list] = self.scale_features_minmax.fit_transform(self.data[feature_list])
-        return self.data
+        data_mm = self.scale_features_minmax.fit_transform(self.data[feature_list])
+        return data_mm
     
     def onehot_cat_features(self, feature_list):
         """
         One-hot encode categorical features.
         """
-        self.data[feature_list] = pd.get_dummies(self.data[feature_list], columns=feature_list, drop_first=True)
-        return self.data
+        data_onehot = pd.get_dummies(self.data[feature_list], columns=feature_list, drop_first=True)
+        return data_onehot
 
     def apply_smote(self, X, y):
         """
