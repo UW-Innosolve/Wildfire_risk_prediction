@@ -1,45 +1,41 @@
 import logging
 import pandas as pd
-from scripts.data_processing.preprocessor import Preprocessor
-
+from scripts.data_processing.fb_dataset import FbDataset
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
-data_dir = "scripts/data_processing/raw_data_dir"
-logging.info(f"Pulling raw data from directory: {data_dir}")
+def main():
+  data_dir = "scripts/data_processing/raw_data_dir"
+  logging.info(f"Pulling raw data from directory: {data_dir}")
 
-###########################
+  ## Initialize  the dataset
+  dataset = FbDataset()
+  dataset.config_features() # Default features
+  dataset.process_data(data_dir) # Load and process data
+  processed_data = dataset.get_processed_data() # Get processed data
+  split_data = dataset.split() # Split data into training and test sets
+  X_train, X_test, y_train, y_test = dataset.get_split_data() # Get split data
+  logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 
-# Initialize the Preprocessor.
-preprocessor = Preprocessor(data_dir)
-logging.info("Loading data from CSV files...")
-data = preprocessor.load_data()  # Aggregate CSVs.
+  # Save model-ready data to model_data_dir
+  model_data_dir = "scripts/modeling/model_data_dir"
+  X_train.to_csv(f"{model_data_dir}/X_train.csv", index=False)
+  X_test.to_csv(f"{model_data_dir}/X_test.csv", index=False)
+  y_train.to_csv(f"{model_data_dir}/y_train.csv", index=False)
+  y_test.to_csv(f"{model_data_dir}/y_test.csv", index=False)
+  logging.info(f"Model-ready data saved to: {model_data_dir}")
 
-logging.info("Cleaning data (converting dates, removing missing target values)...")
-data = preprocessor.clean_data()  # Clean the data.
 
-logging.info("Performing feature engineering (e.g., extracting month from date)...")
-data = preprocessor.feature_engineering()  # Feature engineering.
+if __name__ == "__main__":
+    main()
+    
+## NOTE:
+## Final model should use a sliding window approach, possibly expanding window approach
+## Possibly train a seperate model for each timeframe of prediction/forecast (ie. how many days in the future)
+## Possibly train a model that predicts the full set of 5 days (ie. a list with days 1-5)
 
-# Define the list of features based on our dataset headers.
-features = [
-    '2t', '2d', '10u', '10v', 'sp', 'tp', #'relative_humidity', 'atmospheric_dryness',
-    'latitude', 'longitude', 'month',
-    'lightning_count', 'absv_strength_sum', 'multiplicity_sum',
-    'railway_count', 'power_line_count', 'highway_count', 'aeroway_count', 'waterway_count'
-]
-target = 'is_fire_day'
-logging.info(f"Selected features: {features}")
-logging.info(f"Target variable: {target}")
-
-# Scale features; we exclude 'date' because it's not a numeric predictor.
-logging.info("Scaling features using StandardScaler...")
-preprocessor.scale_features(features)
-
-# Split the data; apply SMOTE for balancing minority class (fire days).
-logging.info("Splitting data into training and test sets and applying SMOTE for balancing...")
-X_train, X_test, y_train, y_test = preprocessor.split_data(features, target, apply_smote=True)
-logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
+## To implement the sliding window approach, we need to modify the FbDataset class to include a method that generates
+## the sliding window data. This method will take in the processed data and return the sliding window data.
     

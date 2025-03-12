@@ -188,7 +188,19 @@ class FbDataset(FeatEngineer, Preprocessor):
     X_train, X_test, y_train, y_test = self.preprocessor.split_data(feature_list, target, apply_smote=apply_smote)
     logger.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
     
+    self.X_train = X_train
+    self.X_test = X_test
+    self.y_train = y_train
+    self.y_test = y_test
+    
     return X_train, X_test, y_train, y_test
+  
+  def get_processed_data(self):
+    return self.fb_processed_data
+  
+  def get_split_data(self):
+    return self.X_train, self.X_test, self.y_train, self.y_test
+  
   
 
       
