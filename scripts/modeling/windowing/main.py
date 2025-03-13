@@ -76,7 +76,7 @@ def create_windows(parameters, labels, training_days, prediction_day):
     # cannot predict any value > last data day + prediction_day (because we don't have that data)
     for i in range(training_days, len(parameters[1])-prediction_day):
         data_window = parameters[i-num_trainingdays:i]
-        label_window = labels[i]
+        label_window = labels[i+5]
         windowed_dataset.append(data_window)
         windowed_labels.append(label_window)
 
