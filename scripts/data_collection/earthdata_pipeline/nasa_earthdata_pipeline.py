@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 ## - set up Earthdata login credentials
 
 ## Search and Download Bulk Dataset (H5)
-## - checks for dataset in local files first
+## - checks for parameters in local files first
 ## - Sets all parameters for search
 ## - called for each daac to be used
 
@@ -52,8 +52,8 @@ class NasaEarthdataPipeline:
 
 
     ## earthdata_pull
-    ## - Searches and downloads the dataset from the Earthdata API
-    ## - single spatial snapshot dataset
+    ## - Searches and downloads the parameters from the Earthdata API
+    ## - single spatial snapshot parameters
     def earthdata_pull_invar(self, short_name, daac, doi, bounding_box, temporal):
         ## Create search query
         h5_file = earthaccess.search_data(
@@ -72,7 +72,7 @@ class NasaEarthdataPipeline:
     
 
     ## earthdata_slice_to_csv
-    ## - Slices the dataset into a dataframe from hardcoded parameters
+    ## - Slices the parameters into a dataframe from hardcoded parameters
     ## - Converts the dataframe to a CSV file then saves it
     ## - Returns the dataframe
 
@@ -140,7 +140,7 @@ class NasaEarthdataPipeline:
 #                 item = group[key]
 #                 full_path = f"{path}/{key}".lstrip('/')
 #                 if isinstance(item, h5py.Dataset):
-#                     # Convert dataset to a pandas DataFrame and save to CSV
+#                     # Convert parameters to a pandas DataFrame and save to CSV
 #                     data = item[:]
 #                     if data.ndim == 1:
 #                         df = pd.DataFrame(data, columns=[key])
@@ -148,7 +148,7 @@ class NasaEarthdataPipeline:
 #                         # Handle multidimensional datasets
 #                         df = pd.DataFrame(data)
 #                     csv_file = os.path.join(output_dir, f"{full_path.replace('/', '_')}.csv")
-#                     print(f"Exporting dataset {full_path} to {csv_file}")
+#                     print(f"Exporting parameters {full_path} to {csv_file}")
 #                     df.to_csv(csv_file, index=False)
 #                     save_path = os.path.join(csv_output_dir, csv_file)
 #                     print(f"Dataset saved to {save_path}")
@@ -165,7 +165,7 @@ class NasaEarthdataPipeline:
 # print(f"CSV files have been saved to {csv_output_dir}")
 
 
-# # logger.info("Saving the GLAH06 dataset as a CSV file")
+# # logger.info("Saving the GLAH06 parameters as a CSV file")
 # # df.to_csv("scripts/data_collection/earthaccess_samples/GLAH06_data_sample.csv")
 
 

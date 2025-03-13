@@ -182,7 +182,7 @@ class EkPipeline:
 
 
     ## ek_fetch_data method
-    ##          - fetch time-variant and time-invariant weather data from the ERA5 dataset using the CDS API (via Earthkit)
+    ##          - fetch time-variant and time-invariant weather data from the ERA5 parameters using the CDS API (via Earthkit)
     ##          - invariant variables must be set before calling this method, method cannot be called without at least one invariant variable set
     ##          - variant variables must be set before calling this method, method cannot be called without at least one variant variable set
     def ek_fetch_data(self, batch_dates):
@@ -225,7 +225,7 @@ class EkPipeline:
                 call_1_params,
             )
             if call_1_ds is None:
-                logger.error("CDS call 1 dataset is empty. No data was retrieved.")
+                logger.error("CDS call 1 parameters is empty. No data was retrieved.")
                 return None
             call_1_ds.save(call_1_file)
             file_1_size = os.path.getsize(call_1_file)
@@ -240,7 +240,7 @@ class EkPipeline:
                 call_2_params
             )
             if call_2_ds is None:
-                logger.error("CDS call 2 dataset is empty. No data was retrieved.")
+                logger.error("CDS call 2 parameters is empty. No data was retrieved.")
                 return None
             call_2_ds.save(call_2_file)
             file_2_size = os.path.getsize(call_2_file)

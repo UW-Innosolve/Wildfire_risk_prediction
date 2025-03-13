@@ -16,10 +16,10 @@ class RawDataAssembler:
     A class to manage the raw data assembly and storage process.
     Must be initialized with:
         - wildfire_incidence_data: DataFrame containing wildfire incidence data with columns:
-        - start_date: Start date for the dataset
-        - end_date: End date for the dataset
-        - resample_interval: Interval for resampling the dataset (e.g., '4D' is every 4th day)
-        - grouping_period_size: Temporal grouping period for the dataset (i.e., temporal size of the output CSVs)
+        - start_date: Start date for the parameters
+        - end_date: End date for the parameters
+        - resample_interval: Interval for resampling the parameters (e.g., '4D' is every 4th day)
+        - grouping_period_size: Temporal grouping period for the parameters (i.e., temporal size of the output CSVs)
             grouping_period_size must be one of the following:
                 - 'D': daily grouping
                 - 'W': weekly grouping
@@ -42,29 +42,29 @@ class RawDataAssembler:
         logger.info(f"Number of fire dates with location data: {len(self.fire_dates)}")
         logger.debug(f"Sample fire_dates:\n{self.fire_dates.head()}")
 
-        # Set the start and end dates for the dataset
+        # Set the start and end dates for the parameters
         self.start_date = start_date
         self.end_date = end_date
 
-        # Set the resample interval for the dataset
+        # Set the resample interval for the parameters
         self.resample_interval = resample_interval
 
-        # Set the temporal grouping period for the dataset
+        # Set the temporal grouping period for the parameters
         self.grouping_period_size = grouping_period_size
 
         # Set the latitude and longitude tolerance for matching fire locations
         self.latitude_tolerance = latitude_tolerance
         self.longitude_tolerance = longitude_tolerance
 
-        # Initialize the variable to store the assembled dataset
+        # Initialize the variable to store the assembled parameters
         self.dataset = None
 
     def assemble_dataset(self, pipelines):
         """
-        Assemble the dataset using the specified data pipelines.
+        Assemble the parameters using the specified data pipelines.
         - pipelines is a list of dictionaries, each with a key (e.g., 'EARTHKIT', 'HUMAN_ACTIVITY', etc.)
-        - grouping_period_size is the temporal grouping period for the dataset.
-        The final merged dataset is saved as CSV files in an output folder.
+        - grouping_period_size is the temporal grouping period for the parameters.
+        The final merged parameters is saved as CSV files in an output folder.
         """
         logger.info(f"Wildfire Incidence Data Columns in Assembler: {self.fire_dates.columns}")
         logger.info(f"Pipeline list: {pipelines}")
@@ -208,7 +208,7 @@ class RawDataAssembler:
 
     def _is_fire_labeler(self, row):
         """
-        Label the fire incidents in the dataset within a specified location tolerance.
+        Label the fire incidents in the parameters within a specified location tolerance.
         
         Args:
             row: A single row of the DataFrame.

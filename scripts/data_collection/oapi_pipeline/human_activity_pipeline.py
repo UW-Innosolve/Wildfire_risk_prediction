@@ -160,7 +160,7 @@ class HumanActivityPipeline:
 
     def fetch_human_activity_monthly(self, monthly_data, period_key):
         """
-        Integrate OSM infrastructure data into the monthly dataset.
+        Integrate OSM infrastructure data into the monthly parameters.
         
         Steps:
           1. If infrastructure data hasn't been fetched, query it via the Overpass API.

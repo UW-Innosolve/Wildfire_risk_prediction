@@ -3,7 +3,7 @@
 # 
 # **Overview:**  
 # This notebook aggregates CSV files from our wildfire prediction pipeline and performs an extensive EDA.
-# The dataset includes the following columns (headers):
+# The parameters includes the following columns (headers):
 # 
 # - **Temporal & Spatial:** `date`, `latitude`, `longitude`
 # - **Weather / Environmental Features:** `10u`, `10v`, `2d`, `2t`, `cl`, `cvh`, `cvl`, `fal`, `lai_hv`, `lai_lv`, `lsm`, `slt`, `sp`, `src`, `stl1`, `stl2`, `stl3`, `stl4`, `swvl2`, `swvl3`, `swvl4`, `tvh`, `tvl`, `z`, `e`, `pev`, `slhf`, `sshf`, `ssr`, `ssrd`, `str`, `strd`, `tp`
@@ -59,20 +59,20 @@ print("Aggregated DataFrame shape:", df.shape)
 # %% [markdown]
 # ## 2. Print and Verify Headers
 # 
-# Let's print out all headers (column names) to confirm our dataset structure.
+# Let's print out all headers (column names) to confirm our parameters structure.
 
 # %% [code]
-print("Headers in the aggregated dataset:")
+print("Headers in the aggregated parameters:")
 for col in df.columns:
     print(col)
     
 # %% [markdown]
 # ## 3. Data Overview and Cleaning
 # 
-# We will inspect the dataset's structure, check for missing values, and view basic statistics.
+# We will inspect the parameters's structure, check for missing values, and view basic statistics.
 
 # %% [code]
-# Display dataset information
+# Display parameters information
 print("Dataset Info:")
 df.info()
 
