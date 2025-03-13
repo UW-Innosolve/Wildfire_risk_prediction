@@ -1,12 +1,33 @@
+### OVERALL PROCESS
+## pull data and labels
+## determine number of lines of latitude and longitude
+## for each parameter
+##      interpolate any holes # TODO ask J if there's any holes he has noticed (alternatively notice any errors later)
+##      reshape each day's data to 37x34
+##      create a sequence of 2D 'images' from each day (in sequential order)
+## catch any outliers? # TODO add code for any days that don't follow 37x34 shape (might get caught by reshape line)
+## now we have an array of sequential 2D 'image' data for each parameter
+## set the windowing, say we want to use 10 days of data to train, and want to predict 5 days ahead
+##      start window from day i (i>=10 because we can't start before day 11)
+##      fetch window of each parameter for [i-10:i]
+##      fetch window for labels for [i+5]
+##      save to respective arrays for training data and labels
+
+
+# load data (path local to Teo's machine for now)
+
+
+# get train and labels dataframes
+train_table = load_data(train_path)
+labels_df = pd.read_csv(train_labels_path)
+
+
 def load_sample(table, series_id):
     expr = pc.field('series_id') == series_id
     sample = table.filter(expr)
     df = sample.to_pandas()
     return df
 
-# get train and labels dataframes
-train_table = load_data(train_path)
-labels_df = pd.read_csv(train_labels_path)
 
 # process labels_df to fill all nan values with None
 labels_df = labels_df.fillna(value='None')
