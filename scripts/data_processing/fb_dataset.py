@@ -21,7 +21,7 @@ class FbDataset(FeatEngineer, Preprocessor):
   #   eng_feats: list of engineered features to be included
   #   Does not return anything, must be called before generate_features
   def config_features(self, raw_params_feats=None, eng_feats=None):
-    self.raw_param_feats = ['latitute', 'longitude', 
+    self.raw_param_feats = ['latitude', 'longitude', 
                             '10u',	'10v', '2d', '2t',  # wind, dewpoint, temperature
                             'cl', # Lake cover              
                             'cvh', 'cvl', # Low vegetation cover, high vegetation cover
@@ -41,7 +41,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                             'ssr',	'ssrd', # surface solar radiation, surface solar radiation down
                             'str',	'strd',	# Surface thermal radiation, surface thermal radiation down
                             'tp', # Total precipitation
-                            'sf', # Snowfall
+                            # 'sf', # Snowfall NOTE: Excluded for now, can be used in the definition of fire season (CWFDRS)
                             'is_fire_day', # NOTE: This is the target variable
                             'lightning_count', 'absv_strength_sum',	'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
                             'railway_count',	'power_line_count',	'highway_count', # Railway, power line, highway count
@@ -118,7 +118,7 @@ class FbDataset(FeatEngineer, Preprocessor):
     # Define feature list for scaling type and onehotting.
     self.numeric_features_ss = [
                                 '2t', '2d', '10u', '10v', 'sp', # wind, dewpoint, temperature, surface pressure
-                                'tp', 'rolling_precipitation', # Total precipitation, rolling precipitation
+                                'tp', # Total precipitation, rolling precipitation
                                 'e', 'pev', # Evaporation, potential evaporation
                                 'slhf', 'sshf', # Latent heat flux, sensible heat flux
                                 'ssr', 'ssrd', # surface solar radiation, surface solar radiation down

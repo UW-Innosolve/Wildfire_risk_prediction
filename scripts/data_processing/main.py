@@ -1,6 +1,6 @@
 import logging
 import pandas as pd
-from scripts.data_processing.fb_dataset import FbDataset
+from fb_dataset import FbDataset
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +13,7 @@ def main():
   ## Initialize  the dataset
   dataset = FbDataset()
   dataset.config_features() # Default features
-  dataset.process_data(data_dir) # Load and process data
+  dataset.process(data_dir) # Load and process data
   processed_data = dataset.get_processed_data() # Get processed data
   split_data = dataset.split() # Split data into training and test sets
   X_train, X_test, y_train, y_test = dataset.get_split_data() # Get split data

@@ -69,15 +69,15 @@ class HumanActivityPipeline:
         logger.info(f"HumanActivityPipeline grid generated with {len(self.grid)} cells.")
 
   
-      def _generate_grid(self, lat_range, lon_range, grid_resolution):
+    def _generate_grid(self, lat_range, lon_range, grid_resolution):
         """
         Generate a spatial grid (DataFrame) covering the specified area.
-        
+
         Returns:
             pd.DataFrame: DataFrame with columns 'latitude' and 'longitude' for grid cell corners.
         """
         grid = pd.DataFrame(columns=['latitude', 'longitude'])
-        
+
         lat_values = np.arange(lat_range[0], lat_range[1], grid_resolution)
         lon_values = np.arange(lon_range[0], lon_range[1], grid_resolution)
 
