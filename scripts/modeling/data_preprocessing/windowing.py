@@ -82,6 +82,6 @@ def create_windows(parameters, labels, training_days, prediction_day):
 
     return windowed_dataset, windowed_labels
 
-# windowed_dataset, windowed_labels = create_windows(parameters, labels, num_trainingdays, prediction_day)
+windowed_dataset, windowed_labels = create_windows(parameters, labels, num_trainingdays, prediction_day)
 
 print('windowing completed')
