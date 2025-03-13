@@ -17,6 +17,50 @@ from idlelib.pyparse import trans
 import numpy as np
 import pandas as pd
 
+
+def reshape_data(df, features, target_column):
+    # count number of lines latitude and longitude (used to reshape data)
+    # TODO assumes that all days have same number of lat/long values
+    latitude_count = df['latitude'].unique().size
+    longitude_count = df['longitude'].unique().size
+    rows_perday = latitude_count * longitude_count
+
+    # get list of days in this file
+    dates = df['date'].unique()
+
+    # create parameters and labels arrays
+    parameters = []
+    labels = df[target_column]
+
+    # processing to reshape each parameter
+    for parametername in features:
+        parameter_sequence = []
+        parameter_full = df[parametername]
+        for day in range(len(dates)):
+            parameter_ondate = parameter_full[rows_perday * day : rows_perday * (day + 1)] # get parameter values on that day
+            parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count, longitude_count) # reshape array to an 'image' according to lat/long
+            parameter_sequence.append(parameter_ondate_reshaped)
+        parameters.append(parameter_sequence)
+
+    return parameters, labels
+
+
+def create_windows(parameters, labels, training_days, prediction_day):
+    windowed_dataset = []
+    windowed_labels = []
+
+    # for every possible window between the first possible day to predict from and the last possible day to predict
+    # cannot start at any value < training_days (because we don't have that data)
+    # cannot predict any value > last data day + prediction_day (because we don't have that data)
+    for i in range(training_days, len(parameters[1])-prediction_day):
+        data_window = parameters[i-training_days:i]
+        label_window = labels[i+5]
+        windowed_dataset.append(data_window)
+        windowed_labels.append(label_window)
+
+    return windowed_dataset, windowed_labels
+
+
 ## initial parameters loading
 # load data (path local to Teo's machine for now)
 rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
@@ -36,47 +80,8 @@ columns_used = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
                 'highway_count', 'aeroway_count', 'waterway_count']
 target_column = 'is_fire_day'
 
-# count number of lines latitude and longitude (used to reshape data)
-# TODO assumes that all days have same number of lat/long values
-latitude_count = rawdata_df['latitude'].unique().size
-longitude_count = rawdata_df['longitude'].unique().size
-rows_perday = latitude_count * longitude_count
+reshaped_data, reshaped_labels = reshape_data(rawdata_df, columns_used, target_column)
+windowed_dataset, windowed_labels = create_windows(reshaped_data, reshaped_labels, 10, 5)
 
-# get list of days in this file
-dates = rawdata_df['date'].unique()
-
-
-## create parameters and labels arrays
-parameters = []
-labels = rawdata_df[target_column]
-
-
-## processing for each parameter
-for parametername in columns_used:
-    parameter_sequence = []
-    parameter_full = rawdata_df[parametername]
-    for day in range(len(dates)):
-        parameter_ondate = parameter_full[rows_perday * day : rows_perday * (day + 1)] # get parameter values on that day
-        parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count, longitude_count) # reshape array to an 'image' according to lat/long
-        parameter_sequence.append(parameter_ondate_reshaped)
-    parameters.append(parameter_sequence)
-
-
-def create_windows(parameters, labels, training_days, prediction_day):
-    windowed_dataset = []
-    windowed_labels = []
-
-    # for every possible window between the first possible day to predict from and the last possible day to predict
-    # cannot start at any value < training_days (because we don't have that data)
-    # cannot predict any value > last data day + prediction_day (because we don't have that data)
-    for i in range(training_days, len(parameters[1])-prediction_day):
-        data_window = parameters[i-training_days:i]
-        label_window = labels[i+5]
-        windowed_dataset.append(data_window)
-        windowed_labels.append(label_window)
-
-    return windowed_dataset, windowed_labels
-
-# windowed_dataset, windowed_labels = create_windows(parameters, labels, 10, 5)
 
 print('windowing completed')
