@@ -59,7 +59,7 @@ class LSTM_3D(nn.Module):
 # Example usage:
 batch_size = 2
 time_steps = 10
-depth = 30
+depth = 31
 height = 37
 width = 34
 hidden_size = 64
