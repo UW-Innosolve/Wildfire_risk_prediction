@@ -1,6 +1,6 @@
 ### OVERALL PROCESS
 ## pull data and labels
-## determine number of lines of latitude and longitude
+## determine number of lines of latitude and longitude (say 37 and 34 respectively)
 ## for each parameter
 ##      interpolate any holes # TODO ask J if there's any holes he has noticed (alternatively notice any errors later)
 ##      reshape each day's data to 37x34
@@ -13,24 +13,57 @@
 ##      fetch window for labels for [i+5]
 ##      save to respective arrays for training data and labels
 
+import numpy as np
+import pandas as pd
 
+## initial parameters loading
 # load data (path local to Teo's machine for now)
+rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
+
+# load raw data into pandas
+rawdata_df = pd.read_csv(rawdata_path)
+
+# get columns
+# TODO fix so that the columns are not fixed
+# columns_used = rawdata_df.columns[3:]
+columns_used = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
+                'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
+                'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'tvh',
+                'tvl', 'z', 'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
+                'tp', 'is_fire_day', 'lightning_count', 'absv_strength_sum',
+                'multiplicity_sum', 'railway_count', 'power_line_count',
+                'highway_count', 'aeroway_count', 'waterway_count']
+
+# count number of lines latitude and longitude (used to reshape data)
+# TODO assumes that all days have same number of lat/long values
+latitude_count = rawdata_df['latitude'].unique().size
+longitude_count = rawdata_df['longitude'].unique().size
+rows_perday = latitude_count * longitude_count
+
+# get list of days in this file
+dates = rawdata_df['date'].unique()
 
 
-# get train and labels dataframes
-train_table = load_data(train_path)
-labels_df = pd.read_csv(train_labels_path)
+## create parameters and labels arrays
+parameters = []
+labels = []
 
 
-def load_sample(table, series_id):
-    expr = pc.field('series_id') == series_id
-    sample = table.filter(expr)
-    df = sample.to_pandas()
-    return df
+## set number of training days and what day we want to predict
+num_trainingdays = 10
+prediction_day = 5
 
 
-# process labels_df to fill all nan values with None
-labels_df = labels_df.fillna(value='None')
+## processing for each parameter
+for parametername in columns_used:
+    parameter_sequence = []
+    parameter_full = rawdata_df[parametername]
+    for day in range(len(dates)):
+        parameter_ondate = parameter_full[rows_perday * day : rows_perday * (day + 1)] # get parameter values on that day
+        parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count, longitude_count) # reshape array to an 'image' according to lat/long
+        parameter_sequence.append(parameter_ondate_reshaped)
+    parameters.append(parameter_sequence)
+
 
 # create a label series for one series_id
 # periods of awake will be labelled 0, periods of asleep will be labelled 1.
@@ -60,6 +93,7 @@ def create_labels(events, steps, label_length):
 
     return label
 
+
 # get all unique series_id
 list_ids = train_table['series_id'].unique()
 
@@ -88,7 +122,6 @@ for series_id in useful_series:
     label = create_labels(event, step, len(anglez))
     sample = [anglez, enmo, label]
     train.append(sample)
-
 
 # works as expected
 series_in_chunks = []
