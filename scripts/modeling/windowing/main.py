@@ -82,32 +82,6 @@ def create_windows(parameters, labels, training_days, prediction_day):
 
     return windowed_dataset, windowed_labels
 
-windowed_dataset, windowed_labels = create_windows(parameters, labels, num_trainingdays, prediction_day)
+# windowed_dataset, windowed_labels = create_windows(parameters, labels, num_trainingdays, prediction_day)
 
 print('windowing completed')
-
-# # works as expected
-# series_in_chunks = []
-# series_in_chunks_labels = []
-#
-# # if there are none values, move ahead 300 steps (25 minutes) until at a time until there are no None values
-# # series selected are complete, so we don't need to worry about the above comment for now
-# for i in range(len(useful_series)):
-#     print(i)
-#     series_pieces = []
-#     sample = np.asarray(train[i])
-#     length = len(sample[0])
-#     start_step = 0
-#     end_step = 8192
-#     while end_step < length:
-#         count_null_labels = np.count_nonzero(sample[2][start_step:end_step] == None)
-#         if count_null_labels == 0:
-#             series_in_chunks.append(np.asarray([sample[0][start_step:end_step], sample[1][start_step:end_step]]))
-#             series_in_chunks_labels.append(np.asarray(sample[2][start_step:end_step]))
-#         else:
-#             print('FLAG: Nulls found')
-#         start_step += 300
-#         end_step += 300
-#
-# series_in_chunks = np.asarray(series_in_chunks)
-# series_in_chunks_labels = np.asarray(series_in_chunks_labels)
