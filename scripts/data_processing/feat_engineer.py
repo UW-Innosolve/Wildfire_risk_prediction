@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbSurfaceFeatures, FbCwfdrsFeatures):
   def __init__(self, raw_data_df):
-    self.raw_data = raw_data_df
-    self.data_features = pd.DataFrame()
+    self.raw_data = raw_data_df.copy()
+    self.data_features = self.raw_data[['date', 'latitude', 'longitude']].copy() # Start with the date, latitude, longitude index
     
   def apply_features(self, eng_feats):
     logger.info(f"Applying engineered features: {eng_feats}")
@@ -81,14 +81,22 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     # Spatial features
     if any([feat in eng_feats for feat in ['clusters_12', 'clusters_24', 'clusters_36']]):
       self.spatial = FbSpatialFeatures(self.raw_data)
+      self.spatial_df = self.data_features[['date', 'latitude', 'longitude']].copy()
       if 'clusters_12' in eng_feats:
-        self.spatial.kmeans_cluster(n_clusters=12)
+        self.spatial_df['clusters_12'] = self.spatial.kmeans_cluster(n_clusters=12)
+        logger.info(f"spatial_df shape: {self.spatial_df.shape}")  
       if 'clusters_24' in eng_feats:
-        self.spatial.kmeans_cluster(n_clusters=24)
+        self.spatial_df['clusters_24'] = self.spatial.kmeans_cluster(n_clusters=24)  
+        logger.info(f"spatial_df shape: {self.spatial_df.shape}")
       if 'clusters_36' in eng_feats:
-        self.spatial.kmeans_cluster(n_clusters=36)
+        self.spatial_df['clusters_36'] = self.spatial.kmeans_cluster(n_clusters=36)
+        logger.info(f"spatial_df shape: {self.spatial_df.shape}")
         
-      self.data_features = self.data_features + self.spatial.get_features()
+      self.data_features = pd.merge(self.data_features, self.spatial_df, on=['date', 'latitude', 'longitude'], how='outer')
+      
+    print(self.data_features.head())
+      
+    return self.data_features
     
     
     

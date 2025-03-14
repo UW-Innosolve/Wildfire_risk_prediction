@@ -15,7 +15,14 @@ logger = logging.getLogger(__name__)
 class FbDataset(FeatEngineer, Preprocessor):
   def __init__(self, raw_data_dir):
     logger.info(f"Initializing FbDataset with data directory: {raw_data_dir}")
-    self.fb_model_features = pd.DataFrame() # Includes all features (raw and engineered)
+    # Initialize the raw data directory and load the raw data.
+    logger.info("Loading data from CSV files...")
+    self.raw_data_dir = raw_data_dir
+    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
+    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+    
+    self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
     self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
     self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
 
@@ -137,14 +144,16 @@ class FbDataset(FeatEngineer, Preprocessor):
     logger.info(f"Using engineered features: {self.eng_feats}")
     
     if self.raw_param_feats == ['DISABLE']:
-      self.fb_model_features = pd.DataFrame()
+      logging.info("No raw parameters selected as features, using only engineered features.")
     else:
-      self.fb_model_features = self.raw_data[self.raw_param_feats]
+      features_raw = self.raw_param_feats + ['date', 'latitude', 'longitude']
+      self.fb_model_features = pd.merge(self.fb_model_features, self.raw_data[features_raw],
+                                        on=['date', 'latitude', 'longitude'], how='outer')
     
     self.feat_engineer = FeatEngineer(self.raw_data)
     self.engineered_feats = self.feat_engineer.apply_features(self.eng_feats)
     
-    if self.engineered_feats: # Since apply_features returns None if 'DISABLE' is passed
+    if not self.engineered_feats.empty: # Since apply_features returns None if 'DISABLE' is passed
       self.fb_model_features = pd.merge(self.fb_model_features,
                                         self.engineered_feats,
                                         on=['date', 'latitude', 'longitude'], how='outer')
@@ -217,7 +226,6 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.numeric_features_mm = [feature for feature in self.numeric_features_mm if feature in self.fb_model_features_raw.columns]
     self.categorical_features = [feature for feature in self.categorical_features if feature in self.fb_model_features_raw.columns]
     
-    
     # Initialize the processed data with the index: 'date', 'latitude', 'longitude'.
     self.fb_processed_data = self.raw_data[['date', 'latitude', 'longitude']]
     
@@ -234,6 +242,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                       on=['date', 'latitude', 'longitude'], how='outer')
     logger.info(f"Data shape after aggregation of MinMax scaling numeric features: {self.fb_processed_data.shape}")
     
+    print(self.categorical_features)
     fb_model_feat_raw_onehot = self.fb_model_features_raw[self.categorical_features]
     fb_model_feat_processed_onehot = self.preprocessor.onehot_cat_features(fb_model_feat_raw_onehot)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_onehot,
@@ -304,6 +313,7 @@ class FbDataset(FeatEngineer, Preprocessor):
   
   def get_processed_data(self):
     return self.fb_processed_data
+  
   
   def get_split_data(self):
     return self.X_train, self.X_test, self.y_train, self.y_test
