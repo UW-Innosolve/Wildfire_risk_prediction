@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 
 class FbTemporalFeatures():
   def __init__(self, raw_data_df):
-    self.raw_data = raw_data_df
-    self.temporal_features = pd.DataFrame()
+    self.raw_data = raw_data_df.copy()
+    self.temporal_features = self.raw_data[['date', 'latitude', 'longitude']]
     self.date_df = pd.to_datetime(self.raw_data["date"], errors="coerce")
-    self.year_df = self.date_df.year
-    self.month_df = self.date_df.month
-    self.day_of_month = self.date_df.day
+    self.year_df = self.date_df.dt.year
+    self.month_df = self.date_df.dt.month
+    self.day_of_month = self.date_df.dt.day
     
     
   def seasonal(self):
@@ -49,6 +49,7 @@ class FbTemporalFeatures():
       seasons.append(season)
       
     self.temporal_features['season'] = seasons
+    return self.temporal_features[['date', 'latitude', 'longitude', 'season']]
       
       
   def fire_seasonal(self):
@@ -90,6 +91,7 @@ class FbTemporalFeatures():
       fire_seasons.append(fire_season)
 
     self.temporal_features['fire_season'] = fire_seasons
+    return self.temporal_features[['date', 'latitude', 'longitude', 'fire_season']]
     
     
   # NOTE: seasonal features are catagorical, must be onehotted later.

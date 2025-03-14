@@ -71,12 +71,19 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     # Temporal features
     if any([feat in eng_feats for feat in ['season', 'fire_season']]):
       self.temporal = FbTemporalFeatures(self.raw_data)
+      self.temporal_df = self.data_features[['date', 'latitude', 'longitude']].copy()
+      
       if 'season' in eng_feats:
-        self.temporal.season()
+        self.temporal_df = pd.merge(self.temporal_df, self.temporal.seasonal(),
+                                              on=['date', 'latitude', 'longitude'], how='outer')
+        logger.info(f"temporal_df shape: {self.temporal_df.shape}")
       if 'fire_season' in eng_feats:
-        self.temporal.fire_season()
-        
-      self.data_features = self.data_features + self.temporal.get_features()
+        self.temporal_df = pd.merge(self.temporal_df, self.temporal.fire_seasonal(),
+                                                   on=['date', 'latitude', 'longitude'], how='outer')
+        logger.info(f"temporal_df shape: {self.temporal_df.shape}")
+      
+      self.data_features = pd.merge(self.data_features, self.temporal_df,
+                                    on=['date', 'latitude', 'longitude'], how='outer')
       
     # Spatial features
     if any([feat in eng_feats for feat in ['clusters_12', 'clusters_24', 'clusters_36']]):

@@ -35,9 +35,9 @@ def main():
                           # 'x_slope',
                           # 'y_slope'
                           
-                          # # Temporal features
-                          # # - Seasonal
-                          # 'season', 'fire_season',
+                          # Temporal features
+                          # - Seasonal
+                          'season', 'fire_season',
                           
                           # Spatial features
                           'clusters_12', 'clusters_24', 'clusters_36'
