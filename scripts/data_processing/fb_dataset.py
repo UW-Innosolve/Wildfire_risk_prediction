@@ -6,9 +6,11 @@ import logging
 import os
 import glob
 
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class FbDataset(FeatEngineer, Preprocessor):
   def __init__(self, raw_data_dir):
@@ -23,7 +25,6 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.raw_data = self._load_data(data_dir=self.raw_data_dir)
     # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
     self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
-    print("WHAAAAAA", self.raw_data.columns)
 
   def _load_data(self, data_dir):
     """
@@ -37,7 +38,7 @@ class FbDataset(FeatEngineer, Preprocessor):
     for file in csv_files:
         try:
             df_temp = pd.read_csv(file)
-            logger.debug(f"Loaded {os.path.basename(file)} with shape {df_temp.shape}")
+            logger.debug(f"Loaded {os.path.basename(file)} with shape {df_temp.shape} onto raw df")
             dfs.append(df_temp)
         except Exception as e:
             logger.error(f"Error loading {file}: {e}")
@@ -135,7 +136,6 @@ class FbDataset(FeatEngineer, Preprocessor):
     logger.info(f"Using raw data features{self.raw_param_feats}")
     logger.info(f"Using engineered features: {self.eng_feats}")
     
-    
     if self.raw_param_feats == ['DISABLE']:
       self.fb_model_features = pd.DataFrame()
     else:
@@ -164,7 +164,7 @@ class FbDataset(FeatEngineer, Preprocessor):
     logger.info("Cleaning data (converting dates, removing missing target values)...")
     self.raw_data = self.preprocessor.clean_data()  # Clean the data (mutates the data member in preprocessor instance, and returns it)
     
-    ## Feature Engineering (relies on raw_data member set above)
+    ## Feature Engineering (relies on raw_data member set at initialization)
     self.config_features(self.raw_param_feats, self.eng_feats) # Set the features to be used (or use defaults if not set)
     self.fb_model_features_raw = self.generate_features()
     
@@ -226,33 +226,23 @@ class FbDataset(FeatEngineer, Preprocessor):
     fb_model_feat_processed_ss = self.preprocessor.scale_features_ss(fb_model_feat_raw_ss)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_ss, 
                                       on=['date', 'latitude', 'longitude'], how='outer')
-    
-    logger.info(f"Data shape after scaling standard features: {self.fb_processed_data.shape}")
+    logger.info(f"Data shape after aggregation of standard scaling numeric features: {self.fb_processed_data.shape}")
       
     fb_model_feat_raw_mm = self.fb_model_features_raw[self.numeric_features_mm]
     fb_model_feat_processed_mm = self.preprocessor.scale_features_mm(fb_model_feat_raw_mm)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_mm,
                                       on=['date', 'latitude', 'longitude'], how='outer')
-    
-    logger.info(f"Data shape after scaling minmax features: {self.fb_processed_data.shape}")
+    logger.info(f"Data shape after aggregation of MinMax scaling numeric features: {self.fb_processed_data.shape}")
     
     fb_model_feat_raw_onehot = self.fb_model_features_raw[self.categorical_features]
     fb_model_feat_processed_onehot = self.preprocessor.onehot_cat_features(fb_model_feat_raw_onehot)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_onehot,
                                       on=['date', 'latitude', 'longitude'], how='outer')
+    logger.info(f"Data shape after aggregation of one-hot encoded features: {self.fb_processed_data.shape}")
     
-    logger.info(f"Data shape after one-hot encoding: {self.fb_processed_data.shape}")
+    logger.info("Data processing complete.")
+    logger.info(f"Final processed data shape: {self.fb_processed_data.shape}")
     
-    print(self.fb_processed_data)
-    print(self.fb_processed_data.columns)
-    
-    # # Re-label with the target variable
-    # self.target = self.raw_data[['date', 'latitude', 'longitude', 'is_fire_day']]
-    # self.fb_processed_data = pd.merge(self.fb_processed_data, self.target, on=['date', 'latitude', 'longitude'], how='outer')
-    # print(self.fb_processed_data.columns)
-
-    
-
     return self.fb_processed_data
   
   
@@ -277,7 +267,7 @@ class FbDataset(FeatEngineer, Preprocessor):
     feature_list = data.columns.tolist()
     try:
         feature_list.remove('is_fire_day')
-        logger.info("Removed target variable from feature list.")
+        logger.debug("Removed target variable from feature list.")
     except ValueError:
         logger.error("Target variable not found in feature list, or could not be removed.")
         
@@ -285,7 +275,7 @@ class FbDataset(FeatEngineer, Preprocessor):
         feature_list.remove('date')
         feature_list.remove('latitude')
         feature_list.remove('longitude')
-        logger.info("Removed index columns from feature list.")
+        logger.debug("Removed index columns from feature list.")
     except ValueError:
         logger.error("Index columns ('date', 'latitude', 'longitude') not found in feature list, or could not be removed.")
     
@@ -310,20 +300,7 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.y_test = y_test
     
     return X_train, X_test, y_train, y_test
-  
-  #  def split_data(self, target, test_size=0.2, random_state=42, apply_smote=False):
-  #       """
-  #       Split the data into training and testing sets.
-  #        - Optionally apply SMOTE to the training data.
-  #        - Parameters like test_size and random_state can be adjusted.
-  #       """
-  #       X = self.data[feature_list]
-  #       y = self.data[target]
-  #       X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-  #       if apply_smote:
-  #           X_train, y_train = self.apply_smote(X_train, y_train)
-  #       return X_train, X_test, y_train, y_test
-  
+
   
   def get_processed_data(self):
     return self.fb_processed_data
