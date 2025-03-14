@@ -8,15 +8,13 @@ logger = logging.getLogger(__name__)
 
 def main():
   data_dir = "scripts/data_processing/raw_data_dir"
-  logging.info(f"Pulling raw data from directory: {data_dir}")
-
+  
   ## Initialize  the dataset
-  dataset = FbDataset()
-  dataset.config_features() # Default features
-  dataset.process(data_dir) # Load and process data
-  processed_data = dataset.get_processed_data() # Get processed data
-  split_data = dataset.split() # Split data into training and test sets
-  X_train, X_test, y_train, y_test = dataset.get_split_data() # Get split data
+  dataset = FbDataset(raw_data_dir=data_dir)
+  dataset.config_features(eng_feats=['DISABLE']) # NOTE: ENGINEERED FEATURES DISABLED FOR NOW
+  dataset.process() # Load and process data
+  processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
+  X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
   logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 
   # Save model-ready data to model_data_dir

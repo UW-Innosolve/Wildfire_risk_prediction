@@ -19,6 +19,8 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     
   def apply_features(self, eng_feats):
     logger.info(f"Applying engineered features: {eng_feats}")
+    if eng_feats == ['DISABLE']:
+      return
     
     # Fire weather danger rating system features
     if any([feat in eng_feats for feat in ['drought_code', 'duff_moisture_code', 'fine_fuel_moisture_code', 'initial_spread_index', 'build_up_index', 'fire_weather_index']]):

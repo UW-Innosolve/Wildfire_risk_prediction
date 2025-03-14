@@ -2,26 +2,66 @@ from feat_engineer import FeatEngineer
 from preprocessor import Preprocessor
 import pandas as pd
 import logging
+import os
+import glob
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class FbDataset(FeatEngineer, Preprocessor):
-  def __init__(self):
+  def __init__(self, raw_data_dir):
+    logger.info(f"Initializing FbDataset with data directory: {raw_data_dir}")
     self.fb_model_features = pd.DataFrame() # Includes all features (raw and engineered)
-    self.fb_processed_data = pd.DataFrame() # Includes all features (raw and engineered) after processing
+    self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
+    self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+
+    # Initialize the raw data directory and load the raw data.
+    logger.info("Loading data from CSV files...")
+    self.raw_data_dir = raw_data_dir
+    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
+    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+
+  def _load_data(self, data_dir):
+    """
+    Aggregate all CSV files from the specified directory into a single DataFrame.
+    Uses glob to fetch file paths and concatenates them.
+    """
+    csv_files = glob.glob(os.path.join(data_dir, "*.csv"))
     
-  # NOTE: THESE ARE FEATURE DEFAULTS, DO NOT EDIT THESE.
+    logger.info((f"Found {len(csv_files)} CSV files in directory: {self.raw_data_dir}"))
+    dfs = []
+    for file in csv_files:
+        try:
+            df_temp = pd.read_csv(file)
+            logger.debug(f"Loaded {os.path.basename(file)} with shape {df_temp.shape}")
+            dfs.append(df_temp)
+        except Exception as e:
+            logger.error(f"Error loading {file}: {e}")
+    if dfs:
+        data = pd.concat(dfs, ignore_index=True)
+        logger.info("Aggregated DataFrame shape:", data.shape)
+    else:
+        raise ValueError("No CSV files found in the specified directory.")
+      
+    return data
+    
+  
+  # NOTE: BELOW ARE FEATURE DEFAULTS, DO NOT EDIT THESE.
   ## Instead, override the parameters using the config_features method
   ## to create an instance with a custom features configuration.
   
   # config_features
   #   raw_params_feats: list of raw parameters to be included as features
   #   eng_feats: list of engineered features to be included
-  #   Does not return anything, must be called before generate_features
+  #   Does not return, must be called before generate_features
   def config_features(self, raw_params_feats=None, eng_feats=None):
-    self.raw_param_feats = ['latitude', 'longitude', 
+    self.raw_param_feats = [
+                            # NOTE Spatial and temporal index included here but not in the final processed data.
+                            # 'latitude', 'longitude', 
+                            # 'date', # Date
+                            # -----------------------------------------------------------------------------------
                             '10u',	'10v', '2d', '2t',  # wind, dewpoint, temperature
                             'cl', # Lake cover              
                             'cvh', 'cvl', # Low vegetation cover, high vegetation cover
@@ -80,40 +120,51 @@ class FbDataset(FeatEngineer, Preprocessor):
                                   # Spatial features
                                   'clusters_12', 'clusters_24', 'clusters_36'
                                 ]
-    if raw_params_feats:
+    if raw_params_feats or (raw_params_feats == ['DISABLE']): # Passing 'DISABLE' will cause no raw parameters to be used
       self.raw_param_feats = raw_params_feats
-    if eng_feats:
+    if eng_feats or (eng_feats == ['DISABLE']): # Passing 'DISABLE' will cause no feature engineering to be used
       self.eng_feats = eng_feats
+      
       
   # Generate features
   #   - Generates features from raw data and engineered features (as set in config_features)
   #   - Returns a DataFrame with all features to be used in the model
   def generate_features(self):
-    self.fb_model_features = self.raw_data[self.raw_param_feats]
+    logger.info(f"Using raw data features{self.raw_param_feats}")
+    logger.info(f"Using engineered features: {self.eng_feats}")
+    
+    
+    if self.raw_param_feats == ['DISABLE']:
+      self.fb_model_features = pd.DataFrame()
+    else:
+      self.fb_model_features = self.raw_data[self.raw_param_feats]
     
     self.feat_engineer = FeatEngineer(self.raw_data)
-    self.fb_model_features = self.fb_model_features + self.feat_engineer.apply_features(self.eng_feats)
+    self.engineered_feats = self.feat_engineer.apply_features(self.eng_feats)
+    
+    if self.engineered_feats: # Since apply_features returns None if 'DISABLE' is passed
+      self.fb_model_features = pd.merge(self.fb_model_features,
+                                        self.engineered_feats,
+                                        on=['date', 'latitude', 'longitude'], how='outer')
     
     return self.fb_model_features
+    
     
   # Process
   #   - Processes the raw data and generates features (both raw and engineered)
   #   - Scales and one-hot encodes features, minmax, standard, and onehot set intentionally
   #   - Inputs: data_dir (str), raw_params_feats (list), eng_feats (list) - if not set, defaults are used
   #   - Returns: processed data (DataFrame)
-  def process(self, data_dir, raw_params_feats=None, eng_feats=None):
+  def process(self):
     # Initialize the Preprocessor.
-    self.preprocessor = Preprocessor(data_dir)
-    logger.info("Loading data from CSV files...")
-    self.raw_data = self.preprocessor.load_data()  # Aggregate CSVs.
-    
+    self.preprocessor = Preprocessor(raw_data_df=self.raw_data)
+
     logger.info("Cleaning data (converting dates, removing missing target values)...")
-    self.raw_data = self.preprocessor.clean_data()  # Clean the data (mutates the data member in preprocessor instance)
+    self.raw_data = self.preprocessor.clean_data()  # Clean the data (mutates the data member in preprocessor instance, and returns it)
     
     ## Feature Engineering (relies on raw_data member set above)
-    self.config_features(raw_params_feats, eng_feats) # Set the features to be used (or use defaults if not set)
+    self.config_features(self.raw_param_feats, self.eng_feats) # Set the features to be used (or use defaults if not set)
     self.fb_model_features_raw = self.generate_features()
-    
     
     # Define feature list for scaling type and onehotting.
     self.numeric_features_ss = [
@@ -152,21 +203,44 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'is_fire_day' # Target variable is binary (remains unchanged during minmax scaling)
                                 ]
     
-    self.catgorical_features = [
+    self.categorical_features = [
                                 'soil', # Soil type
                                 'season', 'fire_season', # Seasonal features
                                 'clusters_12', 'clusters_24', 'clusters_36' # Spatial clustering
                                 ]
     
-    for num_feat in self.numeric_features_ss:
-      self.fb_processed_data = self.fb_processed_data + self.preprocessor.scale_features_ss([num_feat])
+    # Filter the feature lists to only include features present in fb_model_features_raw.columns
+    self.numeric_features_ss = [feature for feature in self.numeric_features_ss if feature in self.fb_model_features_raw.columns]
+    self.numeric_features_mm = [feature for feature in self.numeric_features_mm if feature in self.fb_model_features_raw.columns]
+    self.categorical_features = [feature for feature in self.categorical_features if feature in self.fb_model_features_raw.columns]
     
-    for num_feat in self.numeric_features_mm:
-      self.fb_processed_data = self.fb_processed_data + self.preprocessor.scale_features_minmax([num_feat])
-      
-    for cat_feat in self.catgorical_features:
-      self.fb_processed_data = self.fb_processed_data + self.preprocessor.onehot_cat_features([cat_feat])
     
+    # Initialize the processed data with the index (must be removed before ).)
+    # self.fb_processed_data = self.raw_data.set_index(['date', 'latitude', 'longitude']).sort_index()
+    
+    
+    print(self.raw_data)
+    self.fb_processed_data = self.raw_data[['date', 'latitude', 'longitude']]
+    print(self.fb_processed_data)
+    
+    # Scale and one-hot encode features
+    fb_model_feat_raw_ss = self.fb_model_features_raw[self.numeric_features_ss]
+    fb_model_feat_processed_ss = self.preprocessor.scale_features_ss(fb_model_feat_raw_ss)
+    self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_ss, 
+                                      on=['date', 'latitude', 'longitude'], how='outer')
+    
+    print(self.fb_processed_data)
+    
+    fb_model_feat_raw_mm = self.fb_model_features_raw[self.numeric_features_mm]
+    fb_model_feat_processed_mm = self.preprocessor.scale_features_mm(fb_model_feat_raw_mm)
+    self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_mm,
+                                      on=['date', 'latitude', 'longitude'], how='outer')
+    
+    fb_model_feat_raw_onehot = self.fb_model_features_raw[self.categorical_features]
+    fb_model_feat_processed_onehot = self.preprocessor.onehot_cat_features(fb_model_feat_raw_onehot)
+    self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_onehot,
+                                      on=['date', 'latitude', 'longitude'], how='outer')
+
     return self.fb_processed_data
   
   
