@@ -21,8 +21,9 @@ class Preprocessor:
         self.feature_scaler_ss = StandardScaler()  # Standardize features for improved model performance
         self.feature_scaler_minmax = MinMaxScaler()  # Normalize features for algorithms that require it
         
-        self.data_idx = pd.DataFrame(self.data, columns = ['date', 'latitude', 'longitude', 'is_fire_day'])
-        self.data_idx.set_index(['date', 'latitude', 'longitude'], inplace=True)
+        self.raw_data_df = raw_data_df.copy()
+        self.data_idx = self.raw_data_df[['date', 'latitude', 'longitude']]
+        print("Data index\n", self.data_idx)
 
     def clean_data(self):
         """
@@ -41,7 +42,7 @@ class Preprocessor:
         Scale features using StandardScaler.
          - This is important for models like KNN and Logistic Regression.
         """
-        data_idx = self.data_idx # start with the date, latitude, longitude index
+        data_idx = self.data_idx.copy() # start with the date, latitude, longitude index
         data_ss = self.feature_scaler_ss.fit_transform(feature_df)
         data_ss = pd.merge(data_idx,
                            pd.DataFrame(data_ss, columns=feature_df.columns, index=self.data_idx.index),
@@ -52,7 +53,7 @@ class Preprocessor:
         """
         Scale features using MinMax.
         """
-        data_idx = self.data_idx # start with the date, latitude, longitude index
+        data_idx = self.data_idx.copy() # start with the date, latitude, longitude index
         data_mm = self.feature_scaler_minmax.fit_transform(feature_df)
         data_mm = pd.merge(data_idx,
                            pd.DataFrame(data_mm, columns=feature_df.columns, index=self.data_idx.index),
@@ -63,17 +64,47 @@ class Preprocessor:
         # data_mm = pd.DataFrame(data_mm, columns=feature_list, index=self.data_idx)
         # return data_mm
     
+    # def onehot_cat_features(self, feature_df):
+    #     """
+    #     One-hot encode categorical features.
+    #     """
+    #     feature_list = feature_df.columns
+    #     data = self.data_idx.copy() # start with the date, latitude, longitude index
+    #     for col in feature_list:
+    #         data_onehot_cols = pd.get_dummies(feature_df[[col]], drop_first=True)
+    #         data_onehot_cols.index = data.index
+    #         data = data.join(data_onehot_cols)
+            
+    #     logger.info(f"One-hot encoded features: {feature_df.columns}")
+    #     logger.info(f"Data shape after one-hot encoding: {data.shape}")
+    #     print(data)
+    #     return data
+    
     def onehot_cat_features(self, feature_df):
         """
-        One-hot encode categorical features.
+        One-hot encode categorical features while preserving the date, latitude, and longitude index.
         """
-        feature_list = feature_df.columns
-        data_idx = self.data_idx # start with the date, latitude, longitude index
-        data_onehot = pd.get_dummies(feature_df, columns=feature_list, drop_first=True) # Drop first to avoid multicollinearity
-        data_onehot = pd.merge(data_idx, data_onehot,
-                               index=self.data_idx.index,
-                               left_index=True, right_index=True)
-        return data_onehot
+        data = self.data_idx.copy()  # Preserve index with date, lat, long
+        print("Data shape", data.shape)
+        
+        onehot_encoded_df = data  # Start with index reference
+    
+        
+        for col in feature_df.columns:
+            onehot_cols = pd.get_dummies(feature_df[col], prefix=col, drop_first=True)
+            print(type(onehot_cols))
+            print(onehot_cols)
+            print(onehot_cols.shape)
+            onehot_encoded_df = pd.concat([onehot_encoded_df, onehot_cols], axis=1)
+        
+        print(onehot_encoded_df.shape)
+        print(onehot_encoded_df)
+        result = onehot_encoded_df
+        
+        logger.info(f"One-hot encoded features: {feature_df.columns}")
+        logger.info(f"Data shape after one-hot encoding: {result.shape}")
+        
+        return result
 
     def apply_smote(self, X, y):
         """
@@ -84,15 +115,15 @@ class Preprocessor:
         X_res, y_res = smote.fit_resample(X, y)
         return X_res, y_res
 
-    def split_data(self, feature_list, target, test_size=0.2, random_state=42, apply_smote=False):
-        """
-        Split the data into training and testing sets.
-         - Optionally apply SMOTE to the training data.
-         - Parameters like test_size and random_state can be adjusted.
-        """
-        X = self.data[feature_list]
-        y = self.data[target]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-        if apply_smote:
-            X_train, y_train = self.apply_smote(X_train, y_train)
-        return X_train, X_test, y_train, y_test
+    # def split_data(self, feature_list, target, test_size=0.2, random_state=42, apply_smote=False):
+    #     """
+    #     Split the data into training and testing sets.
+    #      - Optionally apply SMOTE to the training data.
+    #      - Parameters like test_size and random_state can be adjusted.
+    #     """
+    #     X = self.data[feature_list]
+    #     y = self.data[target]
+    #     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    #     if apply_smote:
+    #         X_train, y_train = self.apply_smote(X_train, y_train)
+    #     return X_train, X_test, y_train, y_test

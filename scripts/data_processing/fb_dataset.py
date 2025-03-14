@@ -1,5 +1,6 @@
 from feat_engineer import FeatEngineer
 from preprocessor import Preprocessor
+from sklearn.model_selection import train_test_split
 import pandas as pd
 import logging
 import os
@@ -22,6 +23,7 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.raw_data = self._load_data(data_dir=self.raw_data_dir)
     # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
     self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+    print("WHAAAAAA", self.raw_data.columns)
 
   def _load_data(self, data_dir):
     """
@@ -74,7 +76,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                             # NOTE: stl and swv layers are excluded in favour of waterheat ratio, daily_water_sum,  daily_temp_sum
                             'stl1',	'stl2',	'stl3',	'stl4', # Soil temperature levels (0-7cm, 7-28cm, 28-100cm, 100-289cm)
                             # 'swvl1',	'swvl2',	'swvl3',	'swvl4', # Soil water volume levels (0-7cm, 7-28cm, 28-100cm, 100-289cm)
-                            # 'tvh',	'tvl', # High vegetation type, low vegetation type (Categorical) #NOTE: fuel_low and fuel_high are preferred
+                            'tvh',	'tvl', # High vegetation type, low vegetation type (Categorical) #NOTE: fuel_low and fuel_high are preferred
                             # 'z', # Geopotential (proportional to elevation) #NOTE: elevation is preferred
                             'e',	'pev', # Evaporation, potential evaporation
                             'slhf',	'sshf',# Latent heat flux, sensible heat flux
@@ -204,6 +206,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 ]
     
     self.categorical_features = [
+                                'tvh', 'tvl', # High vegetation type, low vegetation type NOTE: fuel_low and fuel_high are preferred, categorical used as placeholder for now.
                                 'soil', # Soil type
                                 'season', 'fire_season', # Seasonal features
                                 'clusters_12', 'clusters_24', 'clusters_36' # Spatial clustering
@@ -215,13 +218,8 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.categorical_features = [feature for feature in self.categorical_features if feature in self.fb_model_features_raw.columns]
     
     
-    # Initialize the processed data with the index (must be removed before ).)
-    # self.fb_processed_data = self.raw_data.set_index(['date', 'latitude', 'longitude']).sort_index()
-    
-    
-    print(self.raw_data)
+    # Initialize the processed data with the index: 'date', 'latitude', 'longitude'.
     self.fb_processed_data = self.raw_data[['date', 'latitude', 'longitude']]
-    print(self.fb_processed_data)
     
     # Scale and one-hot encode features
     fb_model_feat_raw_ss = self.fb_model_features_raw[self.numeric_features_ss]
@@ -229,17 +227,31 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_ss, 
                                       on=['date', 'latitude', 'longitude'], how='outer')
     
-    print(self.fb_processed_data)
-    
+    logger.info(f"Data shape after scaling standard features: {self.fb_processed_data.shape}")
+      
     fb_model_feat_raw_mm = self.fb_model_features_raw[self.numeric_features_mm]
     fb_model_feat_processed_mm = self.preprocessor.scale_features_mm(fb_model_feat_raw_mm)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_mm,
                                       on=['date', 'latitude', 'longitude'], how='outer')
     
+    logger.info(f"Data shape after scaling minmax features: {self.fb_processed_data.shape}")
+    
     fb_model_feat_raw_onehot = self.fb_model_features_raw[self.categorical_features]
     fb_model_feat_processed_onehot = self.preprocessor.onehot_cat_features(fb_model_feat_raw_onehot)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_onehot,
                                       on=['date', 'latitude', 'longitude'], how='outer')
+    
+    logger.info(f"Data shape after one-hot encoding: {self.fb_processed_data.shape}")
+    
+    print(self.fb_processed_data)
+    print(self.fb_processed_data.columns)
+    
+    # # Re-label with the target variable
+    # self.target = self.raw_data[['date', 'latitude', 'longitude', 'is_fire_day']]
+    # self.fb_processed_data = pd.merge(self.fb_processed_data, self.target, on=['date', 'latitude', 'longitude'], how='outer')
+    # print(self.fb_processed_data.columns)
+
+    
 
     return self.fb_processed_data
   
@@ -248,18 +260,48 @@ class FbDataset(FeatEngineer, Preprocessor):
   #   - Splits the processed data into training and test sets
   #   - Applies SMOTE for balancing the minority class (fire days)
   #   - Inputs: test_size (float), random_state (int), apply_smote (bool)
-  #   - Returns: X_train, X_test, y_train, y_test (DataFrames)
+  #   - Returns: X_train, X_test, y_train, y_test (DataFrames) NOTE: (OUTPUT DATA DOES NOT HAVE INDEX COLUMNS 'date', 'latitude', 'longitude')
   def split(self, test_size=0.2, random_state=42, apply_smote=True):
+    """
+    Split the data into training and testing sets.
+      - Optionally apply SMOTE to the training data.
+      - Parameters like test_size and random_state can be adjusted.
+    """
+    
+    data = self.fb_processed_data.copy()
+    
     # Define the target variable
     target_param = 'is_fire_day'
-    target = self.fb_processed_data[target_param]
     
     # Get the feature list
-    feature_list = self.fb_processed_data.columns.tolist()
+    feature_list = data.columns.tolist()
+    try:
+        feature_list.remove('is_fire_day')
+        logger.info("Removed target variable from feature list.")
+    except ValueError:
+        logger.error("Target variable not found in feature list, or could not be removed.")
+        
+    try:
+        feature_list.remove('date')
+        feature_list.remove('latitude')
+        feature_list.remove('longitude')
+        logger.info("Removed index columns from feature list.")
+    except ValueError:
+        logger.error("Index columns ('date', 'latitude', 'longitude') not found in feature list, or could not be removed.")
     
-    # Split the data; apply SMOTE for balancing minority class (fire days).
-    logger.info("Splitting data into training and test sets and applying SMOTE for balancing...")
-    X_train, X_test, y_train, y_test = self.preprocessor.split_data(feature_list, target, apply_smote=apply_smote)
+    # Training set from all but the target variable
+    X = data[feature_list]
+    # Testing set is the target variable
+    y = data[[target_param]]
+    
+    logger.info("Splitting data into training and test sets...")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    
+    if apply_smote:
+        logger.info("Applying SMOTE to training data...")
+        logger.info(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
+        X_train, y_train = self.preprocessor.apply_smote(X=X_train, y=y_train)
+      
     logger.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
     
     self.X_train = X_train
@@ -269,15 +311,28 @@ class FbDataset(FeatEngineer, Preprocessor):
     
     return X_train, X_test, y_train, y_test
   
+  #  def split_data(self, target, test_size=0.2, random_state=42, apply_smote=False):
+  #       """
+  #       Split the data into training and testing sets.
+  #        - Optionally apply SMOTE to the training data.
+  #        - Parameters like test_size and random_state can be adjusted.
+  #       """
+  #       X = self.data[feature_list]
+  #       y = self.data[target]
+  #       X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+  #       if apply_smote:
+  #           X_train, y_train = self.apply_smote(X_train, y_train)
+  #       return X_train, X_test, y_train, y_test
+  
+  
   def get_processed_data(self):
     return self.fb_processed_data
   
   def get_split_data(self):
     return self.X_train, self.X_test, self.y_train, self.y_test
-  
-  
 
-      
-    
-    
-    
+
+
+
+
+
