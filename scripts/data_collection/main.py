@@ -14,8 +14,8 @@ import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_load
 import collection_utils.raw_data_assembly as raw_data_assembly
 
 from earthkit_pipeline.cds_auth import CdsAuth
-import cfgrib
-import eccodes
+# import cfgrib
+# import eccodes
 
 # Configure logging: Log to both file (pipeline.log) and the console.
 logging.basicConfig(
@@ -49,10 +49,10 @@ def main():
     # Define the temporal period for data retrieval
     query_period = {
         'start_date': '2014-01-01',
-        'end_date': '2016-12-31'
+        'end_date': '2014-12-31'
     }
     # Define the grid resolution (in degrees)
-    query_grid_resolution = 0.35
+    query_grid_resolution = 0.30
 
     # ------------------------------------------------------
     # 3. Pipeline Configuration: Enable/Disable Pipelines
@@ -161,7 +161,7 @@ def main():
         wildfire_incidence_data,
         start_date=query_period['start_date'],
         end_date=query_period['end_date'],
-        resample_interval='4D',
+        resample_interval='1D',
         grouping_period_size='M',
         latitude_tolerance=1.0,
         longitude_tolerance=1.0
