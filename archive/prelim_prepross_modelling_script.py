@@ -134,7 +134,7 @@ def load_or_preprocess_data():
  
             # Atmospheric Dryness calculation
             all_data["atmospheric_dryness"] = (
-                all_data["t2m"] - all_data[""]
+                all_data["t2m"] - all_data["d2m"]
             ).astype(float)
  
             # Create interaction terms
