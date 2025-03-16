@@ -120,8 +120,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                   'surface_depth_waterheat', # Adds 17 columns, with ratio for each 17cm depth
                                   #  - Topography
                                   'elevation',
-                                  'x_slope',
-                                  'y_slope'
+                                  'slope',
                                   
                                   # Temporal features
                                   # - Seasonal
@@ -208,7 +207,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'ltng_multiplicity_ratio', 'ltng_strength_ratio', # Lightning ratios
                                 'surface_depth_waterheat', # Waterheat ratio
                                 'elevation', # Elevation
-                                'x_slope', 'y_slope', # Slope
+                                'slope' # Slope
                                 'fuel_low', 'fuel_high', # NOTE: Fuel type is binary (remains unchanged duing minmax scaling)
                                 'is_fire_day' # Target variable is binary (remains unchanged during minmax scaling)
                                 ]

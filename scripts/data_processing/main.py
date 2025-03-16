@@ -23,17 +23,16 @@ def main():
                           #  - Atmospheric
                           'relative_humidity', 'atmospheric_dryness',
                           
-                          # # Surface features
-                          # #  - Fuel (From vegetation)
-                          # 'fuel_low', 'fuel_high',
-                          # #  - Soil
-                          # 'soil', # Catagorical
+                          # Surface features
+                          #  - Fuel (From vegetation)
+                          'fuel_low', 'fuel_high',
+                          #  - Soil
+                          'soil', # Catagorical
                           # #  - Surface water and heat
                           # 'surface_depth_waterheat', # Adds 17 columns, with ratio for each 17cm depth
-                          # #  - Topography
-                          # 'elevation',
-                          # 'x_slope',
-                          # 'y_slope'
+                          #  - Topography
+                          'elevation',
+                          'slope',
                           
                           # Temporal features
                           # - Seasonal
