@@ -3,8 +3,8 @@ import pandas as pd
 
 class FbWeatherFeatures():
   def __init__(self, raw_data_df):
-    self.raw_data = raw_data_df
-    self.weather_features = pd.DataFrame()
+    self.raw_data = raw_data_df.copy()
+    self.weather_features = self.raw_data[['date', 'latitude', 'longitude']]
     
     
   def lightning_features(self):
@@ -39,20 +39,30 @@ class FbWeatherFeatures():
     
   def lightning_products(self):
     # lightning count * multiplicity and lightning count * absolute strength sum
-    self.weather_features["ltng_multiplicity_prod"] = self.raw_data["lightning_count"] * self.raw_data["multiplicity"]
+    self.weather_features["ltng_multiplicity_prod"] = self.raw_data["lightning_count"] * self.raw_data["multiplicity_sum"]
     self.weather_features["ltng_strength_prod"] = self.raw_data["lightning_count"] * self.raw_data["absv_strength_sum"]
     
     
   def lightning_to_ratios(self):
     # lightning count to multiplicity and lightning count to absolute strength sum
-    self.weather_features["ltng_multiplicity_ratio"] = self.raw_data["lightning_count"] / self.raw_data["multiplicity_sum"]
-    self.weather_features["ltng_strength_ratio"] = self.raw_data["lightning_count"] / self.raw_data["absv_strength_sum"]
+    # NOTE: Provides information on the average multiplicity or absolute strength per lightning strike.
+    lc = self.raw_data["lightning_count"]
+    
+    # Set default values for when lightning_count is 0
+    self.weather_features["ltng_multiplicity_ratio"] = self.raw_data["multiplicity_sum"] / lc
+    self.weather_features["ltng_strength_ratio"] = self.raw_data["absv_strength_sum"] / lc
+    
+    # Handle division by zero by replacing NaN values with 0 (lightning_count == 0)
+    self.weather_features["ltng_multiplicity_ratio"].fillna(0, inplace=True)
+    self.weather_features["ltng_strength_ratio"].fillna(0, inplace=True)
+
     
   def rolling_precipitation(self, window=7):
     '''
     Rolling precipitation feature takes the sum of total precipitation over a given window.
     '''
-    self.weather_features["rolling_precipitation"] = self.raw_data["tp"].rolling(window=window).sum()
+    self.weather_features["rolling_precipitation"] = self.raw_data["tp"].rolling(window=window, min_periods=1).sum()
+    
     
   def features(self, lightning=True, atmospheric=True, precipitation=True):
     if lightning:
@@ -62,6 +72,7 @@ class FbWeatherFeatures():
     if precipitation:
       self.rolling_precipitation()
     return self.weather_features
+  
   
   def get_features(self):
     return self.weather_features

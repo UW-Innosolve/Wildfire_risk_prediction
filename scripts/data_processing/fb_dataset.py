@@ -84,7 +84,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                             # NOTE: stl and swv layers are excluded in favour of waterheat ratio, daily_water_sum,  daily_temp_sum
                             'stl1',	'stl2',	'stl3',	'stl4', # Soil temperature levels (0-7cm, 7-28cm, 28-100cm, 100-289cm)
                             # 'swvl1',	'swvl2',	'swvl3',	'swvl4', # Soil water volume levels (0-7cm, 7-28cm, 28-100cm, 100-289cm)
-                            'tvh',	'tvl', # High vegetation type, low vegetation type (Categorical) #NOTE: fuel_low and fuel_high are preferred
+                            # 'tvh',	'tvl', # High vegetation type, low vegetation type (Categorical) #NOTE: fuel_low and fuel_high are preferred
                             # 'z', # Geopotential (proportional to elevation) #NOTE: elevation is preferred
                             'e',	'pev', # Evaporation, potential evaporation
                             'slhf',	'sshf',# Latent heat flux, sensible heat flux
@@ -128,7 +128,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                   'season', 'fire_season',
                                   
                                   # Spatial features
-                                  'clusters_12', 'clusters_24', 'clusters_36'
+                                  'clusters_12', 'clusters_30'
                                 ]
     if raw_params_feats or (raw_params_feats == ['DISABLE']): # Passing 'DISABLE' will cause no raw parameters to be used
       self.raw_param_feats = raw_params_feats
@@ -209,16 +209,14 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'surface_depth_waterheat', # Waterheat ratio
                                 'elevation', # Elevation
                                 'x_slope', 'y_slope', # Slope
-                                
                                 'fuel_low', 'fuel_high', # NOTE: Fuel type is binary (remains unchanged duing minmax scaling)
                                 'is_fire_day' # Target variable is binary (remains unchanged during minmax scaling)
                                 ]
     
     self.categorical_features = [
-                                'tvh', 'tvl', # High vegetation type, low vegetation type NOTE: fuel_low and fuel_high are preferred, categorical used as placeholder for now.
                                 'soil', # Soil type
                                 'season', 'fire_season', # Seasonal features
-                                'clusters_12', 'clusters_24', 'clusters_36' # Spatial clustering
+                                'clusters_12', 'clusters_30' # Spatial clustering
                                 ]
     
     # Filter the feature lists to only include features present in fb_model_features_raw.columns

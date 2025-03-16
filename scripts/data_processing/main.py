@@ -15,13 +15,13 @@ def main():
                           # 'fine_fuel_moisture_code', 'initial_spread_index',
                           # 'build_up_index', 'fire_weather_index',
                           
-                          # # Weather features
-                          # #  - Lightning
-                          # 'lightning_products', 'lightning_ratios',
-                          # #  - Precipitation
-                          # 'rolling_precipitation',
-                          # #  - Atmospheric
-                          # 'relative_humidity', 'atmospheric_dryness',
+                          # Weather features
+                          #  - Lightning
+                          'lightning_products', 'lightning_ratios',
+                          #  - Precipitation
+                          'rolling_precipitation',
+                          #  - Atmospheric
+                          'relative_humidity', 'atmospheric_dryness',
                           
                           # # Surface features
                           # #  - Fuel (From vegetation)
@@ -40,7 +40,7 @@ def main():
                           'season', 'fire_season',
                           
                           # Spatial features
-                          'clusters_12', 'clusters_24', 'clusters_36'
+                          'clusters_12', 'clusters_30'
                         ]
   
   ## Initialize  the dataset

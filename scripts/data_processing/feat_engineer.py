@@ -39,6 +39,7 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
         self.data_features['fire_weather_index'] = self.cwfdrs['fire_weather_index']
 
     # Weather features
+    # NOTE: The weather feature set is computed by the FbWeatherFeatures class, stored in the weather_features member until get_features() is called.
     if any([feat in eng_feats for feat in ['lightning_products', 'lightning_ratios', 'rolling_precipitation', 'relative_humidity', 'atmospheric_dryness']]):
       self.weather = FbWeatherFeatures(self.raw_data)
       if 'lightning_products' in eng_feats:
@@ -52,7 +53,13 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
       if 'atmospheric_dryness' in eng_feats:
         self.weather.rel_atmospheric_dryness()
         
-      self.data_features = self.data_features + self.weather.get_features()
+      self.weather_df  = self.weather.get_features()
+      # for col in self.weather_df.columns:
+      #   print(f"col: {col}")
+      #   print(self.weather_df[col])
+      
+      self.data_features = pd.merge(self.data_features, self.weather_df,
+                                    on=['date', 'latitude', 'longitude'], how='outer')
       
     # Surface features
     if any([feat in eng_feats for feat in ['fuel_low', 'fuel_high', 'soil', 'elevation', 'x_slope', 'y_slope', 'surface_depth_waterheat', 'surface_water_sum', 'surface_heat_sum']]):
@@ -86,17 +93,14 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
                                     on=['date', 'latitude', 'longitude'], how='outer')
       
     # Spatial features
-    if any([feat in eng_feats for feat in ['clusters_12', 'clusters_24', 'clusters_36']]):
+    if any([feat in eng_feats for feat in ['clusters_12', 'clusters_30']]):
       self.spatial = FbSpatialFeatures(self.raw_data)
       self.spatial_df = self.data_features[['date', 'latitude', 'longitude']].copy()
       if 'clusters_12' in eng_feats:
         self.spatial_df['clusters_12'] = self.spatial.kmeans_cluster(n_clusters=12)
-        logger.info(f"spatial_df shape: {self.spatial_df.shape}")  
-      if 'clusters_24' in eng_feats:
-        self.spatial_df['clusters_24'] = self.spatial.kmeans_cluster(n_clusters=24)  
-        logger.info(f"spatial_df shape: {self.spatial_df.shape}")
+        logger.info(f"spatial_df shape: {self.spatial_df.shape}") 
       if 'clusters_36' in eng_feats:
-        self.spatial_df['clusters_36'] = self.spatial.kmeans_cluster(n_clusters=36)
+        self.spatial_df['clusters_30'] = self.spatial.kmeans_cluster(n_clusters=36)
         logger.info(f"spatial_df shape: {self.spatial_df.shape}")
         
       self.data_features = pd.merge(self.data_features, self.spatial_df, on=['date', 'latitude', 'longitude'], how='outer')
