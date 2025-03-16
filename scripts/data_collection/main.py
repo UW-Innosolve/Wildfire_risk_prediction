@@ -48,8 +48,8 @@ def main():
     }
     # Define the temporal period for data retrieval
     query_period = {
-        'start_date': '2014-01-01',
-        'end_date': '2014-12-31'
+        'start_date': '2006-01-01',
+        'end_date': '2024-12-31'
     }
     # Define the grid resolution (in degrees)
     query_grid_resolution = 0.30
