@@ -62,7 +62,7 @@ def main():
         "Random Forest": RandomForestModel(),
         "XGBoost": XGBoostModel(),
         "Logistic Regression": LogisticRegressionModel(),
-        # Regression models (e.g., Linear, Polynomial, Ridge) are included for completeness,
+        # Regression models (e.g., Linear, Polynomial, Ridge) are included based on last update,
         # but typically for classification tasks you would focus on classifiers.
         "Linear Regression": LinearRegressionModel(),
         "Polynomial Regression 3": PolynomialRegressionModel(params={'degree': 3}),
@@ -98,7 +98,7 @@ def main():
     logging.info(f"Models selected for voting ensemble: {selected_model_names}")
     
     # Build a dictionary of selected models (only include classifiers).
-    # Here, we filter out any regression models.
+    # Here, we filter out pure regression models.
     classifier_names = {"Logistic Regression", "KNN", "Random Forest", "XGBoost"}
     selected_models = {name: models[name] for name in selected_model_names if name in classifier_names}
     
