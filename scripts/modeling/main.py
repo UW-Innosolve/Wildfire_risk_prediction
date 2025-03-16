@@ -91,8 +91,8 @@ def main():
     # ---------------------------
     # For the ensemble, we typically use only the classifiers. We'll assume that
     # Logistic Regression, KNN, Random Forest, and XGBoost are the classifiers.
-    # Set a threshold (e.g., minimum F1 score of 0.70) for inclusion in the ensemble.
-    f1_threshold = 0.70
+    # Set a threshold (e.g., minimum F1 score of 0.60) for inclusion in the ensemble.
+    f1_threshold = 0.60
     logging.info(f"Filtering models with F1 score >= {f1_threshold} from test metrics for the ensemble...")
     selected_model_names = filter_models_by_threshold(reporter, threshold=f1_threshold)
     logging.info(f"Models selected for voting ensemble: {selected_model_names}")
