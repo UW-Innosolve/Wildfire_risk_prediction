@@ -5,7 +5,7 @@ import pandas as pd
 class FbSurfaceFeatures():
   def __init__(self, raw_data_df):
     self.raw_data = raw_data_df
-    self.surface_features = pd.DataFrame()
+    self.surface_features = self.raw_data[['date', 'latitude', 'longitude']]
     
     
   def vegetation(self):
@@ -29,19 +29,13 @@ class FbSurfaceFeatures():
     
     no_fuel is and vegetation type not listed above
     '''
-    type_low = self.raw_data['tvl']
-    type_high = self.raw_data['tvh']
-    
-    for veg_type_low, veg_type_high in type_low, type_high:
-      if veg_type_low in [1, 10, 7, 16, 17, 19]:
-        self.surface_features['fuel_low'] = 1
-      else:
-        self.surface_features['fuel_low'] = 0
-        
-      if veg_type_high in [3, 4, 5, 6, 18]:
-        self.surface_features['fuel_high'] = 1
-      else:
-        self.surface_features['fuel_high'] = 0
+    # Define vegetation categories
+    low_fuel_types = {1, 10, 7, 16, 17, 19}
+    high_fuel_types = {3, 4, 5, 6, 18}
+
+    # Vectorized operations to assign 1 or 0 based on conditions
+    self.surface_features["fuel_low"] = self.raw_data["tvl"].isin(low_fuel_types).astype(int)
+    self.surface_features["fuel_high"] = self.raw_data["tvh"].isin(high_fuel_types).astype(int)
         
       
     
@@ -60,7 +54,8 @@ class FbSurfaceFeatures():
         7: "Organic"
     }
     
-    self.raw_data["slt"] = self.df["soil_catagorical"].map(bins)
+    self.surface_features['soil'] = self.raw_data["slt"].map(bins)
+    
     
     ## NOTE: take only sum of temperature volumes in final feature set
   def surface_depth_waterheat(self):
@@ -101,10 +96,41 @@ class FbSurfaceFeatures():
     
   def topography(self):
     grav_accel = 9.8067
+    lat_meters = 111320  # Meters per degree latitude
+    lon_meters = 111320 * np.cos(np.radians(self.raw_data["latitude"]))  # Meters per longitude degree
+
+    # Normalize elevation
     self.elevation = self.raw_data['z'] / grav_accel
-    self.x_slope = np.gradient(self.elevation, self.raw_data['longitude'])
-    self.y_slope = np.gradient(self.elevation, self.raw_data['latitude'])
-    self.surface_features['elevation', 'x_slope', 'y_slope'] = self.elevation, self.x_slope, self.y_slope
+    
+    # Prevent division by zero issues
+    if self.raw_data["longitude"].nunique() == 1:  # Constant longitudes
+        self.x_slope = np.zeros_like(self.elevation)
+    else:
+        self.x_slope = np.gradient(self.elevation, self.raw_data['longitude'] * lon_meters)
+
+    if self.raw_data["latitude"].nunique() == 1:  # Constant latitudes
+        self.y_slope = np.zeros_like(self.elevation)
+    else:
+        self.y_slope = np.gradient(self.elevation, self.raw_data['latitude'] * lat_meters)
+        
+    # Fix extreme values
+    self.x_slope = np.nan_to_num(self.x_slope, nan=0.0, posinf=0.0, neginf=0.0)
+    self.y_slope = np.nan_to_num(self.y_slope, nan=0.0, posinf=0.0, neginf=0.0)
+
+    # Compute slope magnitude safely
+    self.slope = np.sqrt(self.x_slope**2 + self.y_slope**2)
+
+    # Store results
+    self.surface_features['elevation'] = self.elevation
+    self.surface_features['slope'] = self.slope
+    # grav_accel = 9.8067
+    # self.elevation = self.raw_data['z'] / grav_accel
+    # self.x_slope = np.gradient(self.elevation, self.raw_data['longitude'])
+    # self.y_slope = np.gradient(self.elevation, self.raw_data['latitude'])
+    # self.slope = np.sqrt(self.x_slope**2 + self.y_slope**2)
+    
+    # self.surface_features['elevation'] = self.elevation
+    # self.surface_features['slope'] = self.slope
     
   def get_features(self):
     return self.surface_features
