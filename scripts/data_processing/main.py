@@ -29,7 +29,7 @@ def main():
                           #  - Soil
                           'soil', # Catagorical
                           # #  - Surface water and heat
-                          # 'surface_depth_waterheat', # Adds 17 columns, with ratio for each 17cm depth
+                          'surface_depth_waterheat', # Adds 10 features (columns)
                           #  - Topography
                           'elevation',
                           'slope',

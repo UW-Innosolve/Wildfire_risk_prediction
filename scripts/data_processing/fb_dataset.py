@@ -205,7 +205,9 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'src', # Skin reservoir content                                                                                                                                                                                                
                                 'railway_count', 'power_line_count', 'highway_count', 'aeroway_count', 'waterway_count', # Infrastructure not normally distributed
                                 'ltng_multiplicity_ratio', 'ltng_strength_ratio', # Lightning ratios
-                                'surface_depth_waterheat', # Waterheat ratio
+                                # Surface water-heat ratios
+                                'surface_water_heat_0', 'surface_water_heat_1', 'surface_water_heat_2', 'surface_water_heat_3', 'surface_water_heat_4',
+                                'surface_water_heat_5', 'surface_water_heat_6', 'surface_water_heat_7', 'surface_water_heat_8', 'surface_water_heat_9',
                                 'elevation', # Elevation
                                 'slope' # Slope
                                 'fuel_low', 'fuel_high', # NOTE: Fuel type is binary (remains unchanged duing minmax scaling)
@@ -233,7 +235,9 @@ class FbDataset(FeatEngineer, Preprocessor):
                                       on=['date', 'latitude', 'longitude'], how='outer')
     logger.info(f"Data shape after aggregation of standard scaling numeric features: {self.fb_processed_data.shape}")
       
+    print(self.numeric_features_mm)
     fb_model_feat_raw_mm = self.fb_model_features_raw[self.numeric_features_mm]
+    print(fb_model_feat_raw_mm)
     fb_model_feat_processed_mm = self.preprocessor.scale_features_mm(fb_model_feat_raw_mm)
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_mm,
                                       on=['date', 'latitude', 'longitude'], how='outer')

@@ -3,10 +3,6 @@ import numpy as np
 import datetime as dt
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 class FbTemporalFeatures():
   def __init__(self, raw_data_df):
