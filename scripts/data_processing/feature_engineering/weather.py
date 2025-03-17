@@ -39,7 +39,7 @@ class FbWeatherFeatures():
     
   def lightning_products(self):
     # lightning count * multiplicity and lightning count * absolute strength sum
-    self.weather_features["ltng_multiplicity_prod"] = self.raw_data["lightning_count"] * self.raw_data["multiplicity_sum"]
+    # self.weather_features["ltng_multiplicity_prod"] = self.raw_data["lightning_count"] * self.raw_data["multiplicity_sum"]
     self.weather_features["ltng_strength_prod"] = self.raw_data["lightning_count"] * self.raw_data["absv_strength_sum"]
     
     
@@ -49,11 +49,11 @@ class FbWeatherFeatures():
     lc = self.raw_data["lightning_count"]
     
     # Set default values for when lightning_count is 0
-    self.weather_features["ltng_multiplicity_ratio"] = self.raw_data["multiplicity_sum"] / lc
+    # self.weather_features["ltng_multiplicity_ratio"] = self.raw_data["multiplicity_sum"] / lc
     self.weather_features["ltng_strength_ratio"] = self.raw_data["absv_strength_sum"] / lc
     
     # Handle division by zero by replacing NaN values with 0 (lightning_count == 0)
-    self.weather_features["ltng_multiplicity_ratio"].fillna(0, inplace=True)
+    # self.weather_features["ltng_multiplicity_ratio"].fillna(0, inplace=True)
     self.weather_features["ltng_strength_ratio"].fillna(0, inplace=True)
 
     

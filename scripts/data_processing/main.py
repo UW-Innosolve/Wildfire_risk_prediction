@@ -47,6 +47,8 @@ def main():
   dataset.config_features(eng_feats=eng_feats) # Can use 'DISABLE' to disable a feature set
   dataset.process() # Load and process data
   processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
+  logger.info(f"Processed data shape: {processed_data.shape}")
+  processed_data.to_csv("processed_data_no_cffdrs.csv", index=False)
   X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
   logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 

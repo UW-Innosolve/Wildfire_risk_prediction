@@ -41,6 +41,12 @@ class FbDataset(FeatEngineer, Preprocessor):
     csv_files = glob.glob(os.path.join(data_dir, "*.csv"))
     
     logger.info((f"Found {len(csv_files)} CSV files in directory: {self.raw_data_dir}"))
+    
+    # If only one file is found, load it directly.
+    if len(csv_files) == 1:
+        data = pd.read_csv(csv_files[0])
+        return data
+
     dfs = []
     for file in csv_files:
         try:
@@ -93,7 +99,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                             'tp', # Total precipitation
                             # 'sf', # Snowfall NOTE: Excluded for now, can be used in the definition of fire season (CWFDRS)
                             'is_fire_day', # NOTE: This is the target variable
-                            'lightning_count', 'absv_strength_sum',	'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
+                            'lightning_count', 'absv_strength_sum',	#'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
                             'railway_count',	'power_line_count',	'highway_count', # Railway, power line, highway count
                             'aeroway_count',	'waterway_count' # Aeroway, waterway count
                           ]
@@ -185,11 +191,11 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'ssr', 'ssrd', # surface solar radiation, surface solar radiation down
                                 'str', 'strd', # Surface thermal radiation, surface thermal radiation down
                                 'tp', 'sf', # Total precipitation, snowfall
-                                'lightning_count', 'absv_strength_sum', 'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
+                                'lightning_count', 'absv_strength_sum',# 'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
                                 'stl1', 'stl2', 'stl3', 'stl4', # Soil temperature levels (0-7cm, 7-28cm, 28-100cm, 100-289cm)
                                 # Fire weather indices unbounded
                                 'drought_code', 'duff_moisture_code', 'fine_fuel_moisture_code', 'initial_spread_index', 'build_up_index', 'fire_weather_index',
-                                'ltng_multiplicity_prod', 'ltng_strength_prod', # Lightning products
+                                 'ltng_strength_prod', #'ltng_multiplicity_prod', # Lightning products
                                 'relative_humidity', 'atmospheric_dryness', # Relative humidity, atmospheric dryness
                                 'rolling_precipitation', # Rolling precipitation
                                 'daily_water_sum', 'daily_temp_sum', # Daily water and temperature sum from the surface
@@ -204,7 +210,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'lsm', # Land-sea mask
                                 'src', # Skin reservoir content                                                                                                                                                                                                
                                 'railway_count', 'power_line_count', 'highway_count', 'aeroway_count', 'waterway_count', # Infrastructure not normally distributed
-                                'ltng_multiplicity_ratio', 'ltng_strength_ratio', # Lightning ratios
+                                 'ltng_strength_ratio', #'ltng_multiplicity_ratio', # Lightning ratios
                                 # Surface water-heat ratios
                                 'surface_water_heat_0', 'surface_water_heat_1', 'surface_water_heat_2', 'surface_water_heat_3', 'surface_water_heat_4',
                                 'surface_water_heat_5', 'surface_water_heat_6', 'surface_water_heat_7', 'surface_water_heat_8', 'surface_water_heat_9',

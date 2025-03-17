@@ -62,7 +62,7 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
                                     on=['date', 'latitude', 'longitude'], how='outer')
       
     # Surface features
-    if any([feat in eng_feats for feat in ['fuel_low', 'fuel_high', 'soil', 'elevation', 'slope''surface_depth_waterheat', 'surface_water_sum', 'surface_heat_sum']]):
+    if any([feat in eng_feats for feat in ['fuel_low', 'fuel_high', 'soil', 'elevation', 'slope', 'surface_depth_waterheat', 'surface_water_sum', 'surface_heat_sum']]):
       self.surface = FbSurfaceFeatures(self.raw_data)
       if 'fuel_low' in eng_feats or 'fuel_high' in eng_feats:
         self.surface.vegetation()
@@ -74,7 +74,6 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
         self.surface.topography() # Elevation and slope come as a package deal
         
       self.surface_df = self.surface.get_features()
-      print(self.surface_df.head())
       self.data_features = pd.merge(self.data_features, self.surface_df,
                                     on=['date', 'latitude', 'longitude'], how='outer')
     
@@ -98,13 +97,12 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     # Spatial features
     if any([feat in eng_feats for feat in ['clusters_12', 'clusters_30']]):
       self.spatial = FbSpatialFeatures(self.raw_data)
-      self.spatial_df = self.data_features[['date', 'latitude', 'longitude']].copy()
       if 'clusters_12' in eng_feats:
-        self.spatial_df['clusters_12'] = self.spatial.kmeans_cluster(n_clusters=12)
-        logger.info(f"spatial_df shape: {self.spatial_df.shape}") 
+        self.spatial.kmeans_cluster(n_clusters=12)
       if 'clusters_36' in eng_feats:
-        self.spatial_df['clusters_30'] = self.spatial.kmeans_cluster(n_clusters=30)
-        logger.info(f"spatial_df shape: {self.spatial_df.shape}")
+        self.spatial.kmeans_cluster(n_clusters=30)
+        
+      self.spatial_df = self.spatial.get_features()
         
       self.data_features = pd.merge(self.data_features, self.spatial_df, on=['date', 'latitude', 'longitude'], how='outer')
       

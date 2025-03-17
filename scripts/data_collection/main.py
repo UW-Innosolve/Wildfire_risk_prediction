@@ -48,7 +48,7 @@ def main():
     }
     # Define the temporal period for data retrieval
     query_period = {
-        'start_date': '2018-01-01',
+        'start_date': '2024-01-01',
         'end_date': '2024-12-31'
     }
     # Define the grid resolution (in degrees)
@@ -59,9 +59,9 @@ def main():
     # ------------------------------------------------------
     # Set each flag to True or False to control which pipeline is initialized.
     pipeline_config = {
-        "EARTHKIT": True,         # For CDS ERA5 reanalysis data
+        "EARTHKIT": False,         # For CDS ERA5 reanalysis data
         "AB_LIGHTNING": True,      # For Alberta Lightning data
-        "HUMAN_ACTIVITY": True,    # For Human Activity data (OSM-based)
+        "HUMAN_ACTIVITY": False,    # For Human Activity data (OSM-based)
         # "NED": False,           # Example for NASA Earthdata pipeline (if available)
     }
 
