@@ -32,7 +32,7 @@ def main():
     # ------------------------------------------------------
     # 1. Load Wildfire Incidence Data
     # ------------------------------------------------------
-    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2023.xlsx"
+    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2024_COPY.xlsx"
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
     wildfire_incidence_data = wildfire_loader.ab_fire_incidents
     # Log the number of incidents loaded.
@@ -48,7 +48,7 @@ def main():
     }
     # Define the temporal period for data retrieval
     query_period = {
-        'start_date': '2006-01-01',
+        'start_date': '2018-01-01',
         'end_date': '2024-12-31'
     }
     # Define the grid resolution (in degrees)
