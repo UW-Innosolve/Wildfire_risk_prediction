@@ -1,6 +1,7 @@
 from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bce_loss
 from model_classes.lstm import LSTM_3D
 from data_preprocessing.windowing import batched_indexed_windows, reshape_data
+from model_evaluation.nn_model_metrics import evaluate
 
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
@@ -8,15 +9,24 @@ import numpy as np
 import pandas as pd
 import torch
 import logging
+from typing import Dict
 
-import tensorboard as tb
+from torch.utils.tensorboard.writer import SummaryWriter
+
+
+def tb_optimizer(
+        writer: SummaryWriter,
+        losses_dict: Dict[str, torch.Tensor],
+        step: int,
+) -> None:
+    for loss_name, loss in losses_dict.items():
+        writer.add_scalar(loss_name, loss, global_step=step)
 
 
 # Configure logging: INFO level logs progress, DEBUG could be used for more details.
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 features = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
@@ -57,6 +67,7 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     features = training_parameters['features']
     num_training_days = training_parameters['num_training_days']
     prediction_day = training_parameters['prediction_day']
+    checkpoint_dir = './checkpoints/'
 
     # Define the list of features based on our dataset headers.
     logging.info(f"Selected features: {features}")
@@ -64,6 +75,7 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
 
     data = torch.Tensor(reshaped_data)
     labels = torch.Tensor(reshaped_labels)
+    writer = SummaryWriter(log_dir=checkpoint_dir)
 
     test_indices_list = []
     for i in range(6, 25):
@@ -82,23 +94,38 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
-        np.random.shuffle(X_test)
-        print(X_train)
-        print(X_test)
+        # print(X_train)
+        # print(X_test)
         batches = X_train.reshape(int(len(X_train)/batch_size), batch_size)
+        batch_num = 0
 
         for batch in batches:
             print(f'Epoch {epoch}, Batch {batch}')
             optimizer.zero_grad()
             inputs, targets = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
             outputs = model(inputs)  # forward pass
-            # outputs = outputs.squeeze(2)  # remove extra dimension
             loss = bce_loss(outputs, targets)
+            if (batch_num % 10) == 0:
+                with torch.no_grad():
+                    np.random.shuffle(X_test)
+                    label_batch = X_test[:4]
+                    test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
+                    test_predictions = model(test_inputs)
+                    # test_metrics = evaluate(test_predictions, test_targets)
+                    test_loss = bce_loss(test_predictions, test_targets)
+                    metrics_dict = {"training_bce_loss": loss.item(),
+                                    "validation_bce_loss": test_loss.item()}#,
+                                    # "accuracy": test_metrics["accuracy"],
+                                    # "precision": test_metrics["precision"],
+                                    # "recall": test_metrics["recall"],
+                                    # "f1_score": test_metrics["f1_score"]}
+                                    # # "roc_auc": test_metrics["roc_auc"]}
+                    tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
             loss.backward()
+            batch_num += 1
 
-        optimizer.step()
-        # if (epoch) % 10 == 0:
-        #     print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
+            optimizer.step()
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
 
 
 if __name__ == "__main__":
