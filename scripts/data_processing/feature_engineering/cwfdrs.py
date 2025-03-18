@@ -142,8 +142,6 @@ class FbCwfdrsFeatures():
         ffmc_start=85,
     )
 
-
-
     # # self.cwfdrs_inputs["sfcWind"] = xci.uas_vas_2_sfcwind(
     # # uas=self.raw_data["10u"].to_xarray(), 
     # # vas=self.raw_data["10v"].to_xarray()
@@ -183,7 +181,7 @@ class FbCwfdrsFeatures():
     # Convert back to Pandas DataFrame
     print(out_fwi)
     print(type(out_fwi))
-    # self.cwfdrs_features = out_fwi.to_dataframe().reset_index()
+    self.cwfdrs_features = out_fwi.to_dataframe().reset_index()
       
   def get_features(self):
     """Return the computed CWFDRS features."""

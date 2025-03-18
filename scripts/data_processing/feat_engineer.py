@@ -25,18 +25,21 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     # Fire weather danger rating system features
     if any([feat in eng_feats for feat in ['drought_code', 'duff_moisture_code', 'fine_fuel_moisture_code', 'initial_spread_index', 'build_up_index', 'fire_weather_index']]):
       self.cwfdrs = FbCwfdrsFeatures(self.raw_data)
-      if 'drought_code' in eng_feats:
-        self.data_features['drought_code'] = self.cwfdrs['drought_code']
-      if 'duff_moisture_code' in eng_feats:
-        self.data_features['duff_moisture_code'] = self.cwfdrs['duff_moisture_code']
-      if 'fine_fuel_moisture_code' in eng_feats:
-        self.data_features['fine_fuel_moisture_code'] = self.cwfdrs['fine_fuel_moisture_code']
-      if 'initial_spread_index' in eng_feats:
-        self.data_features['initial_spread_index'] = self.cwfdrs['initial_spread_index']
-      if 'build_up_index' in eng_feats:
-        self.data_features['build_up_index'] = self.cwfdrs['build_up_index']
-      if 'fire_weather_index' in eng_feats:
-        self.data_features['fire_weather_index'] = self.cwfdrs['fire_weather_index']
+      
+      self.cwfdrs_features = self.cwfdrs.get_features()
+      print(self.cwfdrs_features.head())
+      # if 'drought_code' in eng_feats:
+      #   self.data_features['drought_code'] = self.cwfdrs['drought_code']
+      # if 'duff_moisture_code' in eng_feats:
+      #   self.data_features['duff_moisture_code'] = self.cwfdrs['duff_moisture_code']
+      # if 'fine_fuel_moisture_code' in eng_feats:
+      #   self.data_features['fine_fuel_moisture_code'] = self.cwfdrs['fine_fuel_moisture_code']
+      # if 'initial_spread_index' in eng_feats:
+      #   self.data_features['initial_spread_index'] = self.cwfdrs['initial_spread_index']
+      # if 'build_up_index' in eng_feats:
+      #   self.data_features['build_up_index'] = self.cwfdrs['build_up_index']
+      # if 'fire_weather_index' in eng_feats:
+      #   self.data_features['fire_weather_index'] = self.cwfdrs['fire_weather_index']
 
     # Weather features
     # NOTE: The weather feature set is computed by the FbWeatherFeatures class, stored in the weather_features member until get_features() is called.
