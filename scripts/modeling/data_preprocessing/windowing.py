@@ -28,6 +28,7 @@ def reshape_data(df, features, target_column):
 
     # get list of days in this file
     dates = df['date'].unique()
+    print(len(dates))
 
     # create parameters and labels arrays
     parameters = []
@@ -49,7 +50,7 @@ def reshape_data(df, features, target_column):
     # create corresponding labels for each day
     label_full = df[target_column]
 
-    for day in range(len(dates)):
+    for day in range(len(dates) - 1):
         labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
         labels_ondate_reshaped = np.asarray(labels_ondate).reshape(latitude_count, longitude_count)
         labels.append(labels_ondate_reshaped)
@@ -98,11 +99,11 @@ def reshape_and_window_indexed(indexed_day, raw_dataframe, labels, training_days
 
 def batched_indexed_windows(batch_indices, parameters_full, labels_full, training_days, prediction_day, device='cpu'):
     with torch.no_grad():
-        batch_data_windows = parameters_full[:, batch_indices[0] - training_days:batch_indices[0], :, :].unsqueeze(0)
+        batch_data_windows = parameters_full[batch_indices[0] - training_days:batch_indices[0], :, :].unsqueeze(0)
         batch_label_windows = labels_full[batch_indices[0] + prediction_day, :, :].unsqueeze(0)
 
         for indx in batch_indices[1:]:
-            windowed_data = parameters_full[:, indx - training_days:indx, :, :].unsqueeze(0)
+            windowed_data = parameters_full[indx - training_days:indx, :, :].unsqueeze(0)
             batch_data_windows = torch.cat((batch_data_windows, windowed_data), dim=0)
             windowed_label = labels_full[indx + prediction_day, :, :].unsqueeze(0)
             batch_label_windows = torch.cat((batch_label_windows, windowed_label), dim=0)
