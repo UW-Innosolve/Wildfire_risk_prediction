@@ -1,8 +1,6 @@
 from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bce_loss
 from model_classes.lstm import LSTM_3D
-# from data_preprocessing.dataloading import dataloader
-# from data_preprocessing.windowing import create_windows
-from data_preprocessing.windowing import batched_indexed_windows, create_windows, reshape_data
+from data_preprocessing.windowing import batched_indexed_windows, reshape_data
 
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
@@ -64,15 +62,8 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     logging.info(f"Selected features: {features}")
     logging.info(f"Target variable: {target_column}")
 
-    # generate windowed data
-    # data, labels = dataloader()
     data = torch.Tensor(reshaped_data)
     labels = torch.Tensor(reshaped_labels)
-    # windowed_data, windowed_labels = create_windows(data, labels, num_training_days, prediction_day)
-
-    # give every year a number
-    # give every viable day of the year an index
-    # pair the above two and iterate to create a list of usable indices
 
     test_indices_list = []
     for i in range(6, 25):
@@ -85,11 +76,9 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     X_train, X_test, y_train, y_test = train_test_split(test_indices_np, test_indices_np, train_size=0.85)
 
     # create model
-    model = LSTM_3D(input_channels=43, hidden_size=64, dropout_rate=0.02)
+    model = LSTM_3D(input_channels=features, hidden_size=64, dropout_rate=0.02)
 
-    # set
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    # input_data = torch.randn(batch_size, 3, 5) # example input
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
@@ -97,18 +86,6 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
         print(X_train)
         print(X_test)
         batches = X_train.reshape(int(len(X_train)/batch_size), batch_size)
-
-        # # Example usage:
-        # batch_size = 14
-        # time_steps = 10
-        # depth = 42
-        # height = 37
-        # width = 34
-        # hidden_size = 64
-        # dropout_rate = 0.2
-        #
-        # # Create a dummy input tensor
-        # input_tensor = torch.randn(batch_size, time_steps, depth, height, width)
 
         for batch in batches:
             print(f'Epoch {epoch}, Batch {batch}')
