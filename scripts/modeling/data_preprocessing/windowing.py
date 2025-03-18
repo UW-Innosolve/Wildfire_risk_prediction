@@ -30,19 +30,30 @@ def reshape_data(df, features, target_column):
 
     # create parameters and labels arrays
     parameters = []
-    labels = df[target_column]
+    labels = []
 
-    # processing to reshape each parameter
+    # processing to reshape each parameter and create an ordered sequence of the parameter on each day
     for parametername in features:
         parameter_sequence = []
         parameter_full = df[parametername]
+
+        # reshape parameter values for each day
         for day in range(len(dates)):
             parameter_ondate = parameter_full[rows_perday * day : rows_perday * (day + 1)] # get parameter values on that day
             parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count, longitude_count) # reshape array to an 'image' according to lat/long
             parameter_sequence.append(parameter_ondate_reshaped)
+
         parameters.append(parameter_sequence)
 
-    return parameters, labels
+    # create corresponding labels for each day
+    label_full = df[target_column]
+
+    for day in range(len(dates)):
+        labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
+        labels_ondate_reshaped = np.asarray(labels_ondate).reshape(latitude_count, longitude_count)
+        labels.append(labels_ondate_reshaped)
+
+    return np.asarray(parameters), np.asarray(labels)
 
 
 def create_windows(parameters, labels, training_days, prediction_day):
@@ -53,12 +64,21 @@ def create_windows(parameters, labels, training_days, prediction_day):
     # cannot start at any value < training_days (because we don't have that data)
     # cannot predict any value > last data day + prediction_day (because we don't have that data)
     for i in range(training_days, len(parameters[1])-prediction_day):
-        data_window = parameters[i-training_days:i]
-        label_window = labels[i+5]
+        print(i)
+        print(f'Training on days {i-training_days} through day {i}, predicting day {i+prediction_day}')
+        data_window = parameters[:, i-training_days:i, :, :]
+        label_window = labels[i+prediction_day, :, :]
         windowed_dataset.append(data_window)
         windowed_labels.append(label_window)
 
     return windowed_dataset, windowed_labels
+
+
+def create_indexed_windows(indexed_day, parameters, labels, training_days, prediction_day):
+    windowed_data = parameters[:, indexed_day - training_days:indexed_day, :, :]
+    windowed_label = labels[indexed_day + prediction_day, :, :]
+
+    return windowed_data, windowed_label
 
 
 ## initial parameters loading
@@ -82,6 +102,6 @@ target_column = 'is_fire_day'
 
 reshaped_data, reshaped_labels = reshape_data(rawdata_df, columns_used, target_column)
 windowed_dataset, windowed_labels = create_windows(reshaped_data, reshaped_labels, 10, 5)
-
+window_daytwelve, window_label_daytwelve = create_indexed_windows(12, reshaped_data, reshaped_labels, 10, 5)
 
 print('windowing completed')

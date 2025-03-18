@@ -1,0 +1,6 @@
+{'test_parameters' : {
+    'batch_size': 10,
+    'num_epochs': 30,
+    'learning_rate': 0.003,
+    'features': 37}
+}
