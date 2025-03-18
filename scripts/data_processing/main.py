@@ -60,7 +60,7 @@ def main():
         X_test.to_csv(f"{model_data_dir}/X_test_{year}.csv", index=False)
         y_train.to_csv(f"{model_data_dir}/y_train_{year}.csv", index=False)
         y_test.to_csv(f"{model_data_dir}/y_test_{year}.csv", index=False)
-        logging.info(f"Model-ready data saved to: {model_data_dir}")
+        logging.info(f"Model-ready data for {year} saved to: {model_data_dir}")
 
 
 if __name__ == "__main__":
