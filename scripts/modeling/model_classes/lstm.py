@@ -23,7 +23,8 @@ class LSTM_3D(nn.Module):
         self.dropout1 = nn.Dropout(dropout_rate)
         self.lstm2 = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size, batch_first=True)
         self.dropout2 = nn.Dropout(dropout_rate)
-        self.linear = nn.Linear(hidden_size, 1)  # Outputting a single value per timestep
+        self.linear = nn.Linear(hidden_size, 1)# Outputting a single value per timestep
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         """
@@ -50,30 +51,33 @@ class LSTM_3D(nn.Module):
         # Linear layer to get a single output per timestep
         out = self.linear(out)  # [batch_size * height * width, 1]
 
+        # take sigmoid of linear layer to get output for binary classification
+        out = self.sigmoid(out)
+
         # Reshape back to [batch_size, height, width]
         out = out.view(batch_size, height, width)  # [batch_size, height, width]
 
         return out
 
 
-# Example usage:
-batch_size = 2
-time_steps = 10
-depth = 31
-height = 37
-width = 34
-hidden_size = 64
-dropout_rate = 0.2
-
-# Create a dummy input tensor
-input_tensor = torch.randn(batch_size, time_steps, depth, height, width)
-
-# Create the model
-model = LSTM_3D(input_channels=depth, hidden_size=hidden_size, dropout_rate=dropout_rate)
-
-# Forward pass
-output = model(input_tensor)
-
-# Print the output shape
-print(output.shape)  # Should be [2, 37, 34]
+# # Example usage:
+# batch_size = 14
+# time_steps = 10
+# depth = 42
+# height = 37
+# width = 34
+# hidden_size = 64
+# dropout_rate = 0.2
+#
+# # Create a dummy input tensor
+# input_tensor = torch.randn(batch_size, time_steps, depth, height, width)
+#
+# # Create the model
+# model = LSTM_3D(input_channels=depth, hidden_size=hidden_size, dropout_rate=dropout_rate)
+#
+# # Forward pass
+# output = model(input_tensor)
+#
+# # Print the output shape
+# print(output.shape)  # Should be [2, 37, 34]
 
