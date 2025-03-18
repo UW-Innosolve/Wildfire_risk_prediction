@@ -60,8 +60,16 @@ rawdata_df = pd.read_csv(rawdata_path)
 reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column)
 
 
+usable_ranges = [range(59, 273), range(424, 638), range(790, 1004), range(1155, 1369), range(1520, 1734), range(1885, 2099), range(2251, 2465), range(2616, 2830), range(2981, 3195), range(3346, 3560), range(3712, 3926), range(4077, 4291), range(4321, 4535), range(4686, 4900), range(5052, 5266), range(5417, 5631), range(5782, 5996), range(6147, 6361), range(6513, 6727)]
+usable_indices = []
+for usablerange in usable_ranges:
+    for i in usable_ranges:
+        usable_indices.append(i)
+fireseason_indices_np = np.asarray(usable_indices)
+
+
 # TODO create a training_parameters json or something similar to make tracking easier?
-def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"batch_size": 10,"num_epochs": 30,"learning_rate": 0.03,"features": len(features), "num_training_days": 14, "prediction_day":5, "hidden_size": 20, "experiment_name":"round3"}):
+def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"batch_size": 10,"num_epochs": 30,"learning_rate": 0.003,"features": len(features), "num_training_days": 14, "prediction_day":5, "hidden_size": 20, "experiment_name":"round3"}):
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
     learning_rate = training_parameters['learning_rate']
@@ -80,15 +88,15 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     labels = torch.Tensor(reshaped_labels)
     writer = SummaryWriter(log_dir=checkpoint_dir)
 
-    test_indices_list = []
-    for i in range(20, 550):
-        test_indices_list.append(i)
-    test_indices_np = np.asarray(test_indices_list)
+    # test_indices_list = []
+    # for i in range(20, 550):
+    #     test_indices_list.append(i)
+    # test_indices_np = np.asarray(test_indices_list)
 
     # Split the data; apply SMOTE for balancing minority class (fire days).
     logging.info("Splitting data into training and test sets using day index...")
     # TODO complete train test splitting
-    X_train, X_test, y_train, y_test = train_test_split(test_indices_np, test_indices_np, train_size=0.85)
+    X_train, X_test, y_train, y_test = train_test_split(fireseason_indices_np, fireseason_indices_np, train_size=0.8)
 
     # create model
     model = LSTM_3D(input_channels=features, hidden_size=hidden_size, dropout_rate=0.02)
