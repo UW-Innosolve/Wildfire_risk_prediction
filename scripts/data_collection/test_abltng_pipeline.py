@@ -8,7 +8,7 @@ print(raw_ltng.head())
 abltng.set_ab_ltng_params(
     lat_range=[49, 60],
     lon_range=[-120, -110],
-    grid_resolution=0.35
+    grid_resolution=0.3
 )
 
 batch_dates = ['2019-01-01', '2019-01-02', '2019-01-03', '2019-01-04', '2019-01-05']

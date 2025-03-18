@@ -14,8 +14,8 @@ import collection_utils.alberta_wf_incidence_loader as alberta_wf_incidence_load
 import collection_utils.raw_data_assembly as raw_data_assembly
 
 from earthkit_pipeline.cds_auth import CdsAuth
-import cfgrib
-import eccodes
+# import cfgrib
+# import eccodes
 
 # Configure logging: Log to both file (pipeline.log) and the console.
 logging.basicConfig(
@@ -32,7 +32,7 @@ def main():
     # ------------------------------------------------------
     # 1. Load Wildfire Incidence Data
     # ------------------------------------------------------
-    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2023.xlsx"
+    wildfire_data_path = "scripts/data_collection/static_datasets/fp-historical-wildfire-data-2006-2024_COPY.xlsx"
     wildfire_loader = alberta_wf_incidence_loader.AlbertaWildfireIncidenceLoader(wildfire_data_path)
     wildfire_incidence_data = wildfire_loader.ab_fire_incidents
     # Log the number of incidents loaded.
@@ -48,20 +48,20 @@ def main():
     }
     # Define the temporal period for data retrieval
     query_period = {
-        'start_date': '2014-01-01',
-        'end_date': '2016-12-31'
+        'start_date': '2024-01-01',
+        'end_date': '2024-12-31'
     }
     # Define the grid resolution (in degrees)
-    query_grid_resolution = 0.35
+    query_grid_resolution = 0.30
 
     # ------------------------------------------------------
     # 3. Pipeline Configuration: Enable/Disable Pipelines
     # ------------------------------------------------------
     # Set each flag to True or False to control which pipeline is initialized.
     pipeline_config = {
-        "EARTHKIT": True,         # For CDS ERA5 reanalysis data
+        "EARTHKIT": False,         # For CDS ERA5 reanalysis data
         "AB_LIGHTNING": True,      # For Alberta Lightning data
-        "HUMAN_ACTIVITY": True,    # For Human Activity data (OSM-based)
+        "HUMAN_ACTIVITY": False,    # For Human Activity data (OSM-based)
         # "NED": False,           # Example for NASA Earthdata pipeline (if available)
     }
 
@@ -161,7 +161,7 @@ def main():
         wildfire_incidence_data,
         start_date=query_period['start_date'],
         end_date=query_period['end_date'],
-        resample_interval='4D',
+        resample_interval='1D',
         grouping_period_size='M',
         latitude_tolerance=1.0,
         longitude_tolerance=1.0
