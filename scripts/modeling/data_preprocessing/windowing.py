@@ -83,25 +83,25 @@ def create_indexed_windows(indexed_day, parameters, labels, training_days, predi
 
 ## initial parameters loading
 # load data (path local to Teo's machine for now)
-rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
-
-# load raw data into pandas
-rawdata_df = pd.read_csv(rawdata_path)
-
-# get columns
-# TODO fix so that the columns are not fixed
-# columns_used = rawdata_df.columns[3:]
-columns_used = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
-                'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
-                'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'tvh',
-                'tvl', 'z', 'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
-                'tp', 'lightning_count', 'absv_strength_sum',
-                'multiplicity_sum', 'railway_count', 'power_line_count',
-                'highway_count', 'aeroway_count', 'waterway_count']
-target_column = 'is_fire_day'
-
-reshaped_data, reshaped_labels = reshape_data(rawdata_df, columns_used, target_column)
-windowed_dataset, windowed_labels = create_windows(reshaped_data, reshaped_labels, 10, 5)
-window_daytwelve, window_label_daytwelve = create_indexed_windows(12, reshaped_data, reshaped_labels, 10, 5)
-
-print('windowing completed')
+# rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
+#
+# # load raw data into pandas
+# rawdata_df = pd.read_csv(rawdata_path)
+#
+# # get columns
+# # TODO fix so that the columns are not fixed
+# # columns_used = rawdata_df.columns[3:]
+# columns_used = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
+#                 'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
+#                 'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'tvh',
+#                 'tvl', 'z', 'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
+#                 'tp', 'lightning_count', 'absv_strength_sum',
+#                 'multiplicity_sum', 'railway_count', 'power_line_count',
+#                 'highway_count', 'aeroway_count', 'waterway_count']
+# target_column = 'is_fire_day'
+#
+# reshaped_data, reshaped_labels = reshape_data(rawdata_df, columns_used, target_column)
+# windowed_dataset, windowed_labels = create_windows(reshaped_data, reshaped_labels, 10, 5)
+# window_daytwelve, window_label_daytwelve = create_indexed_windows(12, reshaped_data, reshaped_labels, 10, 5)
+#
+# print('windowing completed')
