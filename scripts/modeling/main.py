@@ -34,11 +34,13 @@ features = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
             'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'tvh',
             'tvl', 'z', 'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
             'tp', 'is_fire_day', 'lightning_count', 'absv_strength_sum',
-            'multiplicity_sum', 'railway_count', 'power_line_count',
+            'railway_count', 'power_line_count',
             'highway_count', 'aeroway_count', 'waterway_count']
 target_column = 'is_fire_day'
+# REMOVED 'multiplicity_sum'
 
-rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
+# rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
+rawdata_path = "/Users/teodoravujovic/Downloads/fb_raw_data_2006-2024_split/fb_raw_data_5.csv"
 
 # load raw data into pandas
 rawdata_df = pd.read_csv(rawdata_path)
@@ -59,15 +61,16 @@ reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_colum
 
 
 # TODO create a training_parameters json or something similar to make tracking easier?
-def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"batch_size": 4,"num_epochs": 5,"learning_rate": 0.003,"features": 42, "num_training_days": 5, "prediction_day":5}):
-    #
+def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"batch_size": 10,"num_epochs": 30,"learning_rate": 0.03,"features": len(features), "num_training_days": 14, "prediction_day":5, "hidden_size": 20, "experiment_name":"round3"}):
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
     learning_rate = training_parameters['learning_rate']
     features = training_parameters['features']
     num_training_days = training_parameters['num_training_days']
     prediction_day = training_parameters['prediction_day']
-    checkpoint_dir = './checkpoints/'
+    hidden_size = training_parameters['hidden_size']
+    experiment_name = training_parameters['experiment_name']
+    checkpoint_dir = f'./checkpoints/{experiment_name}/'
 
     # Define the list of features based on our dataset headers.
     logging.info(f"Selected features: {features}")
@@ -78,7 +81,7 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     writer = SummaryWriter(log_dir=checkpoint_dir)
 
     test_indices_list = []
-    for i in range(6, 25):
+    for i in range(20, 550):
         test_indices_list.append(i)
     test_indices_np = np.asarray(test_indices_list)
 
@@ -88,16 +91,16 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     X_train, X_test, y_train, y_test = train_test_split(test_indices_np, test_indices_np, train_size=0.85)
 
     # create model
-    model = LSTM_3D(input_channels=features, hidden_size=64, dropout_rate=0.02)
+    model = LSTM_3D(input_channels=features, hidden_size=hidden_size, dropout_rate=0.02)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    batch_num = 0
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
         # print(X_train)
         # print(X_test)
         batches = X_train.reshape(int(len(X_train)/batch_size), batch_size)
-        batch_num = 0
 
         for batch in batches:
             print(f'Epoch {epoch}, Batch {batch}')
@@ -105,14 +108,15 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
             inputs, targets = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
             outputs = model(inputs)  # forward pass
             loss = bce_loss(outputs, targets)
-            if (batch_num % 10) == 0:
+            if (batch_num % 20) == 0:
                 with torch.no_grad():
                     np.random.shuffle(X_test)
-                    label_batch = X_test[:4]
+                    label_batch = X_test[:batch_size]
                     test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
                     test_predictions = model(test_inputs)
                     # test_metrics = evaluate(test_predictions, test_targets)
                     test_loss = bce_loss(test_predictions, test_targets)
+                    print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {test_loss}")
                     metrics_dict = {"training_bce_loss": loss.item(),
                                     "validation_bce_loss": test_loss.item()}#,
                                     # "accuracy": test_metrics["accuracy"],
