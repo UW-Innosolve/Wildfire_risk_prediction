@@ -26,12 +26,12 @@ class FbDataset(FeatEngineer, Preprocessor):
     self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
     self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
 
-    # Initialize the raw data directory and load the raw data.
-    logger.info("Loading data from CSV files...")
-    self.raw_data_dir = raw_data_dir
-    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
-    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
-    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+    # # Initialize the raw data directory and load the raw data.
+    # logger.info("Loading data from CSV files...")
+    # self.raw_data_dir = raw_data_dir
+    # self.raw_data = self._load_data(data_dir=self.raw_data_dir)
+    # # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+    # self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
 
   def _load_data(self, data_dir):
     """
