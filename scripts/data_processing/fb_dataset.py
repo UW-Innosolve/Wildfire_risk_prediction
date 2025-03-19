@@ -13,25 +13,51 @@ logger = logging.getLogger(__name__)
 
 
 class FbDataset(FeatEngineer, Preprocessor):
-  def __init__(self, raw_data_dir):
-    logger.info(f"Initializing FbDataset with data directory: {raw_data_dir}")
-    # Initialize the raw data directory and load the raw data.
-    logger.info("Loading data from CSV files...")
-    self.raw_data_dir = raw_data_dir
-    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
-    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
-    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
-    
-    self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
-    self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
-    self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+  def __init__(self, raw_data_dir, one_file_at_a_time=False):
+    if one_file_at_a_time == False:
+      logger.info(f"Initializing FbDataset with data directory: {raw_data_dir}")
+      # Initialize the raw data directory and load the raw data.
+      logger.info("Loading data from CSV files...")
+      self.raw_data_dir = raw_data_dir
+      self.raw_data = self._load_data(data_dir=self.raw_data_dir)
+      # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+      self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+      leap_days = ['2008-02-29', '2012-02-29', '2016-02-29', '2020-02-29', '2024-02-29']
+      for day in leap_days:
+        self.raw_data = self.raw_data.drop(self.raw_data[self.raw_data.date == day].index)
+      
+      self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
+      self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
+      self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+      
+      ##initialize training and testing data
+      self.X_train = pd.DataFrame()
+      self.X_test = pd.DataFrame()
+      self.y_train = pd.DataFrame()
+      self.y_test = pd.DataFrame()
+      
+    if one_file_at_a_time == True:
+      logger.info(f"Initializing FbDataset with single file: {raw_data_dir}")
+      # Initialize the raw data directory and load the raw data.
+      logger.info("Loading data from CSV files...")
+      self.raw_data_dir = 'NO DIRECTORY, GAVE CSV FILE'
+      self.raw_data = pd.read_csv(raw_data_dir)
+      # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+      self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+      leap_days = ['2008-02-29', '2012-02-29', '2016-02-29', '2020-02-29', '2024-02-29']
+      for day in leap_days:
+        self.raw_data = self.raw_data.drop(self.raw_data[self.raw_data.date == day].index)
+      
+      self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
+      self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
+      self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+      
+      ##initialize training and testing data
+      self.X_train = pd.DataFrame()
+      self.X_test = pd.DataFrame()
+      self.y_train = pd.DataFrame()
+      self.y_test = pd.DataFrame()
 
-    # Initialize the raw data directory and load the raw data.
-    logger.info("Loading data from CSV files...")
-    self.raw_data_dir = raw_data_dir
-    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
-    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
-    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
 
   def _load_data(self, data_dir):
     """
@@ -324,6 +350,19 @@ class FbDataset(FeatEngineer, Preprocessor):
   
   def get_split_data(self):
     return self.X_train, self.X_test, self.y_train, self.y_test
+  
+  def destroy(self):
+    del self.fb_model_features
+    del self.fb_model_features_raw
+    del self.fb_processed_data
+    del self.raw_data
+    del self.preprocessor
+    del self.feat_engineer
+    del self.X_train
+    del self.X_test
+    del self.y_train
+    del self.y_test
+    logger.info("FbDataset object destroyed.")
 
 
 

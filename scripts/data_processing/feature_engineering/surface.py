@@ -62,14 +62,8 @@ class FbSurfaceFeatures():
     self.surface_features['soil'] = self.raw_data["slt"].map(bins)
     
     
-    ## NOTE: take only sum of temperature volumes in final feature set
-  def surface_depth_waterheat(self):
-    '''
-    layer 1: 0 - 7cm
-    layer 2: 7 - 28cm
-    layer 3: 28 - 100cm
-    layer 4: 100 - 289cm
-    '''
+    
+  ## NOTE: take only sum of temperature volumes in final feature set
   def surface_depth_waterheat(self):
     '''
     Compute surface water-heat ratio from soil water volume and soil temperature.

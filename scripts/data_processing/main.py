@@ -42,26 +42,24 @@ def main():
                           'clusters_12', 'clusters_30'
                         ]
 
-    for year in range(2006, 2024):
-        ## Initialize  the dataset
-        yearly_data_dir = f"{data_dir}/{year}"
-        dataset = FbDataset(raw_data_dir=yearly_data_dir)
-        dataset.config_features(eng_feats=eng_feats) # Can use 'DISABLE' to disable a feature set
-        dataset.process() # Load and process data
-        processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
-        logger.info(f"Processed data shape: {processed_data.shape}")
-        processed_data.to_csv("processed_data_no_cffdrs.csv", index=False)
-        X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
-        logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 
-        # Save model-ready data to model_data_dir
-        model_data_dir = "scripts/modeling/model_data_dir"
-        X_train.to_csv(f"{model_data_dir}/X_train_{year}.csv", index=False)
-        X_test.to_csv(f"{model_data_dir}/X_test_{year}.csv", index=False)
-        y_train.to_csv(f"{model_data_dir}/y_train_{year}.csv", index=False)
-        y_test.to_csv(f"{model_data_dir}/y_test_{year}.csv", index=False)
-        logging.info(f"Model-ready data for {year} saved to: {model_data_dir}")
+    ## Initialize  the dataset
+    dataset = FbDataset(raw_data_dir=data_dir)
+    dataset.config_features(eng_feats=eng_feats) # Can use 'DISABLE' to disable a feature set
+    dataset.process() # Load and process data
+    processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
+    logger.info(f"Processed data shape: {processed_data.shape}")
+    processed_data.to_csv("processed_data_no_cffdrs.csv", index=False)
+    X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
+    logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 
+    # Save model-ready data to model_data_dir
+    model_data_dir = "scripts/modeling/model_data_dir"
+    X_train.to_csv(f"{model_data_dir}/X_train.csv", index=False)
+    X_test.to_csv(f"{model_data_dir}/X_test.csv", index=False)
+    y_train.to_csv(f"{model_data_dir}/y_train.csv", index=False)
+    y_test.to_csv(f"{model_data_dir}/y_test.csv", index=False)
+    logger.info("Model-ready data saved to model_data_dir")
 
 if __name__ == "__main__":
     main()
