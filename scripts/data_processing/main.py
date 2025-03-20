@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
 def main():
-    data_dir = "scripts/data_processing/raw_data_dir"
+    data_dir = "/home/tvujovic/scratch/firebird/feat-eng/Wildfire_risk_prediction/scripts/data_processing/raw_data_dir"
 
     # Features added class by class tp start
     eng_feats =            [ # CWFDRS Fire weather indices
