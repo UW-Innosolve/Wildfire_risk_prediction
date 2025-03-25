@@ -278,10 +278,21 @@ class FbDataset(FeatEngineer, Preprocessor):
     print(self.categorical_features)
     fb_model_feat_raw_onehot = self.fb_model_features_raw[self.categorical_features]
     fb_model_feat_processed_onehot = self.preprocessor.onehot_cat_features(fb_model_feat_raw_onehot)
+    
+    ## Check for nulls in the one-hot encoded features
+    if fb_model_feat_processed_onehot.isnull().values.any():
+      logger.error("One-hot encoded features contain null values.")
+      
+    if self.fb_processed_data.isnull().values.any():
+      logger.error("Before merging cats, processed data contains null values.")
+    
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_onehot,
                                       on=['date', 'latitude', 'longitude'], how='outer')
-    logger.info(f"Data shape after aggregation of one-hot encoded features: {self.fb_processed_data.shape}")
     
+    if self.fb_processed_data.isnull().values.any():
+      logger.error("After merging cats, processed data contains null values.")
+    
+    logger.info(f"Data shape after aggregation of one-hot encoded features: {self.fb_processed_data.shape}")
     logger.info("Data processing complete.")
     logger.info(f"Final processed data shape: {self.fb_processed_data.shape}")
     

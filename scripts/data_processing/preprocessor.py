@@ -78,7 +78,14 @@ class Preprocessor:
         
         for col in feature_df.columns:
             onehot_cols = pd.get_dummies(feature_df[col], prefix=col, drop_first=True)
-            onehot_encoded_df = pd.concat([onehot_encoded_df, onehot_cols], axis=1)
+            
+            ## Attempted fix
+            onehot_cols_with_idx = pd.concat([data, onehot_cols], axis=1)
+            assert(onehot_cols_with_idx.isnull().values.any() == False)
+            
+            # Use merge to aggregate main df, instead of concat
+            onehot_encoded_df = pd.merge(onehot_encoded_df, onehot_cols_with_idx, index=self.data_idx.index,
+                                         left_index=True, right_index=True)
         
         result = onehot_encoded_df
         

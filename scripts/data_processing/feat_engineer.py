@@ -107,7 +107,8 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
         
       self.spatial_df = self.spatial.get_features()
         
-      self.data_features = pd.merge(self.data_features, self.spatial_df, on=['date', 'latitude', 'longitude'], how='outer')
+      self.data_features = pd.merge(self.data_features, self.spatial_df,
+                                    on=['date', 'latitude', 'longitude'], how='outer')
       
     print(self.data_features.head())
       

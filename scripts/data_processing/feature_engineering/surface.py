@@ -59,7 +59,8 @@ class FbSurfaceFeatures():
         7: "Organic"
     }
     
-    self.surface_features['soil'] = self.raw_data["slt"].map(bins)
+    slt = self.raw_data["slt"].copy()
+    self.surface_features['soil'] = slt.map(bins)
     
     
     

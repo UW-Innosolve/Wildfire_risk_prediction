@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     # Paths for input and output folders
-  input_folder = "scripts/data_processing/raw_data_dir"
+  input_folder = "scripts/data_processing/raw_subset"
   output_folder = "scripts/data_processing/processed_data_dir"
 
   # Ensure output folder exists
