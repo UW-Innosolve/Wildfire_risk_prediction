@@ -6,6 +6,7 @@ from feature_engineering.spatial import FbSpatialFeatures
 from feature_engineering.weather import FbWeatherFeatures
 from feature_engineering.surface import FbSurfaceFeatures
 from feature_engineering.cwfdrs import FbCwfdrsFeatures
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +20,7 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
     
   def apply_features(self, eng_feats):
     logger.info(f"Applying engineered features: {eng_feats}")
+    # timer = time.time()
     if eng_feats == ['DISABLE']:
       return
     
@@ -70,7 +72,10 @@ class FeatEngineer(FbTemporalFeatures, FbSpatialFeatures, FbWeatherFeatures, FbS
       if 'fuel_low' in eng_feats or 'fuel_high' in eng_feats:
         self.surface.vegetation()
       if 'soil' in eng_feats:
+        soil_start = time.time()
         self.surface.soil()
+        soil_end = time.time()
+        logger.info(f"Time to compute soil: {soil_end - soil_start}")
       if 'surface_depth_waterheat' in eng_feats or 'surface_water_sum' in eng_feats or 'surface_heat_sum' in eng_feats:
         self.surface.surface_depth_waterheat()
       if 'elevation' in eng_feats or 'slope' in eng_feats:

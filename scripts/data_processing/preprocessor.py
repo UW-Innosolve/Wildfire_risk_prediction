@@ -84,8 +84,7 @@ class Preprocessor:
             assert(onehot_cols_with_idx.isnull().values.any() == False)
             
             # Use merge to aggregate main df, instead of concat
-            onehot_encoded_df = pd.merge(onehot_encoded_df, onehot_cols_with_idx, index=self.data_idx.index,
-                                         left_index=True, right_index=True)
+            onehot_encoded_df = pd.merge(onehot_encoded_df, onehot_cols_with_idx, on=['date', 'latitude', 'longitude'], how='outer')
         
         result = onehot_encoded_df
         

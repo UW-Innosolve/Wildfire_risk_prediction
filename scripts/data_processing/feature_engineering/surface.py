@@ -44,7 +44,7 @@ class FbSurfaceFeatures():
         
       
     
-  ## NOTE: soil using map()
+  # NOTE: soil using map()
   # def soil(self):
   #   """
   #   Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
@@ -63,31 +63,53 @@ class FbSurfaceFeatures():
   #   self.surface_features['soil'] = slt.map(bins)
   
   ## NOTE: soil using pd.Categorical
+  # def soil(self):
+  #   """
+  #   Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
+  #   """
+  #   # Define categories and map to numeric values
+  #   category_map = {
+  #       1: "Coarse",
+  #       2: "Coarse",
+  #       3: "Medium",
+  #       4: "Medium",
+  #       5: "Medium",
+  #       6: "Organic",
+  #       7: "Organic"
+  #   }
+
+  #   # Convert to Categorical for faster mapping
+  #   slt_values = self.raw_data['slt'].astype('category')
+    
+  #   # Use .cat.set_categories() for consistent mapping
+  #   self.surface_features['soil'] = pd.Categorical(
+  #       slt_values.map(category_map), 
+  #       categories=["Coarse", "Medium", "Organic"]
+  #   )
+
+  #   logger.info(f"Unique soil categories: {self.surface_features['soil'].unique()}")
+  
+  ## NOTE: soil using np.select() - fastest?
   def soil(self):
     """
     Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
     """
-    # Define categories and map to numeric values
-    category_map = {
-        1: "Coarse",
-        2: "Coarse",
-        3: "Medium",
-        4: "Medium",
-        5: "Medium",
-        6: "Organic",
-        7: "Organic"
-    }
+    slt = self.raw_data['slt'].to_numpy()
 
-    # Convert to Categorical for faster mapping
-    slt_values = self.raw_data['slt'].astype('category')
-    
-    # Use .cat.set_categories() for consistent mapping
-    self.surface_features['soil'] = pd.Categorical(
-        slt_values.map(category_map), 
-        categories=["Coarse", "Medium", "Organic"]
-    )
+    # Define conditions and choices
+    conditions = [
+        np.isin(slt, [1, 2]),
+        np.isin(slt, [3, 4, 5]),
+        np.isin(slt, [6, 7])
+    ]
+    choices = ["Coarse", "Medium", "Organic"]
 
-    logger.info(f"Unique soil categories: {self.surface_features['soil'].unique()}")
+    # Apply vectorized condition assignment
+    self.surface_features['soil'] = np.select(conditions, choices, default='non_soil')
+    num_soil_errors = np.isin(self.surface_features['soil'], 'non_soil').sum()
+    logger.info(f"Number of soil errors: {num_soil_errors}")
+
+    logger.info(f"Unique soil categories: {np.unique(self.surface_features['soil'])}")
 
     
     
