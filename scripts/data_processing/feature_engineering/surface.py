@@ -44,12 +44,31 @@ class FbSurfaceFeatures():
         
       
     
+  ## NOTE: soil using map()
+  # def soil(self):
+  #   """
+  #   Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
+  #   """
+  #   bins = {
+  #       1: "Coarse",
+  #       2: "Coarse",
+  #       3: "Medium",
+  #       4: "Medium",
+  #       5: "Medium",
+  #       6: "Organic",
+  #       7: "Organic"
+  #   }
     
+  #   slt = self.raw_data["slt"].copy()
+  #   self.surface_features['soil'] = slt.map(bins)
+  
+  ## NOTE: soil using pd.Categorical
   def soil(self):
     """
     Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
     """
-    bins = {
+    # Define categories and map to numeric values
+    category_map = {
         1: "Coarse",
         2: "Coarse",
         3: "Medium",
@@ -58,9 +77,18 @@ class FbSurfaceFeatures():
         6: "Organic",
         7: "Organic"
     }
+
+    # Convert to Categorical for faster mapping
+    slt_values = self.raw_data['slt'].astype('category')
     
-    slt = self.raw_data["slt"].copy()
-    self.surface_features['soil'] = slt.map(bins)
+    # Use .cat.set_categories() for consistent mapping
+    self.surface_features['soil'] = pd.Categorical(
+        slt_values.map(category_map), 
+        categories=["Coarse", "Medium", "Organic"]
+    )
+
+    logger.info(f"Unique soil categories: {self.surface_features['soil'].unique()}")
+
     
     
     
