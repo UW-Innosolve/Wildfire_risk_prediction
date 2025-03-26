@@ -1,3 +1,4 @@
+#!/bin/bash
 #SBATCH --account=def-nassersa-ab
 #SBATCH --mail-user=teo.vujovic@gmail.com
 #SBATCH --mail-type=ALL
