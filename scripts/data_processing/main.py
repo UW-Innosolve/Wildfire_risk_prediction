@@ -7,7 +7,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
 def main():
-    data_dir = "/home/tvujovic/scratch/firebird/feat-eng/Wildfire_risk_prediction/scripts/data_processing/raw_data_dir"
+    data_dir = "scripts/data_processing/raw_data_dir"
+    output_folder = "scripts/data_processing/processed_data_dir"
 
     # Features added class by class tp start
     eng_feats =            [ # CWFDRS Fire weather indices
@@ -49,7 +50,7 @@ def main():
     dataset.process() # Load and process data
     processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
     logger.info(f"Processed data shape: {processed_data.shape}")
-    processed_data.to_csv("final_processed_data_no_more_time.csv", index=False)
+    processed_data.to_csv(f"{output_folder}/processed_data.csv", index=False)
     # X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
     # logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 

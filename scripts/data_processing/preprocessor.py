@@ -71,27 +71,39 @@ class Preprocessor:
         One-hot encode categorical features while preserving the date, latitude, and longitude index.
         """
         data = self.data_idx.copy()  # Preserve index with date, lat, long
+        data = data.sort_values(by=['date', 'latitude', 'longitude'])
+        data.to_csv("empty_data_index.csv")
         logger.info(f"One-hot encoding features: {feature_df.columns}")
         
-        onehot_encoded_df = data  # Start with index reference
+        onehot_sets = []
     
-        
         for col in feature_df.columns:
+            logger.info(f"Processing one-hot encoding for column: {col}")
             onehot_cols = pd.get_dummies(feature_df[col], prefix=col, drop_first=True)
+            logger.info(f"onehot_cols shape: {onehot_cols.shape}, data shape: {data.shape}")
+            onehot_cols_with_idx = pd.concat([data.reset_index(drop=True), onehot_cols.reset_index(drop=True)], axis=1)
+            print(onehot_cols_with_idx.head())
             
-            ## Attempted fix
-            onehot_cols_with_idx = pd.concat([data, onehot_cols], axis=1)
-            assert(onehot_cols_with_idx.isnull().values.any() == False)
+            nulls_in_onehot_col = onehot_cols_with_idx.isnull().values.any().sum()
+            if nulls_in_onehot_col > 0:
+                logger.warning(f"Null values found in one-hot encoded column: {col}")
+                logger.warning(f"Number of null values: {nulls_in_onehot_col}")
+                
+            onehot_sets.append(onehot_cols_with_idx)
             
-            # Use merge to aggregate main df, instead of concat
-            onehot_encoded_df = pd.merge(onehot_encoded_df, onehot_cols_with_idx, on=['date', 'latitude', 'longitude'], how='outer')
+            #NOTE: Uncomment to save one-hot encoded columns to CSV
+            onehot_cols.to_csv(f"onehot_cols_{col}.csv")
+            onehot_cols_with_idx.to_csv(f"onehot_cols_with_idx_{col}.csv")
+    
+        df_comb = onehot_sets[0]
+        logger.info(f"df_comb (0) shape: {onehot_sets[0].shape}")
+        for df in onehot_sets[1:]:
+            df_comb = pd.merge(df_comb, df, on=['date', 'latitude', 'longitude'], how='outer')
+            logger.info(f"df_comb shape: {df_comb.shape}")
+            
+        logger.info(f"Data shape after one-hot encoding: {df_comb.shape}")
         
-        result = onehot_encoded_df
-        
-        logger.info(f"One-hot encoded features: {feature_df.columns}")
-        logger.info(f"Data shape after one-hot encoding: {result.shape}")
-        
-        return result
+        return df_comb
 
 
     def apply_smote(self, X, y):

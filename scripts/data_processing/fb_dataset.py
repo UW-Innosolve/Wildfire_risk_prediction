@@ -83,7 +83,7 @@ class FbDataset(FeatEngineer, Preprocessor):
             logger.error(f"Error loading {file}: {e}")
     if dfs:
         data = pd.concat(dfs, ignore_index=True)
-        logger.info("Aggregated DataFrame shape:", data.shape)
+        logger.info(f"Aggregated DataFrame shape: {data.shape}")
     else:
         raise ValueError("No CSV files found in the specified directory.")
       
