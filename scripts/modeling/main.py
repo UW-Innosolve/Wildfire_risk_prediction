@@ -109,16 +109,16 @@ def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09
 # TODO update parameters to pull from a json file
 # TODO update to run on a device (i.e. cpu or gpu)
 def main(training_parameters={"batch_size": 10,
-                              "num_epochs": 8,
-                              "learning_rate": 0.005,
+                              "num_epochs": 10,
+                              "learning_rate": 0.05,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"testtrain",
-                              "test_range": (2008),
-                              "train_range": (2006, 2007)},
-         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+                              "experiment_name":"testrun",
+                              "test_range": (2024),
+                              "train_range": (2006, 2023)},
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device='cpu'):
     # load training parameters
     batch_size = training_parameters['batch_size']
