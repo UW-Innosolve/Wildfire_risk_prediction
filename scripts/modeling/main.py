@@ -117,9 +117,8 @@ def main(training_parameters={"batch_size": 10,
                               "experiment_name":"testrun",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
-         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
-         device='cpu'):
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv'):
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv'):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -132,6 +131,7 @@ def main(training_parameters={"batch_size": 10,
     checkpoint_dir = f'./checkpoints/{experiment_name}/'
     train_range = training_parameters['train_range']
     test_range = training_parameters['test_range']
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f"Training parameters set successfully")
 
     # load data from df
