@@ -4,6 +4,7 @@ import sys
 import joblib
 import dask.dataframe as dd
 import pandas as pd
+import numpy as np
 
 # === Classification models ===
 from model_classes.fb_knn import KNNModel
@@ -134,6 +135,23 @@ def main():
     if y_test.empty:
         logging.warning("y_test is empty. You won't get meaningful test metrics.")
 
+    # =============  IMPORTANT FIX FOR "c_contiguous" ERROR =============
+    logging.info("Converting X_train, X_test, y_train, y_test into numeric contiguous NumPy arrays...")
+    # Convert to numeric (coerce errors to NaN if they exist, but presumably they're all numeric already)
+    X_train = X_train.apply(pd.to_numeric, errors='coerce')
+    X_test  = X_test.apply(pd.to_numeric, errors='coerce')
+
+    # Now convert to actual NumPy arrays, then ensure they're C-contiguous
+    X_train = np.ascontiguousarray(X_train.values)
+    X_test  = np.ascontiguousarray(X_test.values)
+
+    y_train = np.ascontiguousarray(y_train.values)
+    y_test  = np.ascontiguousarray(y_test.values)
+
+    logging.info(f"[DEBUG] After conversion: X_train shape = {X_train.shape}, X_test shape = {X_test.shape}")
+    logging.info(f"[DEBUG] y_train shape = {y_train.shape}, y_test shape = {y_test.shape}")
+    # =============  END OF FIX =============
+
     # -------------------------------
     # 2. Define Models
     # -------------------------------
@@ -202,16 +220,14 @@ def main():
         logging.info("No models met the threshold; skipping Voting Classifier.")
     else:
         logging.info("Fitting the Voting Classifier on the full training set...")
-        voting_clf = VotingClassifierCustom(
-            selected_models,  
-            voting='soft'
-        )
+        from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+        from model_classes.voting_classifier import VotingClassifierCustom
+        
+        voting_clf = VotingClassifierCustom(selected_models, voting='soft')
         voting_clf.fit(X_train, y_train)
         
-        from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-        
         voting_preds = voting_clf.predict(X_test)
-        voting_probs = voting_clf.predict_proba(X_test)[:, 1]  # probability for positive class
+        voting_probs = voting_clf.predict_proba(X_test)[:, 1]  # Probability for positive class
         
         voting_metrics = {
             "accuracy":  accuracy_score(y_test, voting_preds),
