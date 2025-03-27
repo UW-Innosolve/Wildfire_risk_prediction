@@ -75,7 +75,7 @@ logging.basicConfig(
 # fireseason_indices_np = np.asarray(usable_indices)
 # testfireseason_indices_np = np.asarray(test_indices)
 
-def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25', size=1258):
+def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25'):
     '''
     Because we use the day we predict from (not the day we are predicting) as the index, we must subtract 5 days from March 1 and 5 days from Sept 31
     '''
@@ -184,12 +184,13 @@ def main(training_parameters={"batch_size": 10,
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     batch_num = 0
     logging.info("Model created successfully")
+    samples_per_epoch = len(X_train) - (len(X_train) % batch_size)
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
         # print(X_train)
         # print(X_test)
-        batches = X_train.reshape(int(len(X_train)/batch_size), batch_size)
+        batches = X_train[:samples_per_epoch].reshape(int(len(X_train)/batch_size), batch_size)
 
         for batch in batches:
             print(f'Epoch {epoch}, Batch {batch}')
@@ -201,7 +202,7 @@ def main(training_parameters={"batch_size": 10,
             if (batch_num % 20) == 0:
                 with torch.no_grad():
                     np.random.shuffle(X_val)
-                    label_batch = X_val[:batch_size]
+                    label_batch = X_val
                     test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
                     test_predictions = model(test_inputs)
                     # test_metrics = evaluate(test_predictions, test_targets)
@@ -227,7 +228,7 @@ def main(training_parameters={"batch_size": 10,
     # and 'optimizer' is your optimizer (optional)
 
     # Option 1: Save the model's state_dict (recommended)
-    torch.save(model.state_dict(), 'model.pth')
+        torch.save(model.state_dict(), f'{checkpoint_dir}/model_epoch_{epoch}.pth')
 
     # Option 2: Save the entire model (not recommended for production)
     # This saves the model's architecture and weights.
@@ -236,12 +237,12 @@ def main(training_parameters={"batch_size": 10,
 
     # Option 3: Save a checkpoint containing model and optimizer state.
     # This is useful for resuming training.
-    checkpoint = {
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),  # If you have an optimizer
-        # Add other relevant information like epoch, loss, etc.
-    }
-    torch.save(checkpoint, 'checkpoint.pth')
+        checkpoint = {
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),  # If you have an optimizer
+            # Add other relevant information like epoch, loss, etc.
+        }
+        torch.save(checkpoint, f'{checkpoint_dir}/checkpoint_epoch_{epoch}.pth')
 
     # # Example of loading the model's state_dict:
     # loaded_model = YourModelClass(*args, **kwargs)  # Instantiate your model
