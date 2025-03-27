@@ -148,7 +148,7 @@ def main(training_parameters={"batch_size": 10,
         val_batch_size = 20 # use small batch of validation set each time if CPU used
 
     # create model
-    model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02)
+    model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     batch_num = 0
     logging.info("Model created successfully")
