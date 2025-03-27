@@ -124,8 +124,8 @@ def main(training_parameters={"batch_size": 10,
     logging.info(f"Successfully reshaped all features")
 
     # remove after converting reshape function to torch
-    data = torch.Tensor(reshaped_data, device=device)
-    labels = torch.Tensor(reshaped_labels, device=device)
+    data = torch.Tensor(reshaped_data).to(device)
+    labels = torch.Tensor(reshaped_labels).to(device)
 
     # set tensorboard writer directory
     writer = SummaryWriter(log_dir=checkpoint_dir)

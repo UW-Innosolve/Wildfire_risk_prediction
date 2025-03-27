@@ -45,7 +45,7 @@ def reshape_data(df, features, target_column, device):
 
         parameter_sequence = []
         for parametername in features:
-            print(parametername)
+            # print(parametername)
             parameter_full = df[parametername]
 
             parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
