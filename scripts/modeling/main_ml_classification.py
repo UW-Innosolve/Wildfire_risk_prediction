@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import joblib
 import dask.dataframe as dd
 import pandas as pd
@@ -32,6 +33,11 @@ logging.basicConfig(
 # Helper: Load data using Dask
 # -----------------------------------------------------------------------------
 def load_data_with_dask(filepath):
+    logging.info(f"[DEBUG] Checking existence of file: {filepath}")
+    if not os.path.exists(filepath):
+        logging.error(f"File not found: {filepath}")
+        sys.exit(f"Exiting due to missing file: {filepath}")
+
     logging.info(f"Loading data from {filepath} with Dask ...")
     df = dd.read_csv(filepath, assume_missing=True)
     logging.info(f"Dask DataFrame loaded from {filepath}")
@@ -51,7 +57,12 @@ def main():
     X_test_path  = os.path.join(data_dir, "X_test.csv")
     y_train_path = os.path.join(data_dir, "y_train.csv")
     y_test_path  = os.path.join(data_dir, "y_test.csv")
-    
+
+    logging.info(f"[DEBUG] X_train_path: {X_train_path}")
+    logging.info(f"[DEBUG] X_test_path:  {X_test_path}")
+    logging.info(f"[DEBUG] y_train_path: {y_train_path}")
+    logging.info(f"[DEBUG] y_test_path:  {y_test_path}")
+
     # Load features and targets; reset indices.
     X_train_dd = load_data_with_dask(X_train_path).reset_index(drop=True)
     X_test_dd  = load_data_with_dask(X_test_path).reset_index(drop=True)
@@ -59,6 +70,7 @@ def main():
     y_test_dd  = load_data_with_dask(y_test_path).reset_index(drop=True)
     
     # Rename target columns to 'y'
+    logging.info("Renaming target columns to 'y' if needed...")
     y_train_dd = y_train_dd.rename(columns={y_train_dd.columns[0]: 'y'})
     y_test_dd = y_test_dd.rename(columns={y_test_dd.columns[0]: 'y'})
     
@@ -67,6 +79,7 @@ def main():
     # -------------------------------
     # 1a. Create an index column and merge X and y to ensure alignment
     # -------------------------------
+    logging.info("Merging X and y DataFrames on 'idx' to ensure alignment...")
     X_train_dd = X_train_dd.assign(idx=lambda df: df.index)
     y_train_dd = y_train_dd.assign(idx=lambda df: df.index)
     df_train_dd = dd.merge(X_train_dd, y_train_dd, on="idx")
@@ -76,36 +89,51 @@ def main():
     df_test_dd = dd.merge(X_test_dd, y_test_dd, on="idx")
     
     # -------------------------------
-    # (Removed code that filters rows by date for specific months)
-    # -------------------------------
-    # If you still want to drop the 'date' column (assuming you don't need it):
-    # if 'date' in df_train_dd.columns:
-    #     df_train_dd = df_train_dd.drop(columns=['date'])
-    #     df_test_dd = df_test_dd.drop(columns=['date'])
-
-    # -------------------------------
     # 1c. Convert Dask DataFrames to pandas DataFrames and split back into X and y
     # -------------------------------
-    logging.info("Converting Dask DataFrames to pandas DataFrames...")
+    logging.info("Computing Dask -> pandas for training set...")
     df_train = df_train_dd.compute()
+    logging.info(f"[DEBUG] df_train shape: {df_train.shape}")
+
+    logging.info("Computing Dask -> pandas for testing set...")
     df_test = df_test_dd.compute()
+    logging.info(f"[DEBUG] df_test shape: {df_test.shape}")
     
     # Drop the merging index column ("idx")
-    df_train = df_train.drop(columns=['idx'])
-    df_test = df_test.drop(columns=['idx'])
+    if 'idx' in df_train.columns:
+        df_train = df_train.drop(columns=['idx'])
+    if 'idx' in df_test.columns:
+        df_test = df_test.drop(columns=['idx'])
     
     # Split the merged DataFrame back into features (X) and target (y)
+    logging.info("Splitting merged DataFrame back into X and y...")
     y_train = df_train.pop('y')
     y_test = df_test.pop('y')
     X_train = df_train
     X_test = df_test
+
+    # Optionally drop 'date' column if present
     if 'date' in X_train.columns:
-     X_train.drop(columns=['date'], inplace=True)
+        logging.info("Dropping 'date' column from X_train")
+        X_train.drop(columns=['date'], inplace=True)
     if 'date' in X_test.columns:
-     X_test.drop(columns=['date'], inplace=True)
+        logging.info("Dropping 'date' column from X_test")
+        X_test.drop(columns=['date'], inplace=True)
+
     logging.info(f"Final shapes -> X_train={X_train.shape}, X_test={X_test.shape}, "
                  f"y_train={y_train.shape}, y_test={y_test.shape}")
     
+    if X_train.empty:
+        logging.warning("X_train is empty! Exiting early.")
+        sys.exit("No data in X_train to train on.")
+    if X_test.empty:
+        logging.warning("X_test is empty. You won't get meaningful test metrics.")
+    if y_train.empty:
+        logging.warning("y_train is empty! Exiting early.")
+        sys.exit("No labels to train on.")
+    if y_test.empty:
+        logging.warning("y_test is empty. You won't get meaningful test metrics.")
+
     # -------------------------------
     # 2. Define Models
     # -------------------------------
@@ -173,11 +201,11 @@ def main():
     if not selected_models:
         logging.info("No models met the threshold; skipping Voting Classifier.")
     else:
+        logging.info("Fitting the Voting Classifier on the full training set...")
         voting_clf = VotingClassifierCustom(
-            selected_models,  # dict of {model_name: model_obj}
+            selected_models,  
             voting='soft'
         )
-        logging.info("Fitting the Voting Classifier on the full training set...")
         voting_clf.fit(X_train, y_train)
         
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
