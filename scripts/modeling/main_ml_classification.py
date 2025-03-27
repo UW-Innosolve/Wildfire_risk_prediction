@@ -197,12 +197,12 @@ def main():
     # -------------------------------
     # 3. Cross-Validation on Training Set
     # -------------------------------
-    logging.info("Starting cross-validation on the training set...")
-    for model_name, model_obj in models.items():
-        logging.info(f"Cross-validating model: {model_name}")
-        cv_metrics = cross_validate_model(model_obj, X_train, y_train)
-        logging.info(f"{model_name} (CV) metrics: {cv_metrics}")
-        reporter.add_result(model_name + " (CV)", cv_metrics)
+    # logging.info("Starting cross-validation on the training set...")
+    # for model_name, model_obj in models.items():
+    #     logging.info(f"Cross-validating model: {model_name}")
+    #     cv_metrics = cross_validate_model(model_obj, X_train, y_train)
+    #     logging.info(f"{model_name} (CV) metrics: {cv_metrics}")
+    #     reporter.add_result(model_name + " (CV)", cv_metrics)
     
     # -------------------------------
     # 4. Train on Full Training Set & Evaluate on Test Set
