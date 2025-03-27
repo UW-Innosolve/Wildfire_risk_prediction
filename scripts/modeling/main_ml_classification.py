@@ -9,6 +9,7 @@ import numpy as np
 # === Classification models ===
 from model_classes.fb_knn import KNNModel
 from model_classes.fb_randfor import RandomForestModel
+# Updated XGBoost to use GPU
 from model_classes.fb_xgboost import XGBoostModel
 from model_classes.fb_regression import LogisticRegressionModel
 
@@ -38,7 +39,6 @@ def load_data_with_dask(filepath):
     if not os.path.exists(filepath):
         logging.error(f"File not found: {filepath}")
         sys.exit(f"Exiting due to missing file: {filepath}")
-
     logging.info(f"Loading data from {filepath} with Dask ...")
     df = dd.read_csv(filepath, assume_missing=True)
     logging.info(f"Dask DataFrame loaded from {filepath}")
@@ -53,7 +53,7 @@ def main():
     # -------------------------------
     # 1. Data Loading with Dask
     # -------------------------------
-    data_dir = "scripts/data_processing/processed_data/split_data_dir"
+    data_dir = "scripts/data_processing/processed_data/split_data_dir"  # Note lowercase 'scripts'
     X_train_path = os.path.join(data_dir, "X_train.csv")
     X_test_path  = os.path.join(data_dir, "X_test.csv")
     y_train_path = os.path.join(data_dir, "y_train.csv")
@@ -135,41 +135,34 @@ def main():
     if y_test.empty:
         logging.warning("y_test is empty. You won't get meaningful test metrics.")
 
-    # =============  IMPORTANT FIX FOR "c_contiguous" ERROR =============
+    # -------------------------------
+    # IMPORTANT: Convert to contiguous NumPy arrays
+    # -------------------------------
     logging.info("Converting X_train, X_test, y_train, y_test into numeric contiguous NumPy arrays...")
-    # Convert to numeric (coerce errors to NaN if they exist, but presumably they're all numeric already)
     X_train = X_train.apply(pd.to_numeric, errors='coerce')
     X_test  = X_test.apply(pd.to_numeric, errors='coerce')
-
-    # Now convert to actual NumPy arrays, then ensure they're C-contiguous
     X_train = np.ascontiguousarray(X_train.values)
     X_test  = np.ascontiguousarray(X_test.values)
-
     y_train = np.ascontiguousarray(y_train.values)
     y_test  = np.ascontiguousarray(y_test.values)
-
     logging.info(f"[DEBUG] After conversion: X_train shape = {X_train.shape}, X_test shape = {X_test.shape}")
     logging.info(f"[DEBUG] y_train shape = {y_train.shape}, y_test shape = {y_test.shape}")
-    # =============  END OF FIX =============
 
     # -------------------------------
-    # 2. Define Models
+    # 2. Define Models (with GPU acceleration for XGBoost)
     # -------------------------------
     reporter = Reporter()
     models = {
-        "KNN": KNNModel(n_neighbors=5),
-
+        "Approx KNN": KNNModel(n_neighbors=23),  # or use your approximate KNN if defined
         "Random Forest": RandomForestModel(
             params={
                 'n_estimators': 100,
                 'max_depth': None,
                 'class_weight': 'balanced',
                 'random_state': 42,
-                # Use all CPU cores
                 'n_jobs': -1
             }
         ),
-
         "XGBoost": XGBoostModel(
             params={
                 'learning_rate': 0.1,
@@ -179,11 +172,10 @@ def main():
                 'scale_pos_weight': 5,
                 'use_label_encoder': False,
                 'eval_metric': 'logloss',
-                # Use all CPU cores
-                'nthread': -1
+                'tree_method': 'gpu_hist',  # Use GPU histogram method
+                'gpu_id': 0
             }
         ),
-
         "Logistic Regression": LogisticRegressionModel(
             params={
                 'C': 1.0,
@@ -195,7 +187,7 @@ def main():
     }
     
     # -------------------------------
-    # 3. Cross-Validation on Training Set
+    # 3. Cross-Validation on Training Set (Consider commenting this out for quick tests)
     # -------------------------------
     # logging.info("Starting cross-validation on the training set...")
     # for model_name, model_obj in models.items():
@@ -218,7 +210,7 @@ def main():
         reporter.add_result(model_name + " (Test)", test_metrics)
     
     # -------------------------------
-    # 5. Build a Voting Classifier
+    # 5. Build a Voting Classifier Ensemble
     # -------------------------------
     f1_threshold = 0.60  # example threshold
     logging.info(f"Filtering models with F1 >= {f1_threshold} (Test) to build ensemble...")
@@ -238,7 +230,7 @@ def main():
         voting_clf.fit(X_train, y_train)
         
         voting_preds = voting_clf.predict(X_test)
-        voting_probs = voting_clf.predict_proba(X_test)[:, 1]  # Probability for positive class
+        voting_probs = voting_clf.predict_proba(X_test)[:, 1]  # probability for positive class
         
         voting_metrics = {
             "accuracy":  accuracy_score(y_test, voting_preds),
