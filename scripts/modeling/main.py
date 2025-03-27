@@ -61,14 +61,11 @@ logging.basicConfig(
 # rawdata_df = csv_aggregate(data_dir)
 
 # load raw data into pandas
-rawdata_path = '/home/tvujovic/scratch/firebird/processed_data.csv'
-rawdata_df = pd.read_csv(rawdata_path)
-features = rawdata_df.columns[3:].tolist()
-target_column = 'is_fire_day'
+
 
 # TODO update reshaping so that its done in torch
 # TODO update reshaping to be done
-reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column)
+
 
 # TODO: update so that usable range is obtained from dates and not hardcoded
 usable_ranges = [range(54, 273), range(419, 638), range(784, 1003), range(1149, 1368), range(1514, 1733), range(1879, 2098), range(2244, 2463), range(2609, 2828), range(2974, 3193), range(3339, 3558), range(3704, 3923), range(4069, 4288), range(4313, 4532), range(4678, 4897), range(5043, 5262), range(5408, 5623)]#, range(5773, 5992), range(6138, 6355)]#, range(6503, 6722)]
@@ -86,20 +83,32 @@ testfireseason_indices_np = np.asarray(test_indices)
 # TODO create a training_parameters json or something similar to make tracking easier
 # TODO update parameters to pull from a json file
 # TODO update to run on a device (i.e. cpu or gpu)
-def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"batch_size": 10,"num_epochs": 8,"learning_rate": 0.005,"features": len(features), "num_training_days": 14, "prediction_day":5, "hidden_size": 64, "experiment_name":"rawtrain_8"}):
+def main(rawdata_path = '/home/tvujovic/scratch/firebird/processed_data.csv', training_parameters={"batch_size": 10,"num_epochs": 8,"learning_rate": 0.005, "num_training_days": 14, "prediction_day":5, "hidden_size": 64, "experiment_name":"rawtrain_8"}):
+    # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
     learning_rate = training_parameters['learning_rate']
-    num_features = training_parameters['features']
+    # num_features = training_parameters['features'] # now obtained from dataframe
     num_training_days = training_parameters['num_training_days']
     prediction_day = training_parameters['prediction_day']
     hidden_size = training_parameters['hidden_size']
     experiment_name = training_parameters['experiment_name']
     checkpoint_dir = f'./checkpoints/{experiment_name}/'
 
-    # Define the list of features based on our dataset headers.
+    # load data from df
+    rawdata_df = pd.read_csv(rawdata_path)
+    # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
+    features = rawdata_df.columns[3:].tolist()
+    target_column = 'is_fire_day'
+    num_features = len(features)
+    # logging
     logging.info(f"Selected features: {features}")
     logging.info(f"Target variable: {target_column}")
+
+    # reshape data into 2-D
+    reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column)
+    # logging
+    logging.info(f"Successfully reshaped all features")
 
     data = torch.Tensor(reshaped_data)
     labels = torch.Tensor(reshaped_labels)
@@ -155,7 +164,7 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
             loss.backward()
             batch_num += 1
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1, norm_type=2, error_if_nonfinite=True)
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), 1, norm_type=2, error_if_nonfinite=True)
 
             optimizer.step()
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
