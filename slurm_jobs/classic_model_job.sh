@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=<your-account>       # e.g. def-somepi
+#SBATCH --account=<iazhar>       # e.g. def-somepi
 #SBATCH --time=00:06:00               # hh:mm:ss or d-hh:mm:ss
 #SBATCH --mem=32G                     # memory per node
 #SBATCH --cpus-per-task=8             # number of CPU cores
