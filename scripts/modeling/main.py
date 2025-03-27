@@ -119,7 +119,7 @@ def main(training_parameters={"batch_size": 10,
                               "train_range": (2006, 2023)},
          rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv'):
-         device='cuda'):
+         device_set='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -132,17 +132,19 @@ def main(training_parameters={"batch_size": 10,
     checkpoint_dir = f'./checkpoints/{experiment_name}/'
     train_range = training_parameters['train_range']
     test_range = training_parameters['test_range']
-    if device == 'cuda':
+    logging.info(f"Training parameters set successfully")
+
+    # set device
+    if device_set == 'cuda':
         if torch.cuda.is_available():
             device = torch.device('cuda')
             logging.info(f"Device set to cuda, running on GPU")
         else:
             device = torch.device('cpu')
-            logging.info(f"No GPU found! Device set to CPU")
+            logging.info(f"No GPU available! Device set to CPU")
     else:
         device = torch.device('cpu')
         logging.info(f"Device set to CPU")
-    logging.info(f"Training parameters set successfully")
 
     # load data from df
     rawdata_df = pd.read_csv(rawdata_path) #.to(device)
@@ -191,7 +193,7 @@ def main(training_parameters={"batch_size": 10,
     logging.info(f"Data split successfully, train_set size - {len(X_train)}, val_set size - {len(X_val)}, test_set size - {len(X_test)}")
 
     # set size of validation batch
-    if device == 'cuda':
+    if device_set == 'cuda' and torch.cuda.is_available():
         val_batch_size = len(X_val) # use full validation set each time if GPU used
     else:
         val_batch_size = 20 # use small batch of validation set each time if CPU used
