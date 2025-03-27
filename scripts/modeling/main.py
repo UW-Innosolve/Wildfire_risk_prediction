@@ -73,8 +73,8 @@ def main(training_parameters={"batch_size": 10,
                               "experiment_name":"testrun_gpu",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
-         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
