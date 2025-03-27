@@ -54,7 +54,7 @@ def reshape_data(df, features, target_column, device):
     #     parameters.append(parameter_sequence)
 
     # create corresponding labels for each day
-    label_full = torch.tensor(df[target_column].array, device=device)
+    label_full = torch.tensor(df[target_column].array)#, device=device)
 
     for day in range(len(dates) - 1):
         labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
@@ -64,7 +64,7 @@ def reshape_data(df, features, target_column, device):
         parameter_sequence = []
         for parametername in features:
             print(parametername)
-            parameter_full = torch.tensor(df[parametername].array, device=device)
+            parameter_full = torch.tensor(df[parametername].array)#, device=device)
 
             parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
             parameter_ondate_reshaped = parameter_ondate.reshape(latitude_count,longitude_count)  # reshape array to an 'image' according to lat/long
@@ -72,7 +72,8 @@ def reshape_data(df, features, target_column, device):
 
         parameters.append(parameter_sequence)
 
-    return torch.tensor(parameters, device=device), torch.tensor(labels, device=device)
+    # return torch.tensor(parameters, device=device), torch.tensor(labels, device=device)
+    return parameters, labels
 
 
 def create_windows(parameters, labels, training_days, prediction_day):

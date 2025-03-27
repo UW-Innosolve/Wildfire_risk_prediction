@@ -70,7 +70,7 @@ def main(training_parameters={"batch_size": 10,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"testrun",
+                              "experiment_name":"testrun_gpu",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
          rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
@@ -124,8 +124,8 @@ def main(training_parameters={"batch_size": 10,
     logging.info(f"Successfully reshaped all features")
 
     # remove after converting reshape function to torch
-    data = torch.Tensor(reshaped_data)
-    labels = torch.Tensor(reshaped_labels)
+    data = torch.Tensor(reshaped_data, device=device)
+    labels = torch.Tensor(reshaped_labels, device=device)
 
     # set tensorboard writer directory
     writer = SummaryWriter(log_dir=checkpoint_dir)
