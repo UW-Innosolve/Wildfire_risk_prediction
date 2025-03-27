@@ -74,7 +74,7 @@ def main(training_parameters={"batch_size": 10,
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
          rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv'):
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
@@ -119,7 +119,7 @@ def main(training_parameters={"batch_size": 10,
     # reshape data into 2-D
     # TODO update reshaping so that its done in torch
     # TODO update reshaping to be done using dates and not indices
-    reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column)
+    reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column, device_set)
     # logging
     logging.info(f"Successfully reshaped all features")
 

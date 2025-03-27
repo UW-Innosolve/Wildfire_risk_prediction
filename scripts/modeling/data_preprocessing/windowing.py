@@ -19,7 +19,7 @@ import pandas as pd
 import torch
 
 
-def reshape_data(df, features, target_column):
+def reshape_data(df, features, target_column, device):
     # count number of lines latitude and longitude (used to reshape data)
     # TODO assumes that all days have same number of lat/long values
     # TODO update to only BUT KEEP INDEX
@@ -35,38 +35,44 @@ def reshape_data(df, features, target_column):
     parameters = []
     labels = []
 
-    # # processing to reshape each parameter and create an ordered sequence of the parameter on each day
-    # for parametername in features:
-    #     parameter_sequence = []
-    #     parameter_full = df[parametername]
+    # # create corresponding labels for each day
+    # label_full = df[target_column]
     #
-    #     # reshape parameter values for each day
-    #     for day in range(len(dates)):
-    #         parameter_ondate = parameter_full[rows_perday * day : rows_perday * (day + 1)] # get parameter values on that day
-    #         parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count, longitude_count) # reshape array to an 'image' according to lat/long
+    # for day in range(len(dates) - 1):
+    #     labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
+    #     labels_ondate_reshaped = np.asarray(labels_ondate).reshape(latitude_count, longitude_count)
+    #     labels.append(labels_ondate_reshaped)
+    #
+    #     parameter_sequence = []
+    #     for parametername in features:
+    #         parameter_full = df[parametername]
+    #
+    #         parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
+    #         parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count,longitude_count)  # reshape array to an 'image' according to lat/long
     #         parameter_sequence.append(parameter_ondate_reshaped)
     #
     #     parameters.append(parameter_sequence)
 
     # create corresponding labels for each day
-    label_full = df[target_column]
+    label_full = torch.tensor(df[target_column].array, device=device)
 
     for day in range(len(dates) - 1):
         labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
-        labels_ondate_reshaped = np.asarray(labels_ondate).reshape(latitude_count, longitude_count)
+        labels_ondate_reshaped = labels_ondate.reshape(latitude_count, longitude_count)
         labels.append(labels_ondate_reshaped)
 
         parameter_sequence = []
         for parametername in features:
-            parameter_full = df[parametername]
+            print(parametername)
+            parameter_full = torch.tensor(df[parametername].array, device=device)
 
             parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
-            parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count,longitude_count)  # reshape array to an 'image' according to lat/long
+            parameter_ondate_reshaped = parameter_ondate.reshape(latitude_count,longitude_count)  # reshape array to an 'image' according to lat/long
             parameter_sequence.append(parameter_ondate_reshaped)
 
         parameters.append(parameter_sequence)
 
-    return np.asarray(parameters), np.asarray(labels)
+    return torch.tensor(parameters, device=device), torch.tensor(labels, device=device)
 
 
 def create_windows(parameters, labels, training_days, prediction_day):
