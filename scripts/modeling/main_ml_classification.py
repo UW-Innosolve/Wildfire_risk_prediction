@@ -158,28 +158,39 @@ def main():
     reporter = Reporter()
     models = {
         "KNN": KNNModel(n_neighbors=5),
+
         "Random Forest": RandomForestModel(
-            params={'n_estimators': 100,
-                    'max_depth': None,
-                    'class_weight': 'balanced',
-                    'random_state': 42,
-                    'n_jobs': -1}
+            params={
+                'n_estimators': 100,
+                'max_depth': None,
+                'class_weight': 'balanced',
+                'random_state': 42,
+                # Use all CPU cores
+                'n_jobs': -1
+            }
         ),
+
         "XGBoost": XGBoostModel(
-            params={'learning_rate': 0.1,
-                    'max_depth': 6,
-                    'n_estimators': 100,
-                    'subsample': 0.8,
-                    'scale_pos_weight': 5,
-                    'use_label_encoder': False,
-                    'eval_metric': 'logloss',
-                    'nthread': -1}
+            params={
+                'learning_rate': 0.1,
+                'max_depth': 6,
+                'n_estimators': 100,
+                'subsample': 0.8,
+                'scale_pos_weight': 5,
+                'use_label_encoder': False,
+                'eval_metric': 'logloss',
+                # Use all CPU cores
+                'nthread': -1
+            }
         ),
+
         "Logistic Regression": LogisticRegressionModel(
-            params={'C': 1.0,
-                    'solver': 'liblinear',
-                    'class_weight': 'balanced',
-                    'max_iter': 1000}
+            params={
+                'C': 1.0,
+                'solver': 'liblinear',
+                'class_weight': 'balanced',
+                'max_iter': 1000
+            }
         ),
     }
     
