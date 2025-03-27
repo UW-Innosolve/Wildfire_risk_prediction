@@ -117,8 +117,9 @@ def main(training_parameters={"batch_size": 10,
                               "experiment_name":"testrun",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
-         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv'):
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv'):
+         device='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -131,7 +132,16 @@ def main(training_parameters={"batch_size": 10,
     checkpoint_dir = f'./checkpoints/{experiment_name}/'
     train_range = training_parameters['train_range']
     test_range = training_parameters['test_range']
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if device == 'cuda':
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            logging.info(f"Device set to cuda, running on GPU")
+        else:
+            device = torch.device('cpu')
+            logging.info(f"No GPU found! Device set to CPU")
+    else:
+        device = torch.device('cpu')
+        logging.info(f"Device set to CPU")
     logging.info(f"Training parameters set successfully")
 
     # load data from df
