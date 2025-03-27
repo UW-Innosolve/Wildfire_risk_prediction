@@ -75,38 +75,51 @@ logging.basicConfig(
 # fireseason_indices_np = np.asarray(usable_indices)
 # testfireseason_indices_np = np.asarray(test_indices)
 
-def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25'):
+def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25', size=1258):
     '''
     Because we use the day we predict from (not the day we are predicting) as the index, we must subtract 5 days from March 1 and 5 days from Sept 31
     '''
     train_indices = []
     test_indices = []
 
+    dates = data_df['date'].unique().tolist()
+
     for year in range(train_range[0], train_range[1] + 1):
-        start_index = data_df[data_df.date == f'{year}-{start_day}'].index # allows us to predict from March 1
-        end_index = data_df[data_df.date == f'{year}-{end_day}'].index # allows us to predict up to Sept 30
-        train_indices.append(range(start_index, end_index))
+        start_index = dates.index(f"{year}-{start_day}")
+        end_index = dates.index(f"{year}-{end_day}")
+        for i in range(start_index, end_index + 1):
+            train_indices.append(i)
 
     if type(test_range) == int:
-        start_index = data_df[data_df.date == f'{test_range[0]}-{start_day}'].index  # allows us to predict from March 1
-        end_index = data_df[data_df.date == f'{test_range[0]}-{end_day}'].index  # allows us to predict up to Sept 30
-        test_indices.append(range(start_index, end_index))
+        start_index = dates.index(f"{test_range}-{start_day}")
+        end_index = dates.index(f"{test_range}-{end_day}")
+        for i in range(start_index, end_index + 1):  # +1 is to catch all days (and not cut off the last one)
+            test_indices.append(i)
     else:
-        for year in range(test_range[0], test_range[1] + 1):
-            start_index = data_df[data_df.date == f'{year}-{start_day}'].index  # allows us to predict from March 1
-            end_index = data_df[data_df.date == f'{year}-{end_day}'].index  # allows us to predict up to Sept 30
-            test_indices.append(range(start_index, end_index))
+        for year in range(test_range[0], test_range[1] + 1): # +1 to not cut off the last year
+            start_index = dates.index(f"{year}-{start_day}")
+            end_index = dates.index(f"{year}-{end_day}")
+            for i in range(start_index, end_index + 1):  # +1 is to catch all days (and not cut off the last one)
+                test_indices.append(i)
 
-    # fireseason_indices_np = np.asarray(train_indices)
-    # testfireseason_indices_np = np.asarray(test_indices)
-
-    return train_indices, test_indices
+    return np.asarray(train_indices), np.asarray(test_indices)
 
 
 # TODO create a training_parameters json or something similar to make tracking easier
 # TODO update parameters to pull from a json file
 # TODO update to run on a device (i.e. cpu or gpu)
-def main(rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv', training_parameters={"batch_size": 10,"num_epochs": 8,"learning_rate": 0.005, "num_training_days": 14, "prediction_day":5, "hidden_size": 64, "experiment_name":"rawtrain_8", "test_range": (2024), "train_range": (2006, 2023)}, device='cpu'):
+def main(training_parameters={"batch_size": 10,
+                              "num_epochs": 8,
+                              "learning_rate": 0.005,
+                              "num_training_days": 14,
+                              "prediction_day":5,
+                              "hidden_size": 64,
+                              "experiment_name":"testtrain",
+                              "test_range": (2008),
+                              "train_range": (2006, 2007)},
+         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+         device='cpu'):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -119,19 +132,20 @@ def main(rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv', trai
     checkpoint_dir = f'./checkpoints/{experiment_name}/'
     train_range = training_parameters['train_range']
     test_range = training_parameters['test_range']
+    logging.info(f"Training parameters set successfully")
 
     # load data from df
-    rawdata_df = pd.read_csv(rawdata_path).to(device)
+    rawdata_df = pd.read_csv(rawdata_path) #.to(device)
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
     features = rawdata_df.columns[3:].array
     target_column = 'is_fire_day'
     num_features = len(features)
-    # logging
     logging.info(f"Selected features: {features}")
     logging.info(f"Target variable: {target_column}")
 
     # get train and test set indices
     train_indices, test_indices = get_indices(rawdata_df, train_range, test_range) # set for fire season only unless changed
+    logging.info(f"Indexing completed, train_indices and test_indices sets created successfully")
 
     # reshape data into 2-D
     # TODO update reshaping so that its done in torch
@@ -155,17 +169,21 @@ def main(rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv', trai
     # test_indices_np = np.asarray(test_indices_list)
 
     # Split the data; apply SMOTE for balancing minority class (fire days).
-    logging.info("Splitting data into training and test sets using day index...")
+    logging.info("Splitting data into training, validation, and test sets using day index")
     # TODO complete train test splitting
     # X_train, X_test, y_train, y_test = train_test_split(fireseason_indices_np, testfireseason_indices_np, train_size=0.8)
     # X_train, X_test, y_train, y_test = train_test_split(test_indices_np, test_indices_np, train_size=0.85)
-    X_train, X_test, y_train, y_test = fireseason_indices_np, testfireseason_indices_np, fireseason_indices_np, testfireseason_indices_np
+    # split train_indices into training and validation sets
+    X_train, X_val, y_train, y_val = train_test_split(train_indices, train_indices, train_size=0.85)
+    # set test_indices as test set
+    X_test, y_test = test_indices, test_indices
+    logging.info(f"Data split successfully, train_set size - {len(X_train)}, val_set size - {len(X_val)}, test_set size - {len(X_test)}")
 
     # create model
     model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02)
-
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     batch_num = 0
+    logging.info("Model created successfully")
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
@@ -182,8 +200,8 @@ def main(rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv', trai
             loss = bce_loss(outputs, targets)
             if (batch_num % 20) == 0:
                 with torch.no_grad():
-                    np.random.shuffle(X_test)
-                    label_batch = X_test[:batch_size]
+                    np.random.shuffle(X_val)
+                    label_batch = X_val[:batch_size]
                     test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
                     test_predictions = model(test_inputs)
                     # test_metrics = evaluate(test_predictions, test_targets)
