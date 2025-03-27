@@ -1,7 +1,7 @@
 from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bce_loss
 from model_classes.lstm import LSTM_3D
 from data_preprocessing.windowing import batched_indexed_windows, reshape_data
-from data_preprocessing.csv_aggreg import csv_aggregate
+# from data_preprocessing.csv_aggreg import csv_aggregate
 from model_evaluation.nn_model_metrics import evaluate
 
 
@@ -31,14 +31,14 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-features = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
-            'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
-            'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'z',
-            'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
-            'tp', 'is_fire_day',
-            'railway_count', 'power_line_count',
-            'highway_count', 'aeroway_count', 'waterway_count']
-# REMOVED 'multiplicity_sum' 'tvh', 'tvl', 'lightning_count', 'absv_strength_sum',
+# features = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
+#             'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
+#             'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'z',
+#             'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
+#             'tp', 'is_fire_day',
+#             'railway_count', 'power_line_count',
+#             'highway_count', 'aeroway_count', 'waterway_count']
+# # REMOVED 'multiplicity_sum' 'tvh', 'tvl', 'lightning_count', 'absv_strength_sum',
 
 # # get columns
 # # TODO fix so that the columns are not fixed
@@ -57,17 +57,20 @@ features = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
 # rawdata_path = "/Users/teodoravujovic/Downloads/fb_raw_data_2006-2024_split/fb_raw_data_5.csv"
 # rawdata_path = '/Users/teodoravujovic/Desktop/code/firebird/lstm_training/Wildfire_risk_prediction/scripts/data_processing/processed_data_no_cffdrs_5.csv'
 # data_dir = '/Users/teodoravujovic/Desktop/code/firebird/lstm_training/Wildfire_risk_prediction/scripts/modeling/raw_data'
-data_dir = '/Users/teodoravujovic/Desktop/data/firebird/fb_complete_raw_output_20250316'
-rawdata_df = csv_aggregate(data_dir)
+# data_dir = '/Users/teodoravujovic/Desktop/data/firebird/fb_complete_raw_output_20250316'
+# rawdata_df = csv_aggregate(data_dir)
 
 # load raw data into pandas
-# rawdata_df = pd.read_csv(rawdata_path)
-# features = rawdata_df.columns[3:].tolist()
+rawdata_path = '/home/tvujovic/scratch/firebird/processed_data.csv'
+rawdata_df = pd.read_csv(rawdata_path)
+features = rawdata_df.columns[3:].tolist()
 target_column = 'is_fire_day'
 
+# TODO update reshaping so that its done in torch
+# TODO update reshaping to be done
 reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column)
 
-
+# TODO: update so that usable range is obtained from dates and not hardcoded
 usable_ranges = [range(54, 273), range(419, 638), range(784, 1003), range(1149, 1368), range(1514, 1733), range(1879, 2098), range(2244, 2463), range(2609, 2828), range(2974, 3193), range(3339, 3558), range(3704, 3923), range(4069, 4288), range(4313, 4532), range(4678, 4897), range(5043, 5262), range(5408, 5623)]#, range(5773, 5992), range(6138, 6355)]#, range(6503, 6722)]
 usable_indices = []
 test_indices = []
@@ -80,12 +83,14 @@ fireseason_indices_np = np.asarray(usable_indices)
 testfireseason_indices_np = np.asarray(test_indices)
 
 
-# TODO create a training_parameters json or something similar to make tracking easier?
+# TODO create a training_parameters json or something similar to make tracking easier
+# TODO update parameters to pull from a json file
+# TODO update to run on a device (i.e. cpu or gpu)
 def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"batch_size": 10,"num_epochs": 8,"learning_rate": 0.005,"features": len(features), "num_training_days": 14, "prediction_day":5, "hidden_size": 64, "experiment_name":"rawtrain_8"}):
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
     learning_rate = training_parameters['learning_rate']
-    features = training_parameters['features']
+    num_features = training_parameters['features']
     num_training_days = training_parameters['num_training_days']
     prediction_day = training_parameters['prediction_day']
     hidden_size = training_parameters['hidden_size']
@@ -113,7 +118,7 @@ def main(dataset=reshaped_data, labels=reshaped_labels, training_parameters={"ba
     X_train, X_test, y_train, y_test = fireseason_indices_np, testfireseason_indices_np, fireseason_indices_np, testfireseason_indices_np
 
     # create model
-    model = LSTM_3D(input_channels=features, hidden_size=64, dropout_rate=0.02)
+    model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     batch_num = 0
