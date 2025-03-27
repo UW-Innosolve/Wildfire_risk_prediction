@@ -22,13 +22,14 @@ import torch
 def reshape_data(df, features, target_column):
     # count number of lines latitude and longitude (used to reshape data)
     # TODO assumes that all days have same number of lat/long values
+    # TODO update to only BUT KEEP INDEX
     latitude_count = df['latitude'].unique().size
     longitude_count = df['longitude'].unique().size
     rows_perday = latitude_count * longitude_count
 
     # get list of days in this file
     dates = df['date'].unique()
-    print(len(dates))
+    print(f"Number of unique dates in dataset is {len(dates)}")
 
     # create parameters and labels arrays
     parameters = []
