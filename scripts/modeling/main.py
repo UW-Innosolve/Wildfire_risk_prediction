@@ -181,6 +181,14 @@ def main(training_parameters={"batch_size": 10,
                                     # "f1_score": test_metrics["f1_score"]}
                                     # # "roc_auc": test_metrics["roc_auc"]}
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
+                    if (batch_num % 100) == 0:
+                        checkpoint = {
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict()}#,  # If you have an optimizer
+                            # Add other relevant information like epoch, loss, etc.}
+                        torch.save(checkpoint, f'{checkpoint_dir}/checkpoint_epoch_{epoch}_batch_{batch_num}.pth')
+                        logging.info(
+                            f"Model checkpoint for epoch {epoch} saved to: {checkpoint_dir}/checkpoint_epoch_{epoch}.pth")
             loss.backward()
             batch_num += 1
 
