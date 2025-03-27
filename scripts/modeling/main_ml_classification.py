@@ -52,7 +52,7 @@ def main():
     # -------------------------------
     # 1. Data Loading with Dask
     # -------------------------------
-    data_dir = "Scripts/data_processing/processed_data/split_data_dir"
+    data_dir = "scripts/data_processing/processed_data/split_data_dir"
     X_train_path = os.path.join(data_dir, "X_train.csv")
     X_test_path  = os.path.join(data_dir, "X_test.csv")
     y_train_path = os.path.join(data_dir, "y_train.csv")
