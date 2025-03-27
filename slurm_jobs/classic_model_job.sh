@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-nassersa-ab
-#SBATCH --time=01:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mem=128G
 #SBATCH --cpus-per-task=8
 #SBATCH --job-name=wildfire_classification
