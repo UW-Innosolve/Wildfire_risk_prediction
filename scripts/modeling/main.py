@@ -2,7 +2,7 @@ from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bc
 from model_classes.lstm import LSTM_3D
 from data_preprocessing.windowing import batched_indexed_windows, reshape_data
 # from data_preprocessing.csv_aggreg import csv_aggregate
-from model_evaluation.nn_model_metrics import evaluate
+# from model_evaluation.nn_model_metrics import evaluate
 
 
 import torch.optim as optim
@@ -30,50 +30,6 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s')
 
-
-# features = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
-#             'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
-#             'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'z',
-#             'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
-#             'tp', 'is_fire_day',
-#             'railway_count', 'power_line_count',
-#             'highway_count', 'aeroway_count', 'waterway_count']
-# # REMOVED 'multiplicity_sum' 'tvh', 'tvl', 'lightning_count', 'absv_strength_sum',
-
-# # get columns
-# # TODO fix so that the columns are not fixed
-# # columns_used = rawdata_df.columns[3:]
-# columns_used = ['10u', '10v', '2d', '2t', 'cl', 'cvh',
-#                 'cvl', 'fal', 'lai_hv', 'lai_lv', 'lsm', 'slt', 'sp', 'src', 'stl1',
-#                 'stl2', 'stl3', 'stl4', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'tvh',
-#                 'tvl', 'z', 'e', 'pev', 'slhf', 'sshf', 'ssr', 'ssrd', 'str', 'strd',
-#                 'tp', 'lightning_count', 'absv_strength_sum',
-#                 'multiplicity_sum', 'railway_count', 'power_line_count',
-#                 'highway_count', 'aeroway_count', 'waterway_count']
-# target_column = 'is_fire_day'
-
-
-# rawdata_path = "/Users/teodoravujovic/Desktop/data/firebird/march13_pull/fb_raw_data_201407.csv"
-# rawdata_path = "/Users/teodoravujovic/Downloads/fb_raw_data_2006-2024_split/fb_raw_data_5.csv"
-# rawdata_path = '/Users/teodoravujovic/Desktop/code/firebird/lstm_training/Wildfire_risk_prediction/scripts/data_processing/processed_data_no_cffdrs_5.csv'
-# data_dir = '/Users/teodoravujovic/Desktop/code/firebird/lstm_training/Wildfire_risk_prediction/scripts/modeling/raw_data'
-# data_dir = '/Users/teodoravujovic/Desktop/data/firebird/fb_complete_raw_output_20250316'
-# rawdata_df = csv_aggregate(data_dir)
-
-# load raw data into pandas
-
-
-# TODO: update so that usable range is obtained from dates and not hardcoded
-# usable_ranges = [range(54, 273), range(419, 638), range(784, 1003), range(1149, 1368), range(1514, 1733), range(1879, 2098), range(2244, 2463), range(2609, 2828), range(2974, 3193), range(3339, 3558), range(3704, 3923), range(4069, 4288), range(4313, 4532), range(4678, 4897), range(5043, 5262), range(5408, 5623)]#, range(5773, 5992), range(6138, 6355)]#, range(6503, 6722)]
-# usable_indices = []
-# test_indices = []
-# for usable_range in usable_ranges:
-#     for i in usable_range:
-#             usable_indices.append(i)
-# for i in range(5773, 5992): # 2022 fire season
-#     test_indices.append(i)
-# fireseason_indices_np = np.asarray(usable_indices)
-# testfireseason_indices_np = np.asarray(test_indices)
 
 def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25'):
     '''
@@ -176,16 +132,9 @@ def main(training_parameters={"batch_size": 10,
     # logging
     logging.info(f"Tensorboard output directory configured to {checkpoint_dir}")
 
-    # test_indices_list = []
-    # for i in range(20, 550):
-    #     test_indices_list.append(i)
-    # test_indices_np = np.asarray(test_indices_list)
-
     # Split the data; apply SMOTE for balancing minority class (fire days).
     logging.info("Splitting data into training, validation, and test sets using day index")
     # TODO complete train test splitting
-    # X_train, X_test, y_train, y_test = train_test_split(fireseason_indices_np, testfireseason_indices_np, train_size=0.8)
-    # X_train, X_test, y_train, y_test = train_test_split(test_indices_np, test_indices_np, train_size=0.85)
     # split train_indices into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(train_indices, train_indices, train_size=0.85)
     # set test_indices as test set
@@ -207,16 +156,13 @@ def main(training_parameters={"batch_size": 10,
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
-        # print(X_train)
-        # print(X_test)
         batches = X_train[:samples_per_epoch].reshape(int(len(X_train)/batch_size), batch_size)
 
         for batch in batches:
-            print(f'Epoch {epoch}, Batch {batch}')
+            print(f'Epoch {epoch}, Batch Number {batch_num}, Batch Indices {batch}')
             optimizer.zero_grad()
             inputs, targets = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
-            outputs = model(inputs)  # forward pass]
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), 1, norm_type=2, error_if_nonfinite=True)
+            outputs = model(inputs)
             loss = bce_loss(outputs, targets)
             if (batch_num % 20) == 0:
                 with torch.no_grad():
@@ -237,14 +183,9 @@ def main(training_parameters={"batch_size": 10,
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
             loss.backward()
             batch_num += 1
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), 1, norm_type=2, error_if_nonfinite=True)
 
             optimizer.step()
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
-    # import torch
-
-    # Assuming 'model' is your PyTorch model
-    # and 'optimizer' is your optimizer (optional)
 
     # Option 1: Save the model's state_dict (recommended)
         torch.save(model.state_dict(), f'{checkpoint_dir}/model_epoch_{epoch}.pth')
