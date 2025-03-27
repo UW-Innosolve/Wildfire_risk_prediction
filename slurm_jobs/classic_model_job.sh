@@ -1,40 +1,41 @@
 #!/bin/bash
-#SBATCH --account=def-nassersa-ab      # Replace with your actual account
-#SBATCH --time=00:06:00               # hh:mm:ss or d-hh:mm:ss
-#SBATCH --mem=32G                     # memory per node
-#SBATCH --cpus-per-task=8             # number of CPU cores
+#SBATCH --account=def-nassersa-ab   # Replace with your project account
+#SBATCH --time=01:00:00             # Increase time so your job can run longer
+#SBATCH --mem=32G                   # memory per node
+#SBATCH --cpus-per-task=8
 #SBATCH --job-name=wildfire_classification
-#SBATCH --output=%x-%j.out            # wildfire_classification-<jobID>.out
-#SBATCH --error=%x-%j.err             # wildfire_classification-<jobID>.err
+#SBATCH --output=wildfire_classification.out   # Always writes to the same .out
+#SBATCH --error=wildfire_classification.err    # Always writes to the same .err
+#SBATCH --open-mode=truncate                  # Overwrites logs each time
 #SBATCH --mail-user=iazhar@uwaterloo.ca
-#SBATCH --mail-type=ALL               # or BEGIN,END,FAIL
+#SBATCH --mail-type=ALL
 
-# Load modules
+# 1) Load modules
 module load StdEnv/2020 gcc/9.3.0 python/3.8
 
-# (1) Source conda script to enable 'conda activate' in non-interactive shells
+# 2) Source conda script (to allow 'conda activate' in non-interactive shells)
 source ~/miniconda3/etc/profile.d/conda.sh
 
-# (2) Activate your environment
+# 3) Activate your conda environment
 conda activate wildfire_env
 
-# (3) Print debug info about which Python is active
+# 4) Debug lines: show which python is active and joblib version
 echo "==============================="
-echo "[DEBUG] Which python: $(which python)"
+echo "[DEBUG] Using Python at: $(which python)"
 python -c "import sys; print('[DEBUG] sys.executable:', sys.executable)"
 python -c "import joblib; print('[DEBUG] joblib version:', joblib.__version__)"
 echo "[DEBUG] CONDA_PREFIX: $CONDA_PREFIX"
 echo "==============================="
 
-# (4) Navigate to your project directory
+# 5) Navigate to your code directory
 cd ~/scratch/Wildfire_risk_prediction
-echo "[DEBUG] Directory contents in $(pwd):"
+echo "[DEBUG] Directory contents of $(pwd):"
 ls -lh
 
 echo "Starting job on $(date)"
 echo "Running on $(hostname)"
 
-# (5) Run your Python script
+# 6) Run your Python script
 python scripts/modeling/main_ml_classification.py
 
 echo "Finished job on $(date)"
