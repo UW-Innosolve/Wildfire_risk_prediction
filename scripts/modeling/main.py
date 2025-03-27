@@ -63,27 +63,50 @@ logging.basicConfig(
 # load raw data into pandas
 
 
-# TODO update reshaping so that its done in torch
-# TODO update reshaping to be done
-
-
 # TODO: update so that usable range is obtained from dates and not hardcoded
-usable_ranges = [range(54, 273), range(419, 638), range(784, 1003), range(1149, 1368), range(1514, 1733), range(1879, 2098), range(2244, 2463), range(2609, 2828), range(2974, 3193), range(3339, 3558), range(3704, 3923), range(4069, 4288), range(4313, 4532), range(4678, 4897), range(5043, 5262), range(5408, 5623)]#, range(5773, 5992), range(6138, 6355)]#, range(6503, 6722)]
-usable_indices = []
-test_indices = []
-for usable_range in usable_ranges:
-    for i in usable_range:
-            usable_indices.append(i)
-for i in range(5773, 5992): # 2022 fire season
-    test_indices.append(i)
-fireseason_indices_np = np.asarray(usable_indices)
-testfireseason_indices_np = np.asarray(test_indices)
+# usable_ranges = [range(54, 273), range(419, 638), range(784, 1003), range(1149, 1368), range(1514, 1733), range(1879, 2098), range(2244, 2463), range(2609, 2828), range(2974, 3193), range(3339, 3558), range(3704, 3923), range(4069, 4288), range(4313, 4532), range(4678, 4897), range(5043, 5262), range(5408, 5623)]#, range(5773, 5992), range(6138, 6355)]#, range(6503, 6722)]
+# usable_indices = []
+# test_indices = []
+# for usable_range in usable_ranges:
+#     for i in usable_range:
+#             usable_indices.append(i)
+# for i in range(5773, 5992): # 2022 fire season
+#     test_indices.append(i)
+# fireseason_indices_np = np.asarray(usable_indices)
+# testfireseason_indices_np = np.asarray(test_indices)
+
+def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25'):
+    '''
+    Because we use the day we predict from (not the day we are predicting) as the index, we must subtract 5 days from March 1 and 5 days from Sept 31
+    '''
+    train_indices = []
+    test_indices = []
+
+    for year in range(train_range[0], train_range[1] + 1):
+        start_index = data_df[data_df.date == f'{year}-{start_day}'].index # allows us to predict from March 1
+        end_index = data_df[data_df.date == f'{year}-{end_day}'].index # allows us to predict up to Sept 30
+        train_indices.append(range(start_index, end_index))
+
+    if type(test_range) == int:
+        start_index = data_df[data_df.date == f'{test_range[0]}-{start_day}'].index  # allows us to predict from March 1
+        end_index = data_df[data_df.date == f'{test_range[0]}-{end_day}'].index  # allows us to predict up to Sept 30
+        test_indices.append(range(start_index, end_index))
+    else:
+        for year in range(test_range[0], test_range[1] + 1):
+            start_index = data_df[data_df.date == f'{year}-{start_day}'].index  # allows us to predict from March 1
+            end_index = data_df[data_df.date == f'{year}-{end_day}'].index  # allows us to predict up to Sept 30
+            test_indices.append(range(start_index, end_index))
+
+    # fireseason_indices_np = np.asarray(train_indices)
+    # testfireseason_indices_np = np.asarray(test_indices)
+
+    return train_indices, test_indices
 
 
 # TODO create a training_parameters json or something similar to make tracking easier
 # TODO update parameters to pull from a json file
 # TODO update to run on a device (i.e. cpu or gpu)
-def main(rawdata_path = '/home/tvujovic/scratch/firebird/processed_data.csv', training_parameters={"batch_size": 10,"num_epochs": 8,"learning_rate": 0.005, "num_training_days": 14, "prediction_day":5, "hidden_size": 64, "experiment_name":"rawtrain_8"}):
+def main(rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv', training_parameters={"batch_size": 10,"num_epochs": 8,"learning_rate": 0.005, "num_training_days": 14, "prediction_day":5, "hidden_size": 64, "experiment_name":"rawtrain_8", "test_range": (2024), "train_range": (2006, 2023)}, device='cpu'):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -94,25 +117,37 @@ def main(rawdata_path = '/home/tvujovic/scratch/firebird/processed_data.csv', tr
     hidden_size = training_parameters['hidden_size']
     experiment_name = training_parameters['experiment_name']
     checkpoint_dir = f'./checkpoints/{experiment_name}/'
+    train_range = training_parameters['train_range']
+    test_range = training_parameters['test_range']
 
     # load data from df
-    rawdata_df = pd.read_csv(rawdata_path)
+    rawdata_df = pd.read_csv(rawdata_path).to(device)
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
-    features = rawdata_df.columns[3:].tolist()
+    features = rawdata_df.columns[3:].array
     target_column = 'is_fire_day'
     num_features = len(features)
     # logging
     logging.info(f"Selected features: {features}")
     logging.info(f"Target variable: {target_column}")
 
+    # get train and test set indices
+    train_indices, test_indices = get_indices(rawdata_df, train_range, test_range) # set for fire season only unless changed
+
     # reshape data into 2-D
+    # TODO update reshaping so that its done in torch
+    # TODO update reshaping to be done using dates and not indices
     reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column)
     # logging
     logging.info(f"Successfully reshaped all features")
 
+    # remove after converting reshape function to torch
     data = torch.Tensor(reshaped_data)
     labels = torch.Tensor(reshaped_labels)
+
+    # set tensorboard writer directory
     writer = SummaryWriter(log_dir=checkpoint_dir)
+    # logging
+    logging.info(f"Tensorboard output directory configured to {checkpoint_dir}")
 
     # test_indices_list = []
     # for i in range(20, 550):
