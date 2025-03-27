@@ -136,6 +136,7 @@ def main(training_parameters={"batch_size": 10,
 
     # load data from df
     rawdata_df = pd.read_csv(rawdata_path) #.to(device)
+    logging.info(f"Dataset csv file loaded into dataframe successfully")
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
     features = rawdata_df.columns[3:].array
     target_column = 'is_fire_day'
@@ -179,6 +180,12 @@ def main(training_parameters={"batch_size": 10,
     X_test, y_test = test_indices, test_indices
     logging.info(f"Data split successfully, train_set size - {len(X_train)}, val_set size - {len(X_val)}, test_set size - {len(X_test)}")
 
+    # set size of validation batch
+    if device == 'cuda':
+        val_batch_size = len(X_val) # use full validation set each time if GPU used
+    else:
+        val_batch_size = 20 # use small batch of validation set each time if CPU used
+
     # create model
     model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -202,7 +209,7 @@ def main(training_parameters={"batch_size": 10,
             if (batch_num % 20) == 0:
                 with torch.no_grad():
                     np.random.shuffle(X_val)
-                    label_batch = X_val
+                    label_batch = X_val[:val_batch_size] # TODO: allow to test the entire validation set at once in gpu implementation
                     test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
                     test_predictions = model(test_inputs)
                     # test_metrics = evaluate(test_predictions, test_targets)
@@ -229,6 +236,7 @@ def main(training_parameters={"batch_size": 10,
 
     # Option 1: Save the model's state_dict (recommended)
         torch.save(model.state_dict(), f'{checkpoint_dir}/model_epoch_{epoch}.pth')
+        logging.info(f"Model state dictionary for epoch {epoch} saved to: {checkpoint_dir}/model_epoch_{epoch}.pth")
 
     # Option 2: Save the entire model (not recommended for production)
     # This saves the model's architecture and weights.
@@ -243,6 +251,7 @@ def main(training_parameters={"batch_size": 10,
             # Add other relevant information like epoch, loss, etc.
         }
         torch.save(checkpoint, f'{checkpoint_dir}/checkpoint_epoch_{epoch}.pth')
+        logging.info(f"Model checkpoint for epoch {epoch} saved to: {checkpoint_dir}/checkpoint_epoch_{epoch}.pth")
 
     # # Example of loading the model's state_dict:
     # loaded_model = YourModelClass(*args, **kwargs)  # Instantiate your model
