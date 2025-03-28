@@ -25,12 +25,11 @@ logging.basicConfig(
 )
 
 def load_data_with_dask(filepath):
-    """Load CSV with Dask, then compute to Pandas."""
+    """Load CSV with Dask and convert to Pandas."""
     logging.info(f"[DEBUG] Checking existence of file: {filepath}")
     if not os.path.exists(filepath):
         logging.error(f"File not found: {filepath}")
         sys.exit(f"Exiting due to missing file: {filepath}")
-
     logging.info(f"Loading data from {filepath} with Dask ...")
     df_dd = dd.read_csv(filepath, assume_missing=True)
     logging.info(f"Dask DataFrame loaded from {filepath}. Now converting to Pandas...")
@@ -43,7 +42,7 @@ def threshold_predictions(probs, threshold=0.5):
     return (probs >= threshold).astype(int)
 
 def main():
-    logging.info("Starting advanced GPU pipeline (LightGBM, XGBoost, CatBoost) on SMOTE-ENN resampled data...")
+    logging.info("Starting advanced GPU pipeline (LightGBM, XGBoost, CatBoost) on SMOTEENN-resampled data...")
 
     # --------------------------------------------------------------------------
     # 1) Load Data
@@ -59,9 +58,18 @@ def main():
     y_train_df = load_data_with_dask(y_train_path)
     y_test_df  = load_data_with_dask(y_test_path)
 
-    # Convert to NumPy arrays
+    # --- New: Drop the 'date' column (if it exists) BEFORE converting to NumPy arrays.
+    if 'date' in X_train_df.columns:
+        logging.info("Dropping 'date' column from X_train DataFrame...")
+        X_train_df = X_train_df.drop(columns=['date'])
+    if 'date' in X_test_df.columns:
+        logging.info("Dropping 'date' column from X_test DataFrame...")
+        X_test_df = X_test_df.drop(columns=['date'])
+
+    # Convert y dataframes to arrays (assume single column)
     y_train = y_train_df.iloc[:, 0].values
     y_test  = y_test_df.iloc[:, 0].values
+    # Convert feature DataFrames to NumPy arrays now that 'date' is removed.
     X_train = X_train_df.values
     X_test  = X_test_df.values
 
@@ -69,31 +77,31 @@ def main():
                  f"X_test: {X_test.shape}, y_test: {y_test.shape}")
 
     # --------------------------------------------------------------------------
-    # 2) Resample with SMOTE + ENN (Hybrid)
+    # 2) Resample with SMOTEENN (Hybrid oversampling + cleaning)
     # --------------------------------------------------------------------------
     logging.info("Applying SMOTEENN to training data for imbalance mitigation...")
     sme = SMOTEENN(random_state=42)
-    X_train_res, y_train_res = sme.fit_resample(X_train, y_train)
+    try:
+        X_train_res, y_train_res = sme.fit_resample(X_train, y_train)
+    except Exception as e:
+        logging.error(f"Error during SMOTEENN resampling: {e}")
+        sys.exit("Resampling failed.")
     logging.info(f"After SMOTEENN => X_train_res: {X_train_res.shape}, y_train_res: {y_train_res.shape}")
 
     # --------------------------------------------------------------------------
-    # GPU-Enabled Models: LightGBM, XGBoost, CatBoost
+    # 3) Define GPU-Enabled Models (LightGBM, XGBoost, CatBoost)
     # --------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------
-    # 3) LightGBM (GPU)
-    # --------------------------------------------------------------------------
-    logging.info("Training LightGBM (GPU-enabled) ...")
-    # Note: For GPU usage in LightGBM, set device_type='gpu'
-    # Depending on your HPC environment, you may need additional parameters,
-    # e.g. 'gpu_platform_id', 'gpu_device_id', etc.
+    # Note: For threshold tuning, we use a default threshold of 0.5; calibration steps are optional.
+    # Also, we have commented out cross-validation for faster iteration.
+    # --- LightGBM ---
+    logging.info("Training LightGBM (GPU-enabled)...")
     lgb_clf = lgb.LGBMClassifier(
         boosting_type='gbdt',
         objective='binary',
         n_estimators=100,
         learning_rate=0.1,
         max_depth=6,
-        device_type='gpu'  # main param for GPU usage
+        device_type='gpu'
     )
     lgb_clf.fit(X_train_res, y_train_res)
     lgb_probs = lgb_clf.predict_proba(X_test)[:, 1]
@@ -107,11 +115,10 @@ def main():
     }
     logging.info(f"LightGBM (Test) metrics @ threshold=0.5 => {lgb_metrics}")
 
-    # (Optional) Calibration for LightGBM
-    logging.info("Calibrating LightGBM with isotonic regression, then threshold=0.7 as demo...")
+    logging.info("Calibrating LightGBM with isotonic regression (threshold=0.7 example)...")
     lgb_cal = CalibratedClassifierCV(base_estimator=lgb_clf, cv=3, method='isotonic')
     lgb_cal.fit(X_train_res, y_train_res)
-    lgb_cal_probs = lgb_cal.predict_proba(X_test)[:,1]
+    lgb_cal_probs = lgb_cal.predict_proba(X_test)[:, 1]
     lgb_cal_preds = threshold_predictions(lgb_cal_probs, threshold=0.7)
     lgb_cal_metrics = {
         "accuracy": accuracy_score(y_test, lgb_cal_preds),
@@ -122,13 +129,11 @@ def main():
     }
     logging.info(f"LightGBM + calibration, threshold=0.7 => {lgb_cal_metrics}")
 
-    # --------------------------------------------------------------------------
-    # 4) XGBoost (GPU)
-    # --------------------------------------------------------------------------
-    logging.info("Training XGBoost (GPU-enabled) ...")
+    # --- XGBoost ---
+    logging.info("Training XGBoost (GPU-enabled)...")
     xgb_clf = xgb.XGBClassifier(
         tree_method='gpu_hist',
-        device='cuda:0',  # This requires a GPU-enabled xgboost build
+        device='cuda:0',  # Use GPU
         learning_rate=0.1,
         max_depth=6,
         n_estimators=100,
@@ -149,11 +154,10 @@ def main():
     }
     logging.info(f"XGBoost (Test) metrics @ threshold=0.5 => {xgb_metrics}")
 
-    # (Optional) Calibration for XGBoost
-    logging.info("Calibrating XGBoost with isotonic regression, threshold=0.7 as example...")
+    logging.info("Calibrating XGBoost with isotonic regression (threshold=0.7 example)...")
     xgb_cal = CalibratedClassifierCV(base_estimator=xgb_clf, cv=3, method='isotonic')
     xgb_cal.fit(X_train_res, y_train_res)
-    xgb_cal_probs = xgb_cal.predict_proba(X_test)[:,1]
+    xgb_cal_probs = xgb_cal.predict_proba(X_test)[:, 1]
     xgb_cal_preds = threshold_predictions(xgb_cal_probs, threshold=0.7)
     xgb_cal_metrics = {
         "accuracy": accuracy_score(y_test, xgb_cal_preds),
@@ -164,21 +168,19 @@ def main():
     }
     logging.info(f"XGBoost + calibration, threshold=0.7 => {xgb_cal_metrics}")
 
-    # --------------------------------------------------------------------------
-    # 5) CatBoost (GPU)
-    # --------------------------------------------------------------------------
-    logging.info("Training CatBoost (GPU-enabled) ...")
+    # --- CatBoost ---
+    logging.info("Training CatBoost (GPU-enabled)...")
     cat_clf = CatBoostClassifier(
         iterations=100,
         depth=6,
         learning_rate=0.1,
-        task_type='GPU',     # GPU usage
-        devices='0',         # If you have a single GPU
+        task_type='GPU',    # GPU usage
+        devices='0',        # Use GPU device 0
         eval_metric='Logloss',
         verbose=False
     )
     cat_clf.fit(X_train_res, y_train_res)
-    cat_probs = cat_clf.predict_proba(X_test)[:,1]
+    cat_probs = cat_clf.predict_proba(X_test)[:, 1]
     cat_preds = threshold_predictions(cat_probs, threshold=0.5)
     cat_metrics = {
         "accuracy": accuracy_score(y_test, cat_preds),
@@ -189,12 +191,10 @@ def main():
     }
     logging.info(f"CatBoost (Test) metrics @ threshold=0.5 => {cat_metrics}")
 
-    # (Optional) Calibration for CatBoost
-    # CatBoost has built-in calibration options, but you can also do scikit-learn approach:
-    logging.info("Calibrating CatBoost with isotonic regression, threshold=0.7 as example...")
+    logging.info("Calibrating CatBoost with isotonic regression (threshold=0.7 example)...")
     cat_cal = CalibratedClassifierCV(base_estimator=cat_clf, cv=3, method='isotonic')
     cat_cal.fit(X_train_res, y_train_res)
-    cat_cal_probs = cat_cal.predict_proba(X_test)[:,1]
+    cat_cal_probs = cat_cal.predict_proba(X_test)[:, 1]
     cat_cal_preds = threshold_predictions(cat_cal_probs, threshold=0.7)
     cat_cal_metrics = {
         "accuracy": accuracy_score(y_test, cat_cal_preds),
@@ -206,14 +206,9 @@ def main():
     logging.info(f"CatBoost + calibration, threshold=0.7 => {cat_cal_metrics}")
 
     # --------------------------------------------------------------------------
-    # (Commented) Cross-Validation
+    # (Commented) Cross-Validation is skipped for now for faster iteration.
     # --------------------------------------------------------------------------
-    """
-    # We skip cross-validation for now. If needed later:
-    # from sklearn.model_selection import cross_val_score
-    # scores = cross_val_score(xgb_clf, X_train_res, y_train_res, cv=5, scoring='f1')
-    # logging.info(f"XGBoost CV F1 => {scores.mean()}")
-    """
+    # logging.info("Skipping cross-validation for now...")
 
     logging.info("Finished advanced pipeline with LightGBM, XGBoost, CatBoost (all GPU). Exiting.")
 
