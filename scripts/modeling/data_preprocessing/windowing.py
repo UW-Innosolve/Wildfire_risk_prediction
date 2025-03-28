@@ -20,6 +20,25 @@ import torch
 
 
 def reshape_data(df, features, target_column, device):
+    """
+    Reshapes all features into a 2-dimensional latitude x longitude grid
+    Returned parameter array will have shape [number of days x number of features x latitude x longitude]
+    Returned label array will have shape [number of days x latitude x longitude]
+
+    Args:
+        df: pandas dataframe
+        features: list of strings
+        target_column: string
+        device: torch.device
+
+    Returns:
+        np.array, np.array
+
+    Notes:
+        - uses numpy instead of torch implementation as torch ran extremely slowly (even on GPU)
+        - uses row indices (rows per day) instead of dates for speed improvements (especially relevant for local execution)
+        - assumes that data is complete and not missing any rows (correct for processed dataset as of March 28, 2025)
+    """
     # count number of lines latitude and longitude (used to reshape data)
     # TODO assumes that all days have same number of lat/long values
     # TODO update to only BUT KEEP INDEX
@@ -107,6 +126,28 @@ def reshape_and_window_indexed(indexed_day, raw_dataframe, labels, training_days
 
 
 def batched_indexed_windows(batch_indices, parameters_full, labels_full, training_days, prediction_day, device='cpu'):
+    """
+    Given a set of indices, creates a window of length training_days their and corresponding label for each index
+    Returns array of windowed data with shape [batch_size x training_days x num_features x latitude x longitude] and corresponding array of labels
+
+    Args:
+        batch_indices: list of ints
+        parameters_full: torch.Tensor
+        labels_full: torch.Tensor
+        training_days: int
+        prediction_day: int
+        device: torch.device
+
+    Returns:
+        torch.Tensor, torch.Tensor
+
+    Notes:
+        - Each day is assigned an index from 1 through 6570 corresponding to the date between Jan 1, 2006 and Dec 31, 2024
+        - Uses indices (not dates directly) to determine window start / end points in data
+        - February 29th in leap years is skipped!! (due to a pandas datetime problem)
+        TODO: fix leap year issue
+
+    """
     with torch.no_grad():
         batch_data_windows = parameters_full[batch_indices[0] - training_days:batch_indices[0], :, :].unsqueeze(0)
         batch_label_windows = labels_full[batch_indices[0] + prediction_day, :, :].unsqueeze(0)
