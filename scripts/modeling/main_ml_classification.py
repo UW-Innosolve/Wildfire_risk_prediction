@@ -122,26 +122,34 @@ def main():
     # -------------------------------
     # Apply SMOTE to address class imbalance (only on training data)
     # -------------------------------
-    logging.info("Applying SMOTE to training data...")
-    smote = SMOTE(random_state=42)
-    X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
-    logging.info(f"After SMOTE: X_train_res shape = {X_train_res.shape}, y_train_res shape = {y_train_res.shape}")
-
-    # Save resampled data to CSV files in a new folder
+    # NEW BLOCK: Check if resampled files exist; if so, load them, else compute SMOTE and save.
     sampled_dir = os.path.join("scripts", "data_processing", "processed_data", "split_data_dir_sampled")
     os.makedirs(sampled_dir, exist_ok=True)
-    pd.DataFrame(X_train_res).to_csv(os.path.join(sampled_dir, "X_train_resampled.csv"), index=False)
-    pd.DataFrame(y_train_res, columns=["y"]).to_csv(os.path.join(sampled_dir, "y_train_resampled.csv"), index=False)
+    x_train_sampled_path = os.path.join(sampled_dir, "X_train_resampled.csv")
+    y_train_sampled_path = os.path.join(sampled_dir, "y_train_resampled.csv")
+
+    if os.path.exists(x_train_sampled_path) and os.path.exists(y_train_sampled_path):
+        logging.info("Loading previously resampled training data from disk...")
+        X_train_res = pd.read_csv(x_train_sampled_path).values
+        y_train_res = pd.read_csv(y_train_sampled_path)["y"].values
+    else:
+        logging.info("Applying SMOTE to training data...")
+        smote = SMOTE(random_state=42)
+        X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+        logging.info(f"After SMOTE: X_train_res shape = {X_train_res.shape}, y_train_res shape = {y_train_res.shape}")
+        pd.DataFrame(X_train_res).to_csv(x_train_sampled_path, index=False)
+        pd.DataFrame(y_train_res, columns=["y"]).to_csv(y_train_sampled_path, index=False)
+        logging.info(f"Resampled training data saved to {sampled_dir}")
     # Also save the test data (unchanged) for consistency
     pd.DataFrame(X_test).to_csv(os.path.join(sampled_dir, "X_test.csv"), index=False)
     pd.DataFrame(y_test, columns=["y"]).to_csv(os.path.join(sampled_dir, "y_test.csv"), index=False)
-    logging.info(f"Resampled and test data saved to {sampled_dir}")
+    logging.info(f"Test data saved to {sampled_dir}")
 
     # -------------------------------
     # Define Models with Parallel/GPU Settings
     # -------------------------------
     reporter = Reporter()
-    from model_classes.fb_approx_knn import ApproxKNNModel  # Assuming you have an approximate KNN class implemented
+    from model_classes.fb_approx_knn import ApproxKNNModel  # Assuming approximate KNN using Annoy is implemented in this file
     models = {
         "Approx KNN": ApproxKNNModel(n_neighbors=23, n_trees=10, metric='euclidean'),
         "Random Forest": RandomForestModel(
@@ -162,7 +170,7 @@ def main():
                 'scale_pos_weight': (np.sum(y_train_res == 0) / np.sum(y_train_res == 1)),
                 'use_label_encoder': False,
                 'eval_metric': 'logloss',
-                'tree_method': 'gpu_hist',  # GPU acceleration
+                'tree_method': 'gpu_hist',  # Use GPU acceleration; requires GPU-enabled xgboost
                 'gpu_id': 0
             }
         ),
@@ -177,7 +185,7 @@ def main():
     }
     
     # -------------------------------
-    # Cross-Validation on Resampled Training Set (Optional: comment out for initial testing)
+    # Cross-Validation on SMOTE-Resampled Training Set (Optional: comment out for initial testing)
     # -------------------------------
     # logging.info("Starting cross-validation on SMOTE-resampled training set...")
     # for model_name, model_obj in models.items():
