@@ -144,6 +144,7 @@ def batched_indexed_windows(batch_indices, parameters_full, labels_full, trainin
     """
     Given a set of indices, creates a window of length training_days their and corresponding label for each index
     Returns array of windowed data with shape [batch_size x training_days x num_features x latitude x longitude] and corresponding array of labels
+    Also includes windowed array of masks if specified
 
     Args:
         batch_indices: list of ints
@@ -177,8 +178,9 @@ def batched_indexed_windows(batch_indices, parameters_full, labels_full, trainin
             windowed_label = labels_full[indx + prediction_day, :, :].unsqueeze(0)
             batch_label_windows = torch.cat((batch_label_windows, windowed_label), dim=0)
         if include_masks:
-            windowed_mask = masks_full[indx + prediction_day, :, :].unsqueeze(0)
-            batch_mask_windows = torch.cat((batch_mask_windows, windowed_mask), dim=0)
+            for indx in batch_indices[1:]:
+                windowed_mask = masks_full[indx + prediction_day, :, :].unsqueeze(0)
+                batch_mask_windows = torch.cat((batch_mask_windows, windowed_mask), dim=0)
 
     return [batch_data_windows, batch_label_windows, batch_mask_windows]
 
