@@ -77,7 +77,8 @@ def main(training_parameters={"batch_size": 10,
                               "train_range": (2006, 2023)},
          rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
-         device_set='cuda'):
+         device_set='cuda',
+         include_masks=True): # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -121,13 +122,14 @@ def main(training_parameters={"batch_size": 10,
     # reshape data into 2-D
     # TODO update reshaping so that its done in torch
     # TODO update reshaping to be done using dates and not indices
-    reshaped_data, reshaped_labels = reshape_data(rawdata_df, features, target_column, device_set)
+    reshaped_data, reshaped_labels, reshaped_masks = reshape_data(rawdata_df, features, target_column, device_set, include_masks=include_masks)
     # logging
     logging.info(f"Successfully reshaped all features")
 
     # remove after converting reshape function to torch
     data = torch.Tensor(reshaped_data).to(device)
     labels = torch.Tensor(reshaped_labels).to(device)
+    masks = torch.Tensor(reshaped_masks).to(device)
 
     # set tensorboard writer directory
     writer = SummaryWriter(log_dir=checkpoint_dir)
@@ -166,11 +168,11 @@ def main(training_parameters={"batch_size": 10,
             print(f'Epoch {epoch}, Batch Number {batch_num}, Batch Indices {batch}')
             optimizer.zero_grad()
             # TODO determine how much slower it is to assign inputs targets and masks like this
-            batch_windows = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
-            inputs, targets, masks = batch_windows[0], batch_windows[1], batch_windows[2]
+            batch_windows = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day, include_masks=True, masks=masks)
+            inputs, targets, regions = batch_windows[0], batch_windows[1], batch_windows[2]
             outputs = model(inputs)
             full_loss = bce_loss(outputs, targets)
-            fire_loss = bce_loss(outputs*targets, targets)
+            fire_loss = bce_loss(outputs*regions, targets)
             loss = (full_loss * 0.2) + (fire_loss * 0.8)
             if (batch_num % 20) == 0:
                 with torch.no_grad():
@@ -180,7 +182,7 @@ def main(training_parameters={"batch_size": 10,
                     np.random.shuffle(X_val)
                     for i in range(0, val_batch_nums):
                         label_batch = X_val[i * val_batch_size : (i+1) * val_batch_size] # TODO: allow to test the entire validation set at once in gpu implementation (stuck at max of 50 due to memory issues!)
-                        test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
+                        test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day,  include_masks=True, masks=masks)
                         test_predictions = model(test_inputs)
                         # test_metrics = evaluate(test_predictions, test_targets)
                         full_test_loss = bce_loss(test_predictions, test_targets)

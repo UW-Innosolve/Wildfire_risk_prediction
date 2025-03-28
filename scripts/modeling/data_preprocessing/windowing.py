@@ -45,6 +45,8 @@ def reshape_data(df, features, target_column, device, include_masks=False, toler
         features: list of strings
         target_column: string
         device: torch.device
+        include_masks: bool
+        tolerance: int
 
     Returns:
         np.array, np.array
@@ -68,6 +70,7 @@ def reshape_data(df, features, target_column, device, include_masks=False, toler
     # create parameters and labels arrays
     parameters = []
     labels = []
+    masks = []
 
     # create corresponding labels for each day
     label_full = df[target_column]
@@ -90,6 +93,13 @@ def reshape_data(df, features, target_column, device, include_masks=False, toler
 
         parameters.append(parameter_sequence)
 
+    # construct full set of masks
+    # TODO determine if reshaping can be using the 1-D label_full array and if it is faster that way (I don't think so because of the lack of delineation between various latitude values, you can't mark where one starts and ends so you'll have wraparound issues)
+    if include_masks:
+        for i in range(len(labels)):
+            mask = create_fire_region_masks(labels[i], tolerance=tolerance)
+            masks.append(mask)
+
     # # create corresponding labels for each day
     # label_full = torch.tensor(df[target_column].array)#, device=device)
     #
@@ -110,19 +120,7 @@ def reshape_data(df, features, target_column, device, include_masks=False, toler
     #     parameters.append(parameter_sequence)
 
     # return torch.tensor(parameters, device=device), torch.tensor(labels, device=device)
-    return np.asarray(parameters), np.asarray(labels)
-
-
-def create_fire_region_masks(targets, tolerance):
-    grid = targets.shape
-    mask = torch.zeros(grid)
-
-    for i in range(tolerance - 1, grid[0] - tolerance):
-        for j in range(tolerance - 1, grid[1] - tolerance):
-            if targets[i, j] == 1:
-                mask[i - tolerance:i + tolerance, j - tolerance:i + tolerance] = 1
-
-    return mask
+    return np.asarray(parameters), np.asarray(labels), np.asarray(masks)
 
 
 def create_windows(parameters, labels, training_days, prediction_day):
@@ -168,7 +166,7 @@ def batched_indexed_windows(batch_indices, parameters_full, labels_full, trainin
         training_days: int
         prediction_day: int
         device: torch.device
-        include_masks: Bool
+        include_masks: bool
         masks_full: None or torch.Tensor
 
     Returns:
