@@ -67,8 +67,10 @@ def reshape_data(df, features, target_column, device):
             # print(parametername)
             parameter_full = df[parametername]
 
-            parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
-            parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count,longitude_count)  # reshape array to an 'image' according to lat/long
+            parameter_ondate = parameter_full[
+                               rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
+            parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count,
+                                                                             longitude_count)  # reshape array to an 'image' according to lat/long
             parameter_sequence.append(parameter_ondate_reshaped)
 
         parameters.append(parameter_sequence)
@@ -96,6 +98,18 @@ def reshape_data(df, features, target_column, device):
     return np.asarray(parameters), np.asarray(labels)
 
 
+def create_fire_region_masks(targets, tolerance):
+    grid = targets.shape
+    mask = torch.zeros(grid)
+
+    for i in range(tolerance - 1, grid[0] - tolerance):
+        for j in range(tolerance - 1, grid[1] - tolerance):
+            if targets[i, j] == 1:
+                mask[i - tolerance:i + tolerance, j - tolerance:i + tolerance] = 1
+
+    return mask
+
+
 def create_windows(parameters, labels, training_days, prediction_day):
     windowed_dataset = []
     windowed_labels = []
@@ -103,11 +117,11 @@ def create_windows(parameters, labels, training_days, prediction_day):
     # for every possible window between the first possible day to predict from and the last possible day to predict
     # cannot start at any value < training_days (because we don't have that data)
     # cannot predict any value > last data day + prediction_day (because we don't have that data)
-    for i in range(training_days, len(parameters[1])-prediction_day):
+    for i in range(training_days, len(parameters[1]) - prediction_day):
         print(i)
-        print(f'Training on days {i-training_days} through day {i}, predicting day {i+prediction_day}')
-        data_window = parameters[:, i-training_days:i, :, :]
-        label_window = labels[i+prediction_day, :, :]
+        print(f'Training on days {i - training_days} through day {i}, predicting day {i + prediction_day}')
+        data_window = parameters[:, i - training_days:i, :, :]
+        label_window = labels[i + prediction_day, :, :]
         windowed_dataset.append(data_window)
         windowed_labels.append(label_window)
 
@@ -125,7 +139,8 @@ def reshape_and_window_indexed(indexed_day, raw_dataframe, labels, training_days
     pass
 
 
-def batched_indexed_windows(batch_indices, parameters_full, labels_full, training_days, prediction_day, device='cpu'):
+def batched_indexed_windows(batch_indices, parameters_full, labels_full, training_days, prediction_day, device='cpu',
+                            include_masks=False, masks_full=None):
     """
     Given a set of indices, creates a window of length training_days their and corresponding label for each index
     Returns array of windowed data with shape [batch_size x training_days x num_features x latitude x longitude] and corresponding array of labels
@@ -137,6 +152,8 @@ def batched_indexed_windows(batch_indices, parameters_full, labels_full, trainin
         training_days: int
         prediction_day: int
         device: torch.device
+        include_masks: Bool
+        masks_full: None or torch.Tensor
 
     Returns:
         torch.Tensor, torch.Tensor
@@ -151,14 +168,19 @@ def batched_indexed_windows(batch_indices, parameters_full, labels_full, trainin
     with torch.no_grad():
         batch_data_windows = parameters_full[batch_indices[0] - training_days:batch_indices[0], :, :].unsqueeze(0)
         batch_label_windows = labels_full[batch_indices[0] + prediction_day, :, :].unsqueeze(0)
+        if include_masks:
+            batch_mask_windows = masks_full[batch_indices[0] + prediction_day, :, :].unsqueeze(0)
 
         for indx in batch_indices[1:]:
             windowed_data = parameters_full[indx - training_days:indx, :, :].unsqueeze(0)
             batch_data_windows = torch.cat((batch_data_windows, windowed_data), dim=0)
             windowed_label = labels_full[indx + prediction_day, :, :].unsqueeze(0)
             batch_label_windows = torch.cat((batch_label_windows, windowed_label), dim=0)
+        if include_masks:
+            windowed_mask = masks_full[indx + prediction_day, :, :].unsqueeze(0)
+            batch_mask_windows = torch.cat((batch_mask_windows, windowed_mask), dim=0)
 
-    return batch_data_windows, batch_label_windows
+    return [batch_data_windows, batch_label_windows, batch_mask_windows]
 
 ## initial parameters loading
 # load data (path local to Teo's machine for now)
