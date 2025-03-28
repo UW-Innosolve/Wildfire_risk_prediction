@@ -63,7 +63,9 @@ def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09
 
 # TODO create a training_parameters json or something similar to make tracking easier
 # TODO update parameters to pull from a json file
-# TODO update to run on a device (i.e. cpu or gpu)
+# TODO check min max values of predictions at various stages
+# TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
+# TODO ask the model to predict classes AND probabilities
 def main(training_parameters={"batch_size": 10,
                               "num_epochs": 10,
                               "learning_rate": 0.1,
@@ -71,10 +73,10 @@ def main(training_parameters={"batch_size": 10,
                               "prediction_day":5,
                               "hidden_size": 64,
                               "experiment_name":"testrun_gpu_1",
-                              "test_range": (2024),
-                              "train_range": (2006, 2023)},
-         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+                              "test_range": (2007),
+                              "train_range": (2006, 2007)},
+         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
@@ -103,7 +105,7 @@ def main(training_parameters={"batch_size": 10,
         logging.info(f"Device set to CPU")
 
     # load data from df
-    rawdata_df = pd.read_csv(rawdata_path) #.to(device)
+    rawdata_df = pd.read_csv(rawdata_path)[:918340] #.to(device)
     logging.info(f"Dataset csv file loaded into dataframe successfully")
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
     features = rawdata_df.columns[3:].array
@@ -163,22 +165,34 @@ def main(training_parameters={"batch_size": 10,
             optimizer.zero_grad()
             inputs, targets = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
             outputs = model(inputs)
-            loss = bce_loss(outputs, targets)
+            full_loss = bce_loss(outputs, targets)
+            fire_loss = bce_loss(outputs*targets, targets)
+            loss = (full_loss * 0.2) + (fire_loss * 0.8)
             if (batch_num % 20) == 0:
                 with torch.no_grad():
-                    val_loss = 0
+                    val_scaled_loss = 0
+                    val_full_loss = 0
+                    val_fire_loss = 0
                     np.random.shuffle(X_val)
-                    for i in range(0,12):
-                        label_batch = X_val[i * 50 : (i+1) * 50] # TODO: allow to test the entire validation set at once in gpu implementation
+                    for i in range(0,2):
+                        label_batch = X_val[i * 50 : (i+1) * 50] # TODO: allow to test the entire validation set at once in gpu implementation (stuck at max of 50 due to memory issues!)
                         test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
                         test_predictions = model(test_inputs)
                         # test_metrics = evaluate(test_predictions, test_targets)
-                        test_loss = bce_loss(test_predictions, test_targets)
-                        val_loss += test_loss
-                    val_loss /= 11
-                    print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_loss}")
+                        full_test_loss = bce_loss(test_predictions, test_targets)
+                        fire_test_loss = bce_loss(test_predictions*targets, test_targets)
+                        test_loss = (full_test_loss * 0.2) + (fire_test_loss * 0.8)
+                        val_scaled_loss += test_loss
+                        val_fire_loss += fire_test_loss
+                        val_full_loss += full_test_loss
+                    val_scaled_loss /= 2
+                    val_fire_loss /= 2
+                    val_fire_loss /= 2
+                    print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_scaled_loss}")
                     metrics_dict = {"training_bce_loss": loss.item(),
-                                    "validation_bce_loss": test_loss.item()}#,
+                                    "scaled_validation_bce_loss": val_scaled_loss.item(),
+                                    "fire_region_validation_bce_loss": val_fire_loss.item(),
+                                    "full_region_validation_bce_loss": val_full_loss.item()}#,
                                     # "accuracy": test_metrics["accuracy"],
                                     # "precision": test_metrics["precision"],
                                     # "recall": test_metrics["recall"],
