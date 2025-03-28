@@ -19,7 +19,22 @@ import pandas as pd
 import torch
 
 
-def reshape_data(df, features, target_column, device):
+def create_fire_region_masks(targets, tolerance):
+    grid = targets.shape
+    mask = torch.zeros(grid)
+
+    for i in range(tolerance - 1, grid[0] - tolerance):
+        for j in range(tolerance - 1, grid[1] - tolerance):
+            if targets[i, j] == 1:
+                mask[i - tolerance:i + tolerance, j - tolerance:i + tolerance] = 1
+
+    return mask
+
+
+# def create_fire_region_column(df, tolerance):
+
+
+def reshape_data(df, features, target_column, device, include_masks=False, tolerance=2):
     """
     Reshapes all features into a 2-dimensional latitude x longitude grid
     Returned parameter array will have shape [number of days x number of features x latitude x longitude]
