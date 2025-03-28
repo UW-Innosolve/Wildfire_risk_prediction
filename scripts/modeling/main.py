@@ -175,6 +175,7 @@ def main(training_parameters={"batch_size": 10,
                         # test_metrics = evaluate(test_predictions, test_targets)
                         test_loss = bce_loss(test_predictions, test_targets)
                         val_loss += test_loss
+                    val_loss /= 11
                     print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_loss}")
                     metrics_dict = {"training_bce_loss": loss.item(),
                                     "validation_bce_loss": test_loss.item()}#,
