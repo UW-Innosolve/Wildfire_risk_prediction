@@ -67,16 +67,16 @@ def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09
 # TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
 # TODO ask the model to predict classes AND probabilities
 def main(training_parameters={"batch_size": 10,
-                              "num_epochs": 10,
-                              "learning_rate": 0.1,
+                              "num_epochs": 20,
+                              "learning_rate": 0.005,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"testrun_gpu_1",
-                              "test_range": (2007),
-                              "train_range": (2006, 2007)},
-         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+                              "experiment_name":"testrun_simplemask_005",
+                              "test_range": (2024),
+                              "train_range": (2006, 2023)},
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
@@ -144,10 +144,12 @@ def main(training_parameters={"batch_size": 10,
     logging.info(f"Data split successfully, train_set size - {len(X_train)}, val_set size - {len(X_val)}, test_set size - {len(X_test)}")
 
     # set size of validation batch
-    if device_set == 'cuda' and torch.cuda.is_available():
-        val_batch_size = len(X_val) # use full validation set each time if GPU used
-    else:
-        val_batch_size = 20 # use small batch of validation set each time if CPU used
+    # if device_set == 'cuda' and torch.cuda.is_available():
+    #     val_batch_size = len(X_val) # use full validation set each time if GPU used
+    # else:
+    #     val_batch_size = 20 # use small batch of validation set each time if CPU used
+    val_batch_size = 30
+    val_batch_nums = len(X_val) // val_batch_size
 
     # create model
     model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
@@ -163,7 +165,9 @@ def main(training_parameters={"batch_size": 10,
         for batch in batches:
             print(f'Epoch {epoch}, Batch Number {batch_num}, Batch Indices {batch}')
             optimizer.zero_grad()
-            inputs, targets = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
+            # TODO determine how much slower it is to assign inputs targets and masks like this
+            batch_windows = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day)
+            inputs, targets, masks = batch_windows[0], batch_windows[1], batch_windows[2]
             outputs = model(inputs)
             full_loss = bce_loss(outputs, targets)
             fire_loss = bce_loss(outputs*targets, targets)
@@ -174,8 +178,8 @@ def main(training_parameters={"batch_size": 10,
                     val_full_loss = 0
                     val_fire_loss = 0
                     np.random.shuffle(X_val)
-                    for i in range(0,2):
-                        label_batch = X_val[i * 50 : (i+1) * 50] # TODO: allow to test the entire validation set at once in gpu implementation (stuck at max of 50 due to memory issues!)
+                    for i in range(0, val_batch_nums):
+                        label_batch = X_val[i * val_batch_size : (i+1) * val_batch_size] # TODO: allow to test the entire validation set at once in gpu implementation (stuck at max of 50 due to memory issues!)
                         test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
                         test_predictions = model(test_inputs)
                         # test_metrics = evaluate(test_predictions, test_targets)
@@ -199,7 +203,7 @@ def main(training_parameters={"batch_size": 10,
                                     # "f1_score": test_metrics["f1_score"]}
                                     # # "roc_auc": test_metrics["roc_auc"]}
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
-                    if (batch_num % 100) == 0:
+                    if (batch_num % 150) == 0:
                         checkpoint = {
                             'model_state_dict': model.state_dict(),
                             'optimizer_state_dict': optimizer.state_dict()}#,  # If you have an optimizer
