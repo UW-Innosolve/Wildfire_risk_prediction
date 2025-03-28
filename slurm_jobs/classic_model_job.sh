@@ -12,16 +12,18 @@
 #SBATCH --mail-type=ALL
 
 module load StdEnv/2020 gcc/9.3.0
+# Possibly: module load cuda/11.0
 
-# Use the full path to the Python interpreter in your conda environment:
 PYENV="/home/iazhar/miniconda3/envs/wildfire_env/bin/python"
 
-# Check that joblib and GPU-enabled xgboost are available
-$PYENV -c "import joblib; print('[DEBUG] joblib version:', joblib.__version__)" || { echo "[FATAL] joblib not found in $PYENV. Exiting."; exit 1; }
-$PYENV -c "import xgboost; print('[DEBUG] xgboost version:', xgboost.__version__)" || { echo "[FATAL] xgboost not found in $PYENV. Exiting."; exit 1; }
+# Check for GPU-enabled libraries:
+$PYENV -c "import xgboost; print('XGBoost version:', xgboost.__version__)" || exit 1
+$PYENV -c "import lightgbm; print('LightGBM version:', lightgbm.__version__)" || exit 1
+$PYENV -c "import catboost; print('CatBoost installed')" || exit 1
 
 cd ~/scratch/Wildfire_risk_prediction
-echo "Starting job on $(date) at $(hostname)"
-echo "Using Python: $PYENV"
-$PYENV scripts/modeling/main_ml_classification.py
+echo "Starting job on $(date), on $(hostname)"
+
+
+$PYENV scripts/modeling/main_xg_advanced.py
 echo "Finished job on $(date)"
