@@ -1,7 +1,10 @@
-from model_evaluation.model_metrics import BaseModel
+# model_classes/fb_approx_knn.py
+
+from model_evaluation.model_metrics import BaseModel  # assuming BaseModel is a minimal base class
 from annoy import AnnoyIndex
 import numpy as np
 import logging
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 class ApproxKNNModel(BaseModel):
     """
@@ -9,9 +12,10 @@ class ApproxKNNModel(BaseModel):
     """
     def __init__(self, n_neighbors=23, n_trees=10, metric='euclidean'):
         """
-        :param n_neighbors: number of neighbors to retrieve for majority voting
-        :param n_trees: number of trees Annoy will build (higher = more accuracy, more build time)
-        :param metric: 'euclidean' or 'angular' etc. (Annoy supports a few)
+        Parameters:
+          - n_neighbors (int): number of neighbors to retrieve for majority voting
+          - n_trees (int): number of trees to build (higher for better accuracy, slower build)
+          - metric (str): distance metric ('euclidean', 'angular', etc.)
         """
         self.n_neighbors = n_neighbors
         self.n_trees = n_trees
@@ -23,49 +27,35 @@ class ApproxKNNModel(BaseModel):
 
     def train(self, X_train, y_train):
         """
-        Build Annoy index for approximate neighbor search.
-        X_train should be a 2D NumPy array, y_train a 1D array.
+        Build the Annoy index for approximate neighbor search.
+        X_train: 2D NumPy array (contiguous, numeric), shape (n_samples, n_features)
+        y_train: 1D NumPy array, shape (n_samples,)
         """
         logging.info("ApproxKNNModel: Building Annoy index for approximate neighbor search...")
         self.X_train = X_train
         self.y_train = y_train
         self.dim = X_train.shape[1]
-        
-        # Annoy requires us to specify the dimension and metric
         self.annoy_index = AnnoyIndex(self.dim, self.metric)
 
         # Add each training vector to the Annoy index
         for i in range(len(X_train)):
-            self.annoy_index.add_item(i, X_train[i, :])
-
-        # Build the Annoy index
-        # n_trees: bigger => more accurate, slower to build
+            self.annoy_index.add_item(i, X_train[i])
+        
+        # Build the Annoy index with n_trees trees
         self.annoy_index.build(self.n_trees)
         logging.info(f"Annoy index built with {len(X_train)} items, dim={self.dim}, n_trees={self.n_trees}")
 
-    def evaluate(self, X_test, y_test):
-        """
-        Evaluate on test data using approximate neighbor search for K nearest neighbors.
-        """
-        # We rely on the base class's evaluate method to do the actual metrics,
-        # but we override how we do 'predict'.
-        # The base 'evaluate()' calls self.model.predict() or .predict_proba(), but here we define our own predict:
-        predictions = self.predict(X_test)
-        
-        # We'll do the same approach as baseclass: compute final metrics
-        return super()._compute_metrics(y_test, predictions, self.predict_proba(X_test))
-
     def predict(self, X_test):
         """
-        Return predicted class via majority vote among the approximate neighbors.
+        Predict class labels for test samples using majority voting among approximate nearest neighbors.
+        X_test: 2D NumPy array, shape (n_test_samples, n_features)
+        Returns: 1D NumPy array of predictions.
         """
         preds = []
         for x in X_test:
-            # Retrieve approximate neighbors
             nn_indices = self.annoy_index.get_nns_by_vector(x, self.n_neighbors)
-            # majority voting among neighbors
             neighbor_labels = self.y_train[nn_indices]
-            # pick the most common label
+            # Majority vote
             vals, counts = np.unique(neighbor_labels, return_counts=True)
             pred = vals[np.argmax(counts)]
             preds.append(pred)
@@ -73,22 +63,29 @@ class ApproxKNNModel(BaseModel):
 
     def predict_proba(self, X_test):
         """
-        Approximate probability: among the neighbors, how many are class=1?
-        This only works if we have a binary classification 0/1. If multi-class, you'd need a more advanced approach.
+        Approximate probability estimation for binary classification.
+        Returns an array of shape (n_samples, 2) with probabilities for classes [0, 1].
         """
-        # For multi-class, you'd sum up each class count. But here's a binary example:
         probs = []
         for x in X_test:
             nn_indices = self.annoy_index.get_nns_by_vector(x, self.n_neighbors)
             neighbor_labels = self.y_train[nn_indices]
-            # For binary classification (0 or 1)
-            p = np.mean(neighbor_labels)  # fraction of 1's in neighbors
-            probs.append([1-p, p])  # shape => [prob_of_0, prob_of_1]
+            p = np.mean(neighbor_labels)  # fraction of ones
+            probs.append([1 - p, p])
         return np.array(probs)
 
-    def _compute_metrics(self, y_true, y_pred, y_proba):
+    def evaluate(self, X_test, y_test):
         """
-        If you want to override the base metrics, you can do it here.
-        But by default we can rely on the parent's evaluate logic.
+        Evaluate the model on test data.
+        Computes accuracy, precision, recall, F1 score, and ROC AUC.
         """
-        pass
+        predictions = self.predict(X_test)
+        y_proba = self.predict_proba(X_test)
+        metrics = {
+            'accuracy': accuracy_score(y_test, predictions),
+            'precision': precision_score(y_test, predictions, zero_division=0),
+            'recall': recall_score(y_test, predictions, zero_division=0),
+            'f1_score': f1_score(y_test, predictions, zero_division=0),
+            'roc_auc': roc_auc_score(y_test, y_proba[:, 1]) if len(np.unique(y_test)) > 1 else None
+        }
+        return metrics
