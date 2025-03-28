@@ -66,15 +66,15 @@ def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09
 # TODO update to run on a device (i.e. cpu or gpu)
 def main(training_parameters={"batch_size": 10,
                               "num_epochs": 10,
-                              "learning_rate": 0.05,
+                              "learning_rate": 0.1,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"testrun_gpu",
+                              "experiment_name":"testrun_gpu_1",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
-         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda'):
     # load training parameters
     batch_size = training_parameters['batch_size']
@@ -166,13 +166,16 @@ def main(training_parameters={"batch_size": 10,
             loss = bce_loss(outputs, targets)
             if (batch_num % 20) == 0:
                 with torch.no_grad():
+                    val_loss = 0
                     np.random.shuffle(X_val)
-                    label_batch = X_val[:val_batch_size] # TODO: allow to test the entire validation set at once in gpu implementation
-                    test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
-                    test_predictions = model(test_inputs)
-                    # test_metrics = evaluate(test_predictions, test_targets)
-                    test_loss = bce_loss(test_predictions, test_targets)
-                    print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {test_loss}")
+                    for i in range(0,12):
+                        label_batch = X_val[i * 50 : (i+1) * 50] # TODO: allow to test the entire validation set at once in gpu implementation
+                        test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day)
+                        test_predictions = model(test_inputs)
+                        # test_metrics = evaluate(test_predictions, test_targets)
+                        test_loss = bce_loss(test_predictions, test_targets)
+                        val_loss += test_loss
+                    print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_loss}")
                     metrics_dict = {"training_bce_loss": loss.item(),
                                     "validation_bce_loss": test_loss.item()}#,
                                     # "accuracy": test_metrics["accuracy"],
