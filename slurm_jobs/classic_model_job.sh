@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-nassersa-ab
-#SBATCH --time=24:00:00
+#SBATCH --time=72:00:00
 #SBATCH --mem=128G
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=10
 #SBATCH --gres=gpu:1
 #SBATCH --job-name=wildfire_classification
 #SBATCH --output=wildfire_classification.out
@@ -12,17 +12,20 @@
 #SBATCH --mail-type=ALL
 
 module load StdEnv/2020 gcc/9.3.0
-# Possibly: module load cuda/11.0
+# If required by your environment, load the appropriate CUDA module. For example:
+# module load cuda/12.6
 
+# Use the full path to the Python interpreter in your conda environment:
 PYENV="/home/iazhar/miniconda3/envs/wildfire_env/bin/python"
 
-# Check for GPU-enabled libraries:
-$PYENV -c "import xgboost; print('XGBoost version:', xgboost.__version__)" || exit 1
-$PYENV -c "import lightgbm; print('LightGBM version:', lightgbm.__version__)" || exit 1
-$PYENV -c "import catboost; print('CatBoost installed')" || exit 1
+# Check that the necessary GPU-enabled libraries are available:
+$PYENV -c "import xgboost; print('XGBoost version:', xgboost.__version__)" || { echo "[FATAL] xgboost not found."; exit 1; }
+$PYENV -c "import lightgbm; print('LightGBM version:', lightgbm.__version__)" || { echo "[FATAL] lightgbm not found."; exit 1; }
+$PYENV -c "import catboost; print('CatBoost installed');" || { echo "[FATAL] catboost not found."; exit 1; }
 
 cd ~/scratch/Wildfire_risk_prediction
-echo "Starting job on $(date), on $(hostname)"
+echo "Starting job on $(date) at $(hostname)"
+echo "Using Python: $PYENV"
 
 
 $PYENV scripts/modeling/main_xg_advanced.py

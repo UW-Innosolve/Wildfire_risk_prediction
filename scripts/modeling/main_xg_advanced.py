@@ -41,6 +41,22 @@ def threshold_predictions(probs, threshold=0.5):
     """Convert probability array to binary predictions using a specified threshold."""
     return (probs >= threshold).astype(int)
 
+def process_chunk(chunk_index, X_chunk, y_chunk, output_dir):
+    """
+    Process a single chunk of training data with SMOTEENN and save its output.
+    Returns the resampled X and y for this chunk.
+    """
+    from imblearn.combine import SMOTEENN  # local import to ensure checkpointing
+    logging.info(f"Processing chunk {chunk_index} with shape {X_chunk.shape}...")
+    sme = SMOTEENN(random_state=42)
+    X_res, y_res = sme.fit_resample(X_chunk, y_chunk)
+    chunk_X_path = os.path.join(output_dir, f"X_train_resampled_chunk_{chunk_index}.csv")
+    chunk_y_path = os.path.join(output_dir, f"y_train_resampled_chunk_{chunk_index}.csv")
+    pd.DataFrame(X_res).to_csv(chunk_X_path, index=False)
+    pd.DataFrame(y_res, columns=["y"]).to_csv(chunk_y_path, index=False)
+    logging.info(f"Chunk {chunk_index} processed and saved.")
+    return X_res, y_res
+
 def main():
     logging.info("Starting advanced GPU pipeline (LightGBM, XGBoost, CatBoost) on SMOTEENN-resampled data...")
 
@@ -58,7 +74,7 @@ def main():
     y_train_df = load_data_with_dask(y_train_path)
     y_test_df  = load_data_with_dask(y_test_path)
 
-    # --- New: Drop the 'date' column (if it exists) BEFORE converting to NumPy arrays.
+    # --- Drop the 'date' column if it exists ---
     if 'date' in X_train_df.columns:
         logging.info("Dropping 'date' column from X_train DataFrame...")
         X_train_df = X_train_df.drop(columns=['date'])
@@ -66,10 +82,9 @@ def main():
         logging.info("Dropping 'date' column from X_test DataFrame...")
         X_test_df = X_test_df.drop(columns=['date'])
 
-    # Convert y dataframes to arrays (assume single column)
+    # Convert to NumPy arrays (assume y is a single column)
     y_train = y_train_df.iloc[:, 0].values
     y_test  = y_test_df.iloc[:, 0].values
-    # Convert feature DataFrames to NumPy arrays now that 'date' is removed.
     X_train = X_train_df.values
     X_test  = X_test_df.values
 
@@ -77,22 +92,46 @@ def main():
                  f"X_test: {X_test.shape}, y_test: {y_test.shape}")
 
     # --------------------------------------------------------------------------
-    # 2) Resample with SMOTEENN (Hybrid oversampling + cleaning)
+    # 2) Resample with SMOTEENN in Chunks (for checkpointing and speed)
     # --------------------------------------------------------------------------
-    logging.info("Applying SMOTEENN to training data for imbalance mitigation...")
-    sme = SMOTEENN(random_state=42)
-    try:
-        X_train_res, y_train_res = sme.fit_resample(X_train, y_train)
-    except Exception as e:
-        logging.error(f"Error during SMOTEENN resampling: {e}")
-        sys.exit("Resampling failed.")
-    logging.info(f"After SMOTEENN => X_train_res: {X_train_res.shape}, y_train_res: {y_train_res.shape}")
+    # We'll split the training data into chunks and process each with SMOTEENN.
+    n_rows = X_train.shape[0]
+    n_chunks = 5  # Adjust based on your available resources
+    chunk_size = int(np.ceil(n_rows / n_chunks))
+    sampled_dir = os.path.join("scripts", "data_processing", "processed_data", "split_data_dir_sampled")
+    os.makedirs(sampled_dir, exist_ok=True)
+    
+    X_chunks = []
+    y_chunks = []
+    for i in range(n_chunks):
+        start = i * chunk_size
+        end = min((i+1) * chunk_size, n_rows)
+        logging.info(f"Processing chunk {i+1}/{n_chunks}: rows {start} to {end}")
+        X_chunk = X_train[start:end]
+        y_chunk = y_train[start:end]
+        chunk_X_path = os.path.join(sampled_dir, f"X_train_resampled_chunk_{i+1}.csv")
+        chunk_y_path = os.path.join(sampled_dir, f"y_train_resampled_chunk_{i+1}.csv")
+        if os.path.exists(chunk_X_path) and os.path.exists(chunk_y_path):
+            logging.info(f"Loading resampled chunk {i+1} from disk...")
+            X_res_chunk = pd.read_csv(chunk_X_path).values
+            y_res_chunk = pd.read_csv(chunk_y_path)["y"].values
+        else:
+            X_res_chunk, y_res_chunk = process_chunk(i+1, X_chunk, y_chunk, sampled_dir)
+        X_chunks.append(X_res_chunk)
+        y_chunks.append(y_res_chunk)
+    X_train_res = np.vstack(X_chunks)
+    y_train_res = np.concatenate(y_chunks)
+    logging.info(f"Final resampled training data shape: X_train_res: {X_train_res.shape}, y_train_res: {y_train_res.shape}")
+
+    # Save test data as well for consistency
+    pd.DataFrame(X_test).to_csv(os.path.join(sampled_dir, "X_test.csv"), index=False)
+    pd.DataFrame(y_test, columns=["y"]).to_csv(os.path.join(sampled_dir, "y_test.csv"), index=False)
+    logging.info(f"Test data saved to {sampled_dir}")
 
     # --------------------------------------------------------------------------
     # 3) Define GPU-Enabled Models (LightGBM, XGBoost, CatBoost)
+    # (Cross-validation is commented out for now for faster iteration)
     # --------------------------------------------------------------------------
-    # Note: For threshold tuning, we use a default threshold of 0.5; calibration steps are optional.
-    # Also, we have commented out cross-validation for faster iteration.
     # --- LightGBM ---
     logging.info("Training LightGBM (GPU-enabled)...")
     lgb_clf = lgb.LGBMClassifier(
@@ -133,12 +172,12 @@ def main():
     logging.info("Training XGBoost (GPU-enabled)...")
     xgb_clf = xgb.XGBClassifier(
         tree_method='gpu_hist',
-        device='cuda:0',  # Use GPU
+        device='cuda:0',
         learning_rate=0.1,
         max_depth=6,
         n_estimators=100,
         subsample=0.8,
-        scale_pos_weight=np.sum(y_train_res == 0)/np.sum(y_train_res == 1),
+        scale_pos_weight=np.sum(y_train_res == 0) / np.sum(y_train_res == 1),
         use_label_encoder=False,
         eval_metric='logloss'
     )
@@ -174,8 +213,8 @@ def main():
         iterations=100,
         depth=6,
         learning_rate=0.1,
-        task_type='GPU',    # GPU usage
-        devices='0',        # Use GPU device 0
+        task_type='GPU',
+        devices='0',
         eval_metric='Logloss',
         verbose=False
     )
@@ -206,7 +245,7 @@ def main():
     logging.info(f"CatBoost + calibration, threshold=0.7 => {cat_cal_metrics}")
 
     # --------------------------------------------------------------------------
-    # (Commented) Cross-Validation is skipped for now for faster iteration.
+    # (Commented) Cross-Validation is skipped for faster iteration.
     # --------------------------------------------------------------------------
     # logging.info("Skipping cross-validation for now...")
 
