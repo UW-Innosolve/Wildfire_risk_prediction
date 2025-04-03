@@ -27,6 +27,11 @@ cd ~/scratch/Wildfire_risk_prediction
 echo "Starting job on $(date) at $(hostname)"
 echo "Using Python: $PYENV"
 
+# Quick check: is the GPU visible to the system?
+echo "Running nvidia-smi to confirm GPU availability..."
+nvidia-smi || echo "No GPU driver or GPU not found on this node!"
 
+echo "Launching pipeline script..."
 $PYENV scripts/modeling/main_xg_advanced.py
+
 echo "Finished job on $(date)"
