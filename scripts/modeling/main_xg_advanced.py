@@ -16,7 +16,7 @@ from sklearn.calibration import CalibratedClassifierCV
 
 # GPU-Enabled Libraries
 import xgboost as xgb
-import lightgbm as lgb
+#import lightgbm as lgb    # <-- Commented out to skip LightGBM
 from catboost import CatBoostClassifier
 
 logging.basicConfig(
@@ -58,7 +58,7 @@ def process_chunk(chunk_index, X_chunk, y_chunk, output_dir):
     return X_res, y_res
 
 def main():
-    logging.info("Starting advanced GPU pipeline (LightGBM, XGBoost, CatBoost) on SMOTEENN-resampled data...")
+    logging.info("Starting advanced GPU pipeline (XGBoost, CatBoost) on SMOTEENN-resampled data (LightGBM commented out)...")
 
     # --------------------------------------------------------------------------
     # 1) Load Data
@@ -92,11 +92,10 @@ def main():
                  f"X_test: {X_test.shape}, y_test: {y_test.shape}")
 
     # --------------------------------------------------------------------------
-    # 2) Resample with SMOTEENN in Chunks (for checkpointing and speed)
+    # 2) Resample with SMOTEENN in Chunks (checkpointing)
     # --------------------------------------------------------------------------
-    # We'll split the training data into chunks and process each with SMOTEENN.
     n_rows = X_train.shape[0]
-    n_chunks = 5  # Adjust based on your available resources
+    n_chunks = 5
     chunk_size = int(np.ceil(n_rows / n_chunks))
     sampled_dir = os.path.join("scripts", "data_processing", "processed_data", "split_data_dir_sampled")
     os.makedirs(sampled_dir, exist_ok=True)
@@ -123,16 +122,17 @@ def main():
     y_train_res = np.concatenate(y_chunks)
     logging.info(f"Final resampled training data shape: X_train_res: {X_train_res.shape}, y_train_res: {y_train_res.shape}")
 
-    # Save test data as well for consistency
+    # Save test data too
     pd.DataFrame(X_test).to_csv(os.path.join(sampled_dir, "X_test.csv"), index=False)
     pd.DataFrame(y_test, columns=["y"]).to_csv(os.path.join(sampled_dir, "y_test.csv"), index=False)
     logging.info(f"Test data saved to {sampled_dir}")
 
     # --------------------------------------------------------------------------
-    # 3) Define GPU-Enabled Models (LightGBM, XGBoost, CatBoost)
-    # (Cross-validation is commented out for now for faster iteration)
+    # 3) GPU Models: XGBoost, CatBoost (LightGBM commented out)
     # --------------------------------------------------------------------------
-    # --- LightGBM ---
+
+    """
+    # --- LightGBM block commented out to avoid No OpenCL device error ---
     logging.info("Training LightGBM (GPU-enabled)...")
     lgb_clf = lgb.LGBMClassifier(
         boosting_type='gbdt',
@@ -142,31 +142,8 @@ def main():
         max_depth=6,
         device_type='gpu'
     )
-    lgb_clf.fit(X_train_res, y_train_res)
-    lgb_probs = lgb_clf.predict_proba(X_test)[:, 1]
-    lgb_preds = threshold_predictions(lgb_probs, threshold=0.5)
-    lgb_metrics = {
-        "accuracy": accuracy_score(y_test, lgb_preds),
-        "precision": precision_score(y_test, lgb_preds, zero_division=0),
-        "recall": recall_score(y_test, lgb_preds, zero_division=0),
-        "f1_score": f1_score(y_test, lgb_preds, zero_division=0),
-        "roc_auc": roc_auc_score(y_test, lgb_probs),
-    }
-    logging.info(f"LightGBM (Test) metrics @ threshold=0.5 => {lgb_metrics}")
-
-    logging.info("Calibrating LightGBM with isotonic regression (threshold=0.7 example)...")
-    lgb_cal = CalibratedClassifierCV(base_estimator=lgb_clf, cv=3, method='isotonic')
-    lgb_cal.fit(X_train_res, y_train_res)
-    lgb_cal_probs = lgb_cal.predict_proba(X_test)[:, 1]
-    lgb_cal_preds = threshold_predictions(lgb_cal_probs, threshold=0.7)
-    lgb_cal_metrics = {
-        "accuracy": accuracy_score(y_test, lgb_cal_preds),
-        "precision": precision_score(y_test, lgb_cal_preds, zero_division=0),
-        "recall": recall_score(y_test, lgb_cal_preds, zero_division=0),
-        "f1_score": f1_score(y_test, lgb_cal_preds, zero_division=0),
-        "roc_auc": roc_auc_score(y_test, lgb_cal_probs),
-    }
-    logging.info(f"LightGBM + calibration, threshold=0.7 => {lgb_cal_metrics}")
+    ...
+    """
 
     # --- XGBoost ---
     logging.info("Training XGBoost (GPU-enabled)...")
@@ -244,12 +221,10 @@ def main():
     }
     logging.info(f"CatBoost + calibration, threshold=0.7 => {cat_cal_metrics}")
 
-    # --------------------------------------------------------------------------
-    # (Commented) Cross-Validation is skipped for faster iteration.
-    # --------------------------------------------------------------------------
+    # (Commenting out cross-validation for faster iteration)
     # logging.info("Skipping cross-validation for now...")
 
-    logging.info("Finished advanced pipeline with LightGBM, XGBoost, CatBoost (all GPU). Exiting.")
+    logging.info("Finished advanced pipeline with XGBoost & CatBoost only (LightGBM commented out). Exiting.")
 
 if __name__ == "__main__":
     main()
