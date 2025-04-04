@@ -32,6 +32,6 @@ echo "Running nvidia-smi to confirm GPU availability..."
 nvidia-smi || echo "No GPU driver or GPU not found on this node!"
 
 echo "Launching pipeline script..."
-$PYENV scripts/modeling/main_xg_advanced.py
+$PYENV scripts/modeling/train_forecasting_model.py
 
 echo "Finished job on $(date)"

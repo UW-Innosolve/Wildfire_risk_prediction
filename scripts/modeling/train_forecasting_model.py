@@ -1,25 +1,18 @@
+#!/usr/bin/env python3
 import logging
 import os
-import joblib
-import pandas as pd
+import sys
 import numpy as np
+import pandas as pd
+import dask.dataframe as dd
 
-# === Classification models ===
-from model_classes.fb_knn import KNNModel
-from model_classes.fb_randfor import RandomForestModel
-from model_classes.fb_xgboost import XGBoostModel
-from model_classes.fb_regression import LogisticRegressionModel
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.calibration import CalibratedClassifierCV
 
-# === Utilities for cross-validation ===
-from model_classes.model_utils import cross_validate_model
+# GPU-Enabled Libraries
+import xgboost as xgb
+from catboost import CatBoostClassifier
 
-# === Reporting and voting classifier ===
-from model_evaluation.model_reporter import Reporter
-from model_classes.voting_classifier import VotingClassifierCustom, filter_models_by_threshold
-
-# -----------------------------------------------------------------------------
-# Configure Logging
-# -----------------------------------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -28,24 +21,21 @@ logging.basicConfig(
 # -----------------------------------------------------------------------------
 # Sliding Window Function
 # -----------------------------------------------------------------------------
-def create_sliding_windows(X, y, lag_window=14, forecast_window=5, agg_func=np.mean):
+def create_sliding_windows(X, y, lag_window=14, forecast_window=3, agg_func=np.max):
     """
-    Create training instances using a sliding window for a forecasting approach.
-    
-    For each training instance:
-      - The input features are the flattened data of the previous lag_window days
-      - The target is the aggregated value (using agg_func) of the *next* forecast_window days from y
+    Create training instances for forecasting. Each sample:
+      - Input features: the flattened data of the previous 'lag_window' days in X
+      - Target: aggregated over the *next* 'forecast_window' days in y (e.g. np.max for classification)
 
-    Parameters:
-      X : Pandas DataFrame (indexed in time order)
-      y : Pandas Series (aligned with X)
-      lag_window : int, number of past days to use as input
-      forecast_window : int, number of future days to aggregate into target
-      agg_func : function to aggregate the future values (e.g., np.mean, np.sum)
+    X : Pandas DataFrame (indexed in time order)
+    y : Pandas Series or 1D DataFrame aligned with X
+    lag_window : int, how many past days to use as input
+    forecast_window : int, how many future days to aggregate into target
+    agg_func : function to aggregate the forecast period (e.g., np.max => if any day in next window is 1 => target=1)
 
     Returns:
-      X_new : ndarray of shape (n_samples, lag_window * n_features)
-      y_new : ndarray of shape (n_samples,)
+      X_new : np.array of shape (n_samples, lag_window * n_features)
+      y_new : np.array of shape (n_samples,)
     """
     n_samples = len(y) - lag_window - forecast_window + 1
     if n_samples <= 0:
@@ -54,25 +44,22 @@ def create_sliding_windows(X, y, lag_window=14, forecast_window=5, agg_func=np.m
     X_windows = []
     y_windows = []
     for i in range(n_samples):
-        # Flatten the past lag_window days of X into one row
-        window = X.iloc[i : i + lag_window].values.flatten()
-        # Aggregate the future forecast_window days in y
-        target = agg_func(y.iloc[i + lag_window : i + lag_window + forecast_window].values)
-
-        X_windows.append(window)
-        y_windows.append(target)
+        # Flatten the past 'lag_window' days of X into one row
+        window_feats = X.iloc[i : i + lag_window].values.flatten()
+        # Aggregate the next 'forecast_window' days of y
+        target_val = agg_func(y.iloc[i + lag_window : i + lag_window + forecast_window].values)
+        X_windows.append(window_feats)
+        y_windows.append(target_val)
 
     return np.array(X_windows), np.array(y_windows)
 
-# -----------------------------------------------------------------------------
-# Main Pipeline
-# -----------------------------------------------------------------------------
-def main():
-    logging.info("Starting Forecasting Model Training Pipeline (14-day lag, 5-day forecast)")
 
-    # -------------------------------
-    # 1. Data Loading
-    # -------------------------------
+def main():
+    logging.info("Starting Forecasting Model (14-day lag, 3-day forecast) using XGBoost & CatBoost")
+
+    # -------------------------------------------------------------------------
+    # 1) Data Loading
+    # -------------------------------------------------------------------------
     data_dir = "Scripts/data_processing/processed_data/split_data_dir"
     X_train_path = os.path.join(data_dir, "X_train.csv")
     X_test_path  = os.path.join(data_dir, "X_test.csv")
@@ -80,110 +67,179 @@ def main():
     y_test_path  = os.path.join(data_dir, "y_test.csv")
 
     logging.info(f"Loading split data from: {data_dir}")
-    X_train = pd.read_csv(X_train_path, low_memory=False)
-    X_test  = pd.read_csv(X_test_path,  low_memory=False)
-    y_train = pd.read_csv(y_train_path, low_memory=False)
-    y_test  = pd.read_csv(y_test_path,  low_memory=False)
+    
+    # Using Dask to read CSVs, then converting to Pandas
+    def load_dask_csv(path):
+        import dask.dataframe as dd
+        if not os.path.exists(path):
+            logging.error(f"File not found: {path}")
+            sys.exit(1)
+        logging.info(f"Reading: {path}")
+        df_dd = dd.read_csv(path, assume_missing=True)
+        df = df_dd.compute()
+        logging.info(f"Read shape {df.shape} from {path}")
+        return df
 
-    # Convert y columns to 1D arrays if needed
-    if y_train.shape[1] == 1:
-        y_train = y_train.iloc[:, 0]
-    if y_test.shape[1] == 1:
-        y_test = y_test.iloc[:, 0]
+    X_train_df = load_dask_csv(X_train_path)
+    X_test_df  = load_dask_csv(X_test_path)
+    y_train_df = load_dask_csv(y_train_path)
+    y_test_df  = load_dask_csv(y_test_path)
 
-    logging.info(f"Data loaded: X_train={X_train.shape}, X_test={X_test.shape}, "
-                 f"y_train={y_train.shape}, y_test={y_test.shape}")
+    # If y has shape (n, 1), flatten to 1D
+    if y_train_df.shape[1] == 1:
+        y_train_df = y_train_df.iloc[:, 0]
+    if y_test_df.shape[1] == 1:
+        y_test_df = y_test_df.iloc[:, 0]
 
-    # -------------------------------
-    # 2. Sliding Window Feature Creation
-    # -------------------------------
+    # Drop 'date' column if present
+    if 'date' in X_train_df.columns:
+        logging.info("Dropping 'date' column from X_train...")
+        X_train_df.drop(columns=['date'], inplace=True)
+    if 'date' in X_test_df.columns:
+        logging.info("Dropping 'date' column from X_test...")
+        X_test_df.drop(columns=['date'], inplace=True)
+
+    logging.info(f"Final shapes -> X_train={X_train_df.shape}, y_train={y_train_df.shape}, "
+                 f"X_test={X_test_df.shape}, y_test={y_test_df.shape}")
+
+    # -------------------------------------------------------------------------
+    # 2) Sliding Windows
+    # -------------------------------------------------------------------------
     lag_window = 14
-    forecast_window = 5
-    agg_func = np.mean  # how we aggregate the forecast period (np.sum, np.mean, etc.)
+    forecast_window = 3
+    agg_func = np.max  # if any day in the next 3 is a fire, target=1, else=0
 
-    logging.info("Creating sliding windows for TRAIN set...")
-    X_train_sw, y_train_sw = create_sliding_windows(X_train, y_train, lag_window, forecast_window, agg_func)
+    logging.info(f"Creating sliding windows with lag={lag_window}, forecast={forecast_window} using agg={agg_func.__name__}...")
+    X_train_sw, y_train_sw = create_sliding_windows(X_train_df, y_train_df, lag_window, forecast_window, agg_func)
+    X_test_sw,  y_test_sw  = create_sliding_windows(X_test_df,  y_test_df,  lag_window, forecast_window, agg_func)
 
-    logging.info("Creating sliding windows for TEST set...")
-    X_test_sw, y_test_sw = create_sliding_windows(X_test, y_test, lag_window, forecast_window, agg_func)
-
-    logging.info(f"Final sliding window shapes -> X_train_sw={X_train_sw.shape}, y_train_sw={y_train_sw.shape}, "
+    logging.info(f"Sliding window shapes -> X_train_sw={X_train_sw.shape}, y_train_sw={y_train_sw.shape}, "
                  f"X_test_sw={X_test_sw.shape}, y_test_sw={y_test_sw.shape}")
 
-    # -------------------------------
-    # 3. Define Models
-    # -------------------------------
-    reporter = Reporter()
-    models = {
-        "KNN": KNNModel(n_neighbors=5),
-        "Random Forest": RandomForestModel(),
-        "XGBoost": XGBoostModel(),
-        "Logistic Regression": LogisticRegressionModel()
+    # -------------------------------------------------------------------------
+    # 3) GPU-Enabled XGBoost
+    # -------------------------------------------------------------------------
+    # (Cross-validation commented out)
+    logging.info("Training XGBoost on sliding-window data (GPU if available)...")
+    # For XGBoost 2.0+, recommended usage: 'tree_method' = 'hist', 'device' = 'cuda'
+    xgb_clf = xgb.XGBClassifier(
+        tree_method='hist',
+        device='cuda',    # or 'cuda:0'
+        learning_rate=0.1,
+        max_depth=6,
+        n_estimators=100,
+        subsample=0.8,
+        use_label_encoder=False,
+        eval_metric='logloss'
+    )
+    # fit
+    xgb_clf.fit(X_train_sw, y_train_sw)
+
+    # Evaluate with a basic threshold = 0.5
+    xgb_probs_05 = xgb_clf.predict_proba(X_test_sw)[:, 1]
+    xgb_preds_05 = (xgb_probs_05 >= 0.5).astype(int)
+    xgb_05_metrics = {
+        "accuracy": accuracy_score(y_test_sw, xgb_preds_05),
+        "precision": precision_score(y_test_sw, xgb_preds_05, zero_division=0),
+        "recall":    recall_score(y_test_sw, xgb_preds_05, zero_division=0),
+        "f1_score":  f1_score(y_test_sw, xgb_preds_05, zero_division=0),
+        "roc_auc":   roc_auc_score(y_test_sw, xgb_probs_05),
     }
+    logging.info(f"XGBoost (threshold=0.5) => {xgb_05_metrics}")
 
-    # -------------------------------
-    # 4. Cross-Validation
-    # -------------------------------
-    for model_name, model_obj in models.items():
-        logging.info(f"Performing cross-validation for {model_name}...")
-        cv_metrics = cross_validate_model(model_obj, X_train_sw, y_train_sw, n_splits=5)
-        logging.info(f"{model_name} (CV) metrics: {cv_metrics}")
-        reporter.add_result(model_name + " (CV)", cv_metrics)
+    # Evaluate with threshold = 0.7
+    xgb_probs_07 = xgb_probs_05
+    xgb_preds_07 = (xgb_probs_05 >= 0.7).astype(int)
+    xgb_07_metrics = {
+        "accuracy": accuracy_score(y_test_sw, xgb_preds_07),
+        "precision": precision_score(y_test_sw, xgb_preds_07, zero_division=0),
+        "recall":    recall_score(y_test_sw, xgb_preds_07, zero_division=0),
+        "f1_score":  f1_score(y_test_sw, xgb_preds_07, zero_division=0),
+        "roc_auc":   roc_auc_score(y_test_sw, xgb_probs_07),
+    }
+    logging.info(f"XGBoost (threshold=0.7) => {xgb_07_metrics}")
 
-    # -------------------------------
-    # 5. Train on Full Train Set & Evaluate on Test Set
-    # -------------------------------
-    for model_name, model_obj in models.items():
-        logging.info(f"Training and evaluating {model_name} on test data...")
-        model_obj.train(X_train_sw, y_train_sw)
-        test_metrics = model_obj.evaluate(X_test_sw, y_test_sw)
-        logging.info(f"{model_name} (Test) metrics: {test_metrics}")
-        reporter.add_result(model_name + " (Test)", test_metrics)
+    # Optional: calibrate XGBoost
+    logging.info("Calibrating XGBoost with isotonic regression (threshold=0.7 demo)...")
+    from sklearn.calibration import CalibratedClassifierCV
+    xgb_cal = CalibratedClassifierCV(base_estimator=xgb_clf, cv=3, method='isotonic')
+    xgb_cal.fit(X_train_sw, y_train_sw)
+    xgb_cal_probs = xgb_cal.predict_proba(X_test_sw)[:, 1]
+    xgb_cal_preds = (xgb_cal_probs >= 0.7).astype(int)
+    xgb_cal_metrics = {
+        "accuracy": accuracy_score(y_test_sw, xgb_cal_preds),
+        "precision": precision_score(y_test_sw, xgb_cal_preds, zero_division=0),
+        "recall":    recall_score(y_test_sw, xgb_cal_preds, zero_division=0),
+        "f1_score":  f1_score(y_test_sw, xgb_cal_preds, zero_division=0),
+        "roc_auc":   roc_auc_score(y_test_sw, xgb_cal_probs),
+    }
+    logging.info(f"XGBoost + calibration (threshold=0.7) => {xgb_cal_metrics}")
 
-    # -------------------------------
-    # 6. Voting Classifier Ensemble
-    # -------------------------------
-    f1_threshold = 0.60  # example threshold
-    logging.info(f"Filtering models with F1 >= {f1_threshold} from test metrics for ensemble...")
-    selected_model_names = filter_models_by_threshold(reporter, threshold=f1_threshold)
-    logging.info(f"Models selected for ensemble: {selected_model_names}")
+    # -------------------------------------------------------------------------
+    # 4) GPU-Enabled CatBoost
+    # -------------------------------------------------------------------------
+    logging.info("Training CatBoost on sliding-window data (GPU if available)...")
+    cat_clf = CatBoostClassifier(
+        iterations=100,
+        depth=6,
+        learning_rate=0.1,
+        task_type='GPU',
+        devices='0',  # if you have a single GPU
+        eval_metric='Logloss',
+        verbose=False
+    )
+    cat_clf.fit(X_train_sw, y_train_sw)
 
-    selected_models = {name: models[name] for name in selected_model_names if name in models}
+    # Evaluate at threshold=0.5
+    cat_probs_05 = cat_clf.predict_proba(X_test_sw)[:, 1]
+    cat_preds_05 = (cat_probs_05 >= 0.5).astype(int)
+    cat_05_metrics = {
+        "accuracy": accuracy_score(y_test_sw, cat_preds_05),
+        "precision": precision_score(y_test_sw, cat_preds_05, zero_division=0),
+        "recall":    recall_score(y_test_sw, cat_preds_05, zero_division=0),
+        "f1_score":  f1_score(y_test_sw, cat_preds_05, zero_division=0),
+        "roc_auc":   roc_auc_score(y_test_sw, cat_probs_05),
+    }
+    logging.info(f"CatBoost (threshold=0.5) => {cat_05_metrics}")
 
-    if selected_models:
-        logging.info("Training Voting Classifier (soft voting) with selected models...")
-        voting_clf = VotingClassifierCustom(selected_models, voting='soft')
-        voting_clf.fit(X_train_sw, y_train_sw)
+    # Evaluate at threshold=0.7
+    cat_preds_07 = (cat_probs_05 >= 0.7).astype(int)
+    cat_07_metrics = {
+        "accuracy": accuracy_score(y_test_sw, cat_preds_07),
+        "precision": precision_score(y_test_sw, cat_preds_07, zero_division=0),
+        "recall":    recall_score(y_test_sw, cat_preds_07, zero_division=0),
+        "f1_score":  f1_score(y_test_sw, cat_preds_07, zero_division=0),
+        "roc_auc":   roc_auc_score(y_test_sw, cat_probs_05),
+    }
+    logging.info(f"CatBoost (threshold=0.7) => {cat_07_metrics}")
 
-        # Evaluate on test set
-        from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-        voting_preds = voting_clf.predict(X_test_sw)
-        voting_probs = voting_clf.predict_proba(X_test_sw)
+    # Optional: calibrate CatBoost with isotonic regression
+    logging.info("Calibrating CatBoost with isotonic regression (threshold=0.7 demo)...")
+    cat_cal = CalibratedClassifierCV(base_estimator=cat_clf, cv=3, method='isotonic')
+    cat_cal.fit(X_train_sw, y_train_sw)
+    cat_cal_probs = cat_cal.predict_proba(X_test_sw)[:, 1]
+    cat_cal_preds = (cat_cal_probs >= 0.7).astype(int)
+    cat_cal_metrics = {
+        "accuracy": accuracy_score(y_test_sw, cat_cal_preds),
+        "precision": precision_score(y_test_sw, cat_cal_preds, zero_division=0),
+        "recall":    recall_score(y_test_sw, cat_cal_preds, zero_division=0),
+        "f1_score":  f1_score(y_test_sw, cat_cal_preds, zero_division=0),
+        "roc_auc":   roc_auc_score(y_test_sw, cat_cal_probs),
+    }
+    logging.info(f"CatBoost + calibration (threshold=0.7) => {cat_cal_metrics}")
 
-        voting_metrics = {
-            "accuracy": accuracy_score(y_test_sw, voting_preds),
-            "precision": precision_score(y_test_sw, voting_preds),
-            "recall": recall_score(y_test_sw, voting_preds),
-            "f1_score": f1_score(y_test_sw, voting_preds),
-            "roc_auc": roc_auc_score(y_test_sw, voting_probs[:,1])
-        }
-        reporter.add_result("Voting Classifier (Test)", voting_metrics)
-        logging.info(f"Voting Classifier (Test) metrics: {voting_metrics}")
+    # -------------------------------------------------------------------------
+    # (Optional) Cross-Validation is commented out for faster iteration
+    # -------------------------------------------------------------------------
+    """
+    # If you later want cross-validation:
+    # from sklearn.model_selection import cross_val_score
+    # scores = cross_val_score(xgb_clf, X_train_sw, y_train_sw, cv=5, scoring='f1')
+    # logging.info(f"XGBoost CV F1 => {scores.mean()}")
+    """
 
-        # Save ensemble
-        ensemble_path = "voting_model.pkl"
-        joblib.dump(voting_clf, ensemble_path)
-        logging.info(f"Voting Classifier saved to {ensemble_path}")
-    else:
-        logging.info("No models met the threshold; skipping Voting Classifier.")
-
-    # -------------------------------
-    # 7. Generate Final Report
-    # -------------------------------
-    final_report = reporter.generate_report("model_report.csv")
-    logging.info("Final Model Performance Report:")
-    logging.info("\n" + final_report.to_string())
-
+    logging.info("Finished forecasting pipeline (XGBoost & CatBoost) with a 3-day horizon using 14-day lag.")
+    logging.info("Exiting pipeline.")
 
 if __name__ == "__main__":
     main()
