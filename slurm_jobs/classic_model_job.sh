@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-nassersa-ab
 #SBATCH --time=72:00:00
-#SBATCH --mem=128G
-#SBATCH --cpus-per-task=10
+#SBATCH --mem=180G
+#SBATCH --cpus-per-task=15
 #SBATCH --gres=gpu:1
 #SBATCH --job-name=wildfire_classification
 #SBATCH --output=wildfire_classification.out
