@@ -1,8 +1,7 @@
 from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bce_loss
 from model_classes.lstm import LSTM_3D
 from data_preprocessing.windowing import batched_indexed_windows, reshape_data
-# from data_preprocessing.csv_aggreg import csv_aggregate
-# from model_evaluation.nn_model_metrics import evaluate
+from model_evaluation.nn_model_metrics import evaluate, evaluate_individuals
 
 
 import torch.optim as optim
@@ -66,6 +65,7 @@ def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09
 # TODO check min max values of predictions at various stages
 # TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
 # TODO ask the model to predict classes AND probabilities
+# TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
 def main(training_parameters={"batch_size": 10,
                               "num_epochs": 20,
                               "learning_rate": 0.005,
@@ -78,7 +78,9 @@ def main(training_parameters={"batch_size": 10,
          rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
-         include_masks=True): # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
+         include_masks=True, # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
+         mask_size=2,
+         threshold_value=0.515):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -106,7 +108,7 @@ def main(training_parameters={"batch_size": 10,
         logging.info(f"Device set to CPU")
 
     # load data from df
-    rawdata_df = pd.read_csv(rawdata_path)[:918340] #.to(device)
+    rawdata_df = pd.read_csv(rawdata_path)[:1377510] #.to(device)
     logging.info(f"Dataset csv file loaded into dataframe successfully")
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
     features = rawdata_df.columns[3:].array
@@ -160,6 +162,14 @@ def main(training_parameters={"batch_size": 10,
     logging.info("Model created successfully")
     samples_per_epoch = len(X_train) - (len(X_train) % batch_size)
 
+    # set flattened array size for one batch (training and validation separately)
+    # TODO fix so this is modular
+    batch_flat_shape = 12580
+    batch_flat_shape_val = 37740
+
+    # set a list of possible threshold values to test
+    threshold_value_testlist = [0.5, 0.51, 0.515, 0.53, 0.55]
+
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
         batches = X_train[:samples_per_epoch].reshape(int(len(X_train)/batch_size), batch_size)
@@ -167,44 +177,99 @@ def main(training_parameters={"batch_size": 10,
         for batch in batches:
             print(f'Epoch {epoch}, Batch Number {batch_num}, Batch Indices {batch}')
             optimizer.zero_grad()
+            # get batched windows for inputs, targets, and fire region masks
             # TODO determine how much slower it is to assign inputs targets and masks like this
-            batch_windows = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day, include_masks=True, masks=masks)
+            batch_windows = batched_indexed_windows(batch, data, labels, num_training_days, prediction_day, include_masks=True, masks_full=masks)
             inputs, targets, regions = batch_windows[0], batch_windows[1], batch_windows[2]
             outputs = model(inputs)
+
+            # calculate losses
             full_loss = bce_loss(outputs, targets)
-            fire_loss = bce_loss(outputs*regions, targets)
-            loss = (full_loss * 0.2) + (fire_loss * 0.8)
+            # TODO figure out why fire_loss is getting so big
+            fire_loss = bce_loss(outputs*targets, targets)
+            region_loss = bce_loss(outputs*regions, targets)
+            loss = (full_loss * 0.2) + (region_loss * 0.8)
+            print(f"Scaled Loss: {loss}, Fire_Region Loss: {region_loss}, Fire Loss: {fire_loss}, Full Loss: {full_loss}")
+
             if (batch_num % 20) == 0:
                 with torch.no_grad():
+                    # calculate training metrics for most recent batch
+                    train_metrics_dict = evaluate(outputs, targets, batch_flat_shape, threshold_value=threshold_value)
+                    print(f"Accuracy: {train_metrics_dict['accuracy']}, Precision: {train_metrics_dict['precision']}, Recall: {train_metrics_dict['recall']}, F1: {train_metrics_dict['f1']}")
+
+                    # set total validation losses to 0, we will average over the entire validation set later
                     val_scaled_loss = 0
                     val_full_loss = 0
                     val_fire_loss = 0
+                    val_fire_region_loss = 0
+                    val_accuracy = 0
+                    val_precision = 0
+                    val_recall = 0
+                    val_f1 = 0
+
+                    # random shuffle the order of the validation set
+                    # TODO: does this matter since we aren't learning anyways?
                     np.random.shuffle(X_val)
+
                     for i in range(0, val_batch_nums):
+                        # get batched windows for inputs, targets, and fire region masks
                         label_batch = X_val[i * val_batch_size : (i+1) * val_batch_size] # TODO: allow to test the entire validation set at once in gpu implementation (stuck at max of 50 due to memory issues!)
-                        test_inputs, test_targets = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day,  include_masks=True, masks=masks)
+                        label_batch_windows = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day,  include_masks=True, masks_full=masks)
+                        test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
                         test_predictions = model(test_inputs)
-                        # test_metrics = evaluate(test_predictions, test_targets)
+
+                        # calculate validation metrics for this batch
+                        batch_val_accuracy, batch_val_precision, batch_val_recall, batch_val_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
+                        batch_val_region_accuracy, batch_val_region_precision, batch_val_region_recall, batch_val_region_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
+
+                        # calculate losses
                         full_test_loss = bce_loss(test_predictions, test_targets)
-                        fire_test_loss = bce_loss(test_predictions*targets, test_targets)
-                        test_loss = (full_test_loss * 0.2) + (fire_test_loss * 0.8)
+                        fire_test_loss = bce_loss(test_predictions * test_targets, test_targets)
+                        fire_test_region_loss = bce_loss(test_predictions*test_regions, test_targets)
+                        test_loss = (full_test_loss * 0.2) + (fire_test_region_loss * 0.8)
+
+                        # update total losses
                         val_scaled_loss += test_loss
+                        val_fire_region_loss += fire_test_region_loss
                         val_fire_loss += fire_test_loss
                         val_full_loss += full_test_loss
-                    val_scaled_loss /= 2
-                    val_fire_loss /= 2
-                    val_fire_loss /= 2
+                        val_accuracy += batch_val_accuracy
+                        val_recall += batch_val_recall
+                        val_f1 += batch_val_f1
+                        val_precision += batch_val_precision
+
+                    # average losses over the full batch
+                    val_scaled_loss /= val_batch_nums
+                    val_fire_loss /= val_batch_nums
+                    val_fire_region_loss /= val_batch_nums
+                    val_full_loss /= val_batch_nums
+                    val_accuracy /= val_batch_nums
+                    val_recall /= val_batch_nums
+                    val_f1 /= val_batch_nums
+                    val_precision /= val_batch_nums
+
+                    # print validation metrics for full set
                     print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_scaled_loss}")
-                    metrics_dict = {"training_bce_loss": loss.item(),
-                                    "scaled_validation_bce_loss": val_scaled_loss.item(),
-                                    "fire_region_validation_bce_loss": val_fire_loss.item(),
-                                    "full_region_validation_bce_loss": val_full_loss.item()}#,
-                                    # "accuracy": test_metrics["accuracy"],
-                                    # "precision": test_metrics["precision"],
-                                    # "recall": test_metrics["recall"],
-                                    # "f1_score": test_metrics["f1_score"]}
+                    print(f"Validation Batch Accuracy: {val_accuracy}, Precision: {val_precision}, Recall: {val_recall}, F1: {val_f1}")
+
+                    # create metrics dictionary for tensorboard
+                    metrics_dict = {"training_scaled_bce_loss": loss.item(),
+                                    "training_full_bce_loss": full_loss.item(),
+                                    "training_fire_loss": fire_loss.item(),
+                                    "training_fire_region_loss": region_loss.item(),
+                                    "validation_scaled_bce_loss": val_scaled_loss.item(),
+                                    "validation_fire_region_bce_loss": val_fire_region_loss.item(),
+                                    "validation_full_region_bce_loss": val_full_loss.item(),
+                                    "train_accuracy": train_metrics_dict["accuracy"],
+                                    "train_precision": train_metrics_dict["precision"],
+                                    "train_recall": train_metrics_dict["recall"],
+                                    "train_f1_score": train_metrics_dict["f1"]}
                                     # # "roc_auc": test_metrics["roc_auc"]}
+
+                    # save metrics to tensorboard
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
+
+                    # save model checkpoint every 150 batches (1500 samples)
                     if (batch_num % 150) == 0:
                         checkpoint = {
                             'model_state_dict': model.state_dict(),
@@ -213,6 +278,7 @@ def main(training_parameters={"batch_size": 10,
                         torch.save(checkpoint, f'{checkpoint_dir}/checkpoint_epoch_{epoch}_batch_{batch_num}.pth')
                         logging.info(
                             f"Model checkpoint for epoch {epoch} saved to: {checkpoint_dir}/checkpoint_epoch_{epoch}.pth")
+
             loss.backward()
             batch_num += 1
 
