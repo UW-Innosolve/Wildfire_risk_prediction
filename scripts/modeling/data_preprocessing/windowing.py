@@ -17,6 +17,13 @@ from idlelib.pyparse import trans
 import numpy as np
 import pandas as pd
 import torch
+import logging
+
+
+# Configure logging: INFO level logs progress, DEBUG could be used for more details.
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def create_fire_region_masks(targets, tolerance):
