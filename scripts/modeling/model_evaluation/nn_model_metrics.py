@@ -71,10 +71,14 @@ def evaluate_individuals(predictions, targets, flat_shape, threshold_value=0.515
 
     # threshold predictions to give 1 and 0
     thresholded_predictions_flat = (predictions_flat > threshold_value).astype(int)
+    if targets_flat.sum() == 0:
+        print('No fire areas present in batch')
+    if thresholded_predictions_flat.sum() == 0:
+        print(f"No fire areas predicted in batch using threshold {threshold_value}")
 
     accuracy = accuracy_score(targets_flat, thresholded_predictions_flat)
-    precision = precision_score(targets_flat, thresholded_predictions_flat)
-    recall = recall_score(targets_flat, thresholded_predictions_flat)
-    f1 = f1_score(targets_flat, thresholded_predictions_flat)
+    precision = precision_score(targets_flat.astype(int), thresholded_predictions_flat)
+    recall = recall_score(targets_flat.astype(int), thresholded_predictions_flat)
+    f1 = f1_score(targets_flat.astype(int), thresholded_predictions_flat)
 
     return accuracy, precision, recall, f1
