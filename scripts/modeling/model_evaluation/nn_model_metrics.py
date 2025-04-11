@@ -29,8 +29,8 @@ def evaluate(predictions, targets, flat_shape, threshold_value=0.515):
     #     probs = model.decision_function(X_test)
 
     # flatten arrays
-    predictions_flat = predictions.detach().numpy().reshape(flat_shape)
-    targets_flat = targets.detach().numpy().reshape(flat_shape)
+    predictions_flat = predictions.detach().cpu().numpy().reshape(flat_shape)
+    targets_flat = targets.detach().cpu().numpy().reshape(flat_shape)
 
     # threshold predictions to give 1 and 0
     thresholded_predictions_flat = (predictions_flat > threshold_value).astype(int)
@@ -66,8 +66,8 @@ def evaluate_individuals(predictions, targets, flat_shape, threshold_value=0.515
     #     probs = model.decision_function(X_test)
 
     # flatten arrays
-    predictions_flat = predictions.detach().numpy().reshape(flat_shape)
-    targets_flat = targets.detach().numpy().reshape(flat_shape)
+    predictions_flat = predictions.detach().cpu().numpy().reshape(flat_shape)
+    targets_flat = targets.detach().cpu().numpy().reshape(flat_shape)
 
     # threshold predictions to give 1 and 0
     thresholded_predictions_flat = (predictions_flat > threshold_value).astype(int)
