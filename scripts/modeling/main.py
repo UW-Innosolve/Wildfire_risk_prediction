@@ -66,13 +66,13 @@ def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics
     val_max = predictions.max()
     val_avg = predictions.sum() / flat_shape
 
-    metrics_dict['validation_accuracy'] += (val_accuracy / 2)
-    metrics_dict['validation_precision'] += (val_precision / 2)
-    metrics_dict['validation_recall'] += (val_recall / 2)
-    metrics_dict['validation_f1'] += (val_f1 / 2)
+    metrics_dict['validation_accuracy'] += (val_accuracy / 19)
+    metrics_dict['validation_precision'] += (val_precision / 19)
+    metrics_dict['validation_recall'] += (val_recall / 19)
+    metrics_dict['validation_f1'] += (val_f1 / 19)
     metrics_dict['validation_min_pred'] += (val_min)
     metrics_dict['validation_max_pred'] += (val_max)
-    metrics_dict['validation_avg_pred'] += (val_avg / 2)
+    metrics_dict['validation_avg_pred'] += (val_avg / 19)
 
     return metrics_dict
 
@@ -102,17 +102,17 @@ def create_empty_metrics_dict():
 # TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
 # TODO ask the model to predict classes AND probabilities
 # TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
-def main(training_parameters={"batch_size": 10,
-                              "num_epochs": 20,
+def main(training_parameters={"batch_size": 30,
+                              "num_epochs": 40,
                               "learning_rate": 0.05,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"smaller_thresholds",
-                              "test_range": (2008),
-                              "train_range": (2006, 2007)},
-         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+                              "experiment_name":"thresholding_experiments",
+                              "test_range": (2024),
+                              "train_range": (2006, 2023)},
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
          include_masks=True, # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
          mask_size=2,
@@ -144,7 +144,7 @@ def main(training_parameters={"batch_size": 10,
         logging.info(f"Device set to CPU")
 
     # load data from df
-    rawdata_df = pd.read_csv(rawdata_path)[:1377510] #.to(device)
+    rawdata_df = pd.read_csv(rawdata_path) # [:1377510] #.to(device)
     logging.info(f"Dataset csv file loaded into dataframe successfully")
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
     features = rawdata_df.columns[3:].array
@@ -210,11 +210,11 @@ def main(training_parameters={"batch_size": 10,
 
     # set flattened array size for one batch (training and validation separately)
     # TODO fix so this is modular
-    batch_flat_shape = 12580
+    batch_flat_shape = 37740
     batch_flat_shape_val = 37740
 
     # set a list of possible threshold values to test
-    threshold_value_testlist = [0.45, 0.5, 0.51, 0.53, 0.55, 0.6, 0.7]
+    # threshold_value_testlist = [0.45, 0.5, 0.51, 0.53, 0.55, 0.6, 0.7]
 
     # TODO: fix so its not hardcoded
     # create tensorboard writers for all other test threshold values
@@ -588,7 +588,7 @@ def main(training_parameters={"batch_size": 10,
                             # Add other relevant information like epoch, loss, etc.}
                         torch.save(checkpoint, f'{checkpoint_dir}/checkpoint_epoch_{epoch}_batch_{batch_num}.pth')
                         logging.info(
-                            f"Model checkpoint for epoch {epoch} saved to: {checkpoint_dir}/checkpoint_epoch_{epoch}.pth")
+                            f"Model checkpoint for epoch {epoch} saved to: {checkpoint_dir}/checkpoint_epoch_{epoch}_batch_{batch_num}.pth")
 
             loss.backward()
             batch_num += 1
