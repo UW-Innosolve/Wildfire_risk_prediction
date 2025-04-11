@@ -60,6 +60,35 @@ def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09
     return np.asarray(train_indices), np.asarray(test_indices)
 
 
+def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics_dict):
+    val_accuracy, val_precision, val_recall, val_f1 = evaluate_individuals(predictions, targets, flat_shape, threshold_value=threshold_value)
+    val_min = predictions.min()
+    val_max = predictions.max()
+    val_avg = predictions.sum() / flat_shape
+
+    metrics_dict['validation_accuracy'] += val_accuracy
+    metrics_dict['validation_precision'] += val_precision
+    metrics_dict['validation_recall'] += val_recall
+    metrics_dict['validation_f1'] += val_f1
+    metrics_dict['validation_min_pred'] += val_min
+    metrics_dict['validation_max_pred'] += val_max
+    metrics_dict['validation_avg_pred'] += val_avg
+
+    return metrics_dict
+
+
+def avg_metrics(metrics_dict, total):
+    metrics_dict['validation_accuracy'] /= total
+    metrics_dict['validation_precision'] /= total
+    metrics_dict['validation_recall'] /= total
+    metrics_dict['validation_f1'] /= total
+    metrics_dict['validation_min_pred'] /= total
+    metrics_dict['validation_max_pred'] /= total
+    metrics_dict['validation_avg_pred'] /= total
+
+    return metrics_dict
+
+
 # TODO create a training_parameters json or something similar to make tracking easier
 # TODO update parameters to pull from a json file
 # TODO check min max values of predictions at various stages
@@ -72,7 +101,7 @@ def main(training_parameters={"batch_size": 10,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"testwrite_tb_b",
+                              "experiment_name":"pleaseworkplease",
                               "test_range": (2008),
                               "train_range": (2006, 2007)},
          # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
@@ -116,6 +145,13 @@ def main(training_parameters={"batch_size": 10,
     num_features = len(features)
     logging.info(f"Selected features: {features}")
     logging.info(f"Target variable: {target_column}")
+    empty_eval_metrics_dict = {"validation_accuracy": 0,
+                               "validation_precision": 0,
+                               "validation_recall": 0,
+                               "validation_f1": 0,
+                               "validation_min_pred": 0,
+                               "validation_max_pred": 0,
+                               "validation_avg_pred": 0}
 
     # get train and test set indices
     train_indices, test_indices = get_indices(rawdata_df, train_range, test_range) # set for fire season only unless changed
@@ -135,7 +171,9 @@ def main(training_parameters={"batch_size": 10,
 
     # TODO: make it modular which subdirectories to create
     # set tensorboard writer directory and subdirectories
-    writer = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_{threshold_value}")
+    writer = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_0515")
+    writer_fire = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_0515")
+    writer_region = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_0515")
     # logging
     logging.info(f"Tensorboard output directory configured to {checkpoint_dir}")
 
@@ -171,15 +209,33 @@ def main(training_parameters={"batch_size": 10,
     # set a list of possible threshold values to test
     threshold_value_testlist = [0.45, 0.5, 0.51, 0.53, 0.55, 0.6, 0.7]
 
-    # # TODO: fix so its not hardcoded
-    # # create tensorboard writers for all other test threshold values
-    # writer_045 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_045")
-    # writer_050 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_050")
-    # writer_051 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_051")
-    # writer_053 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_053")
-    # writer_055 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_055")
-    # writer_060 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_060")
-    # writer_070 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_070")
+    # TODO: fix so its not hardcoded
+    # create tensorboard writers for all other test threshold values
+    writer_045 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_045")
+    writer_050 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_050")
+    writer_051 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_051")
+    writer_053 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_053")
+    writer_055 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_055")
+    writer_060 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_060")
+    writer_070 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_070")
+
+    writer_fire_045 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_045")
+    writer_fire_050 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_050")
+    writer_fire_051 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_051")
+    writer_fire_053 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_053")
+    writer_fire_055 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_055")
+    writer_fire_060 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_060")
+    writer_fire_070 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_070")
+
+    writer_region_045 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_045")
+    writer_region_050 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_050")
+    writer_region_051 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_051")
+    writer_region_053 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_053")
+    writer_region_055 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_055")
+    writer_region_060 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_060")
+    writer_region_070 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_070")
+
+    writer_list = [writer_045, writer_050, writer_051, writer_053, writer_055, writer_060, writer_070]
 
     for epoch in range(num_epochs):
         np.random.shuffle(X_train)
@@ -213,33 +269,70 @@ def main(training_parameters={"batch_size": 10,
                     val_full_loss = 0
                     val_fire_loss = 0
                     val_fire_region_loss = 0
-                    val_accuracy = 0
-                    val_precision = 0
-                    val_recall = 0
-                    val_f1 = 0
-                    val_region_accuracy = 0
-                    val_region_precision = 0
-                    val_region_recall = 0
-                    val_region_f1 = 0
-                    val_fire_accuracy = 0
-                    val_fire_precision = 0
-                    val_fire_recall = 0
-                    val_fire_f1 = 0
-                    max_value = 0
-                    min_value = 0
-                    avg_max_value = 0
-                    avg_min_value = 0
 
-                    # validation metrics for TESTING THRESHOLDS (won't be here forever)
-                    # TODO figure out a more elegant way to not hardcode this
-                    # update length of list of 0 depending on number of test thresholds
-                    val_mets = np.zeros((4, len(threshold_value_testlist)))
-                    val_region_mets = np.zeros((4, len(threshold_value_testlist)))
-                    val_fire_mets = np.zeros((4, len(threshold_value_testlist)))
+                    # val_accuracy = 0
+                    # val_precision = 0
+                    # val_recall = 0
+                    # val_f1 = 0
+                    # val_min = 1
+                    # val_max = 0
+                    #
+                    # val_region_accuracy = 0
+                    # val_region_precision = 0
+                    # val_region_recall = 0
+                    # val_region_f1 = 0
+                    # val_region_min = 0
+                    # val_region_max = 0
+                    #
+                    # val_fire_accuracy = 0
+                    # val_fire_precision = 0
+                    # val_fire_recall = 0
+                    # val_fire_f1 = 0
+                    # val_fire_min = 0
+                    # val_fire_max = 0
+                    #
+                    # # validation metrics for TESTING THRESHOLDS (won't be here forever)
+                    # # TODO figure out a more elegant way to not hardcode this
+                    # # update length of list of 0 depending on number of test thresholds
+                    # val_mets = np.zeros((4, len(threshold_value_testlist)))
+                    # val_region_mets = np.zeros((4, len(threshold_value_testlist)))
+                    # val_fire_mets = np.zeros((4, len(threshold_value_testlist)))
 
                     # random shuffle the order of the validation set
                     # TODO: does this matter since we aren't learning anyways?
                     np.random.shuffle(X_val)
+
+                    metrics = empty_eval_metrics_dict
+                    metrics_fire = empty_eval_metrics_dict
+                    metrics_regions = empty_eval_metrics_dict
+
+                    metrics_045 = empty_eval_metrics_dict
+                    metrics_fire_045 = empty_eval_metrics_dict
+                    metrics_regions_045 = empty_eval_metrics_dict
+
+                    metrics_050 = empty_eval_metrics_dict
+                    metrics_fire_050 = empty_eval_metrics_dict
+                    metrics_regions_050 = empty_eval_metrics_dict
+
+                    metrics_051 = empty_eval_metrics_dict
+                    metrics_fire_051 = empty_eval_metrics_dict
+                    metrics_regions_051 = empty_eval_metrics_dict
+
+                    metrics_053 = empty_eval_metrics_dict
+                    metrics_fire_053 = empty_eval_metrics_dict
+                    metrics_regions_053 = empty_eval_metrics_dict
+
+                    metrics_055 = empty_eval_metrics_dict
+                    metrics_fire_055 = empty_eval_metrics_dict
+                    metrics_regions_055 = empty_eval_metrics_dict
+
+                    metrics_060 = empty_eval_metrics_dict
+                    metrics_fire_060 = empty_eval_metrics_dict
+                    metrics_regions_060 = empty_eval_metrics_dict
+
+                    metrics_070 = empty_eval_metrics_dict
+                    metrics_fire_070 = empty_eval_metrics_dict
+                    metrics_regions_070 = empty_eval_metrics_dict
 
                     for i in range(0, val_batch_nums):
                         # get batched windows for inputs, targets, and fire region masks
@@ -248,24 +341,61 @@ def main(training_parameters={"batch_size": 10,
                         test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
                         test_predictions = model(test_inputs)
 
-                        # calculate validation metrics for this batch
-                        batch_val_accuracy, batch_val_precision, batch_val_recall, batch_val_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
-                        batch_val_region_accuracy, batch_val_region_precision, batch_val_region_recall, batch_val_region_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
-                        batch_val_fire_accuracy, batch_val_fire_precision, batch_val_fire_recall, batch_val_fire_f1 = evaluate_individuals(
-                            test_predictions * test_targets, test_targets, batch_flat_shape_val,
-                            threshold_value=threshold_value)
+                        # TODO CONDENSE THIS (please, I cry)
+                        # calculate all of the metrics (its a lot)
+                        metrics = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, threshold_value, metrics)
+                        metrics_regions = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value, metrics_regions)
+                        metrics_fire = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, threshold_value, metrics_fire)
 
-                        # calculate validation metrics for test threshold values
-                        # TODO: un-hardcode this :), hard-coded for 5 different threshold values
-                        # THIS SUCKS BUT I NEED IT (sorry)
-                        for j in range(len(threshold_value_testlist)):
-                            temp_acc, temp_prec, temp_rec, temp_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
-                            temp_reg_acc, temp_reg_prec, temp_reg_rec, temp_reg_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
-                            temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1 = evaluate_individuals(test_predictions * test_targets, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
+                        metrics_045 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.45, metrics_045)
+                        metrics_regions_045 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.45, metrics_regions_045)
+                        metrics_fire_045 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.45, metrics_fire_045)
 
-                            val_mets[:, j] += temp_acc, temp_prec, temp_rec, temp_f1
-                            val_region_mets[:, j] += temp_reg_acc, temp_reg_prec, temp_reg_rec, temp_reg_f1
-                            val_fire_mets[:, j] += temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1
+                        metrics_050 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.50, metrics_050)
+                        metrics_regions_050 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.50, metrics_regions_050)
+                        metrics_fire_050 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.50, metrics_fire_050)
+
+                        metrics_051 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.51, metrics_051)
+                        metrics_regions_051 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.51, metrics_regions_051)
+                        metrics_fire_051 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.51, metrics_fire_051)
+
+                        metrics_053 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.53, metrics_053)
+                        metrics_regions_053 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.53, metrics_regions_053)
+                        metrics_fire_053 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.53, metrics_fire_053)
+
+                        metrics_055 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.55, metrics_055)
+                        metrics_regions_055 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.55, metrics_regions_055)
+                        metrics_fire_055 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.55, metrics_fire_055)
+
+                        metrics_060 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.60, metrics_060)
+                        metrics_regions_060 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.60, metrics_regions_060)
+                        metrics_fire_060 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.60, metrics_fire_060)
+
+                        metrics_070 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.70, metrics_070)
+                        metrics_regions_070 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.70, metrics_regions_070)
+                        metrics_fire_070 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.70, metrics_fire_070)
+
+                        # # calculate validation metrics for this batch
+                        # batch_val_accuracy, batch_val_precision, batch_val_recall, batch_val_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
+                        # batch_val_region_accuracy, batch_val_region_precision, batch_val_region_recall, batch_val_region_f1 = evaluate_individuals(test_region_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
+                        # batch_val_fire_accuracy, batch_val_fire_precision, batch_val_fire_recall, batch_val_fire_f1 = evaluate_individuals(test_fire_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
+                        # batch_max, batch_min = test_predictions.max(), test_predictions.min()
+                        # if batch_max > val_max:
+                        #     val_max = batch_max
+                        # if batch_min < val_min:
+                        #     val_min = batch_min
+                        #
+                        # # calculate validation metrics for test threshold values
+                        # # TODO: un-hardcode this :), hard-coded for 5 different threshold values
+                        # # THIS SUCKS BUT I NEED IT (sorry)
+                        # for j in range(len(threshold_value_testlist)):
+                        #     temp_acc, temp_prec, temp_rec, temp_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
+                        #     temp_reg_acc, temp_reg_prec, temp_reg_rec, temp_reg_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
+                        #     temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1 = evaluate_individuals(test_predictions * test_targets, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
+                        #
+                        #     val_mets[:, j] += temp_acc, temp_prec, temp_rec, temp_f1
+                        #     val_region_mets[:, j] += temp_reg_acc, temp_reg_prec, temp_reg_rec, temp_reg_f1
+                        #     val_fire_mets[:, j] += temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1
 
                         # calculate losses
                         full_test_loss = bce_loss(test_predictions, test_targets)
@@ -278,41 +408,11 @@ def main(training_parameters={"batch_size": 10,
                         val_fire_region_loss += fire_test_region_loss
                         val_fire_loss += fire_test_loss
                         val_full_loss += full_test_loss
-                        val_accuracy += batch_val_accuracy
-                        val_recall += batch_val_recall
-                        val_f1 += batch_val_f1
-                        val_precision += batch_val_precision
-                        val_region_accuracy += batch_val_region_accuracy
-                        val_region_precision += batch_val_region_precision
-                        val_region_recall += batch_val_region_recall
-                        val_region_f1 += batch_val_region_f1
-                        val_fire_accuracy += batch_val_fire_accuracy
-                        val_fire_precision += batch_val_fire_precision
-                        val_fire_recall += batch_val_fire_recall
-                        val_fire_f1 += batch_val_fire_f1
 
-                    # average losses over the full batch
-                    val_scaled_loss /= val_batch_nums
-                    val_fire_loss /= val_batch_nums
-                    val_fire_region_loss /= val_batch_nums
-                    val_full_loss /= val_batch_nums
-                    val_accuracy /= val_batch_nums
-                    val_recall /= val_batch_nums
-                    val_f1 /= val_batch_nums
-                    val_precision /= val_batch_nums
-                    val_region_accuracy /= val_batch_nums
-                    val_region_precision /= val_batch_nums
-                    val_region_recall /= val_batch_nums
-                    val_region_f1 /= val_batch_nums
-
-                    # average threshold testing metrics over full batch
-                    val_mets /= val_batch_nums
-                    val_fire_mets /= val_batch_nums
-                    val_region_mets /= val_batch_nums
 
                     # print validation metrics for full set
                     print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_scaled_loss}")
-                    print(f"Validation Batch Accuracy: {val_accuracy}, Precision: {val_precision}, Recall: {val_recall}, F1: {val_f1}")
+                    print(f"Validation Batch Accuracy: {metrics['validation_accuracy']}, Precision: {metrics['validation_precision']}, Recall: {metrics['validation_recall']}, F1: {metrics['validation_f1']}")
 
                     # create metrics dictionary for tensorboard
                     metrics_dict = {"training_scaled_bce_loss": loss.item(),
@@ -320,47 +420,74 @@ def main(training_parameters={"batch_size": 10,
                                     "training_fire_loss": fire_loss.item(),
                                     "training_fire_region_loss": region_loss.item(),
                                     "validation_scaled_bce_loss": val_scaled_loss.item(),
+                                    "validation_fire_bce_loss": val_fire_loss.item(),
                                     "validation_fire_region_bce_loss": val_fire_region_loss.item(),
                                     "validation_full_region_bce_loss": val_full_loss.item(),
-                                    "train_accuracy": train_metrics_dict["accuracy"],
-                                    "train_precision": train_metrics_dict["precision"],
-                                    "train_recall": train_metrics_dict["recall"],
-                                    "train_f1": train_metrics_dict["f1"],
-                                    "validation_accuracy": val_accuracy,
-                                    "validation_precision": val_precision,
-                                    "validation_recall": val_recall,
-                                    "validation_f1": val_f1,
-                                    "validation_fire_region_accuracy": val_region_accuracy,
-                                    "validation_fire_region_precision": val_region_precision,
-                                    "validation_fire_region_recall": val_region_recall,
-                                    "validation_fire_region_f1": val_region_f1,
-                                    "validation_fire_accuracy": val_fire_accuracy,
-                                    "validation_fire_precision": val_fire_precision,
-                                    "validation_fire_recall": val_fire_recall,
-                                    "validation_fire_f1": val_fire_f1}
-                                    # # "roc_auc": test_metrics["roc_auc"]}
+                                    "train_accuracy_0515": train_metrics_dict["accuracy"],
+                                    "train_precision_0515": train_metrics_dict["precision"],
+                                    "train_recall_0515": train_metrics_dict["recall"],
+                                    "train_f1_0515": train_metrics_dict["f1"]}#,
+                                    # "validation_accuracy": metrics['validation_accuracy'],
+                                    # "validation_precision": metrics['validation_precision'],
+                                    # "validation_recall": metrics['validation_recall'],
+                                    # "validation_f1": metrics['validation_f1'],
+                                    # "validation_fire_region_accuracy": metrics_regions['validation_accuracy'],
+                                    # "validation_fire_region_precision": metrics_regions['validation_precision'],
+                                    # "validation_fire_region_recall": metrics_regions['validation_recall'],
+                                    # "validation_fire_region_f1": metrics_regions['validation_f1'],
+                                    # "validation_fire_accuracy": metrics_fire['validation_accuracy'],
+                                    # "validation_fire_precision": metrics_fire['validation_precision'],
+                                    # "validation_fire_recall": metrics_fire['validation_recall'],
+                                    # "validation_fire_f1": metrics_fire['validation_f1']}
 
-                    threshold_test_mets = {}
-                    for i in threshold_value_testlist:
-                        for j in range(len(threshold_value_testlist)):
-                            threshold_test_mets[f"validation_accuracy_threshold_{i}"] = val_mets[0, j]
-                            threshold_test_mets[f"validation_precision_threshold_{i}"] = val_mets[1, j]
-                            threshold_test_mets[f"validation_recall_threshold_{i}"] = val_mets[2, j]
-                            threshold_test_mets[f"validation_f1_threshold_{i}"] = val_mets[3, j]
-
-                            threshold_test_mets[f"validation_region_accuracy_threshold_{i}"] = val_region_mets[0, j]
-                            threshold_test_mets[f"validation_region_precision_threshold_{i}"] = val_region_mets[1, j]
-                            threshold_test_mets[f"validation_region_recall_threshold_{i}"] = val_region_mets[2, j]
-                            threshold_test_mets[f"validation_region_f1_threshold_{i}"] = val_region_mets[3, j]
-
-                            threshold_test_mets[f"validation_fire_accuracy_threshold_{i}"] = val_fire_mets[0, j]
-                            threshold_test_mets[f"validation_fire_precision_threshold_{i}"] = val_fire_mets[1, j]
-                            threshold_test_mets[f"validation_fire_recall_threshold_{i}"] = val_fire_mets[2, j]
-                            threshold_test_mets[f"validation_fire_f1_threshold_{i}"] = val_fire_mets[3, j]
+                    # threshold_test_mets = {}
+                    # for i in threshold_value_testlist:
+                    #     for j in range(len(threshold_value_testlist)):
+                    #         threshold_test_mets[f"validation_accuracy_threshold_{i}"] = val_mets[0, j]
+                    #         threshold_test_mets[f"validation_precision_threshold_{i}"] = val_mets[1, j]
+                    #         threshold_test_mets[f"validation_recall_threshold_{i}"] = val_mets[2, j]
+                    #         threshold_test_mets[f"validation_f1_threshold_{i}"] = val_mets[3, j]
+                    #
+                    #         threshold_test_mets[f"validation_region_accuracy_threshold_{i}"] = val_region_mets[0, j]
+                    #         threshold_test_mets[f"validation_region_precision_threshold_{i}"] = val_region_mets[1, j]
+                    #         threshold_test_mets[f"validation_region_recall_threshold_{i}"] = val_region_mets[2, j]
+                    #         threshold_test_mets[f"validation_region_f1_threshold_{i}"] = val_region_mets[3, j]
+                    #
+                    #         threshold_test_mets[f"validation_fire_accuracy_threshold_{i}"] = val_fire_mets[0, j]
+                    #         threshold_test_mets[f"validation_fire_precision_threshold_{i}"] = val_fire_mets[1, j]
+                    #         threshold_test_mets[f"validation_fire_recall_threshold_{i}"] = val_fire_mets[2, j]
+                    #         threshold_test_mets[f"validation_fire_f1_threshold_{i}"] = val_fire_mets[3, j]
 
                     # save metrics to tensorboard
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
-                    tb_optimizer(writer=writer, losses_dict=threshold_test_mets, step=batch_num)
+
+                    tb_optimizer(writer=writer, losses_dict=avg_metrics(metrics, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_045, losses_dict=avg_metrics(metrics_045, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_050, losses_dict=avg_metrics(metrics_050, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_051, losses_dict=avg_metrics(metrics_051, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_053, losses_dict=avg_metrics(metrics_053, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_055, losses_dict=avg_metrics(metrics_055, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_060, losses_dict=avg_metrics(metrics_060, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_070, losses_dict=avg_metrics(metrics_070, val_batch_nums), step=batch_num)
+
+                    tb_optimizer(writer=writer_fire, losses_dict=avg_metrics(metrics_fire, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_045, losses_dict=avg_metrics(metrics_fire_045, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_050, losses_dict=avg_metrics(metrics_fire_050, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_051, losses_dict=avg_metrics(metrics_fire_051, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_053, losses_dict=avg_metrics(metrics_fire_053, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_055, losses_dict=avg_metrics(metrics_fire_055, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_060, losses_dict=avg_metrics(metrics_fire_060, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_fire_070, losses_dict=avg_metrics(metrics_fire_070, val_batch_nums), step=batch_num)
+
+                    tb_optimizer(writer=writer_region, losses_dict=avg_metrics(metrics_regions, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_045, losses_dict=avg_metrics(metrics_regions_045, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_050, losses_dict=avg_metrics(metrics_regions_050, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_051, losses_dict=avg_metrics(metrics_regions_051, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_053, losses_dict=avg_metrics(metrics_regions_053, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_055, losses_dict=avg_metrics(metrics_regions_055, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_060, losses_dict=avg_metrics(metrics_regions_060, val_batch_nums), step=batch_num)
+                    tb_optimizer(writer=writer_region_070, losses_dict=avg_metrics(metrics_regions_070, val_batch_nums), step=batch_num)
+                    # tb_optimizer(writer=writer, losses_dict=threshold_test_mets, step=batch_num)
 
                     # save model checkpoint every 150 batches (1500 samples)
                     if (batch_num % 150) == 0:
