@@ -218,6 +218,8 @@ def main(training_parameters={"batch_size": 10,
 
     # TODO: fix so its not hardcoded
     # create tensorboard writers for all other test threshold values
+    writer_010 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_010")
+    writer_015 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_015")
     writer_020 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_020")
     writer_030 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_030")
     writer_035 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_035")
@@ -230,6 +232,8 @@ def main(training_parameters={"batch_size": 10,
     writer_060 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_060")
     writer_070 = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_070")
 
+    writer_fire_010 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_010")
+    writer_fire_015 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_015")
     writer_fire_020 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_020")
     writer_fire_030 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_030")
     writer_fire_035 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_035")
@@ -242,6 +246,8 @@ def main(training_parameters={"batch_size": 10,
     writer_fire_060 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_060")
     writer_fire_070 = SummaryWriter(log_dir=f"{checkpoint_dir}fire_threshold_070")
 
+    writer_region_010 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_010")
+    writer_region_015 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_015")
     writer_region_020 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_020")
     writer_region_030 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_030")
     writer_region_035 = SummaryWriter(log_dir=f"{checkpoint_dir}region_threshold_035")
@@ -325,6 +331,14 @@ def main(training_parameters={"batch_size": 10,
                     metrics_fire = create_empty_metrics_dict()
                     metrics_regions = create_empty_metrics_dict()
 
+                    metrics_010 = create_empty_metrics_dict()
+                    metrics_fire_010 = create_empty_metrics_dict()
+                    metrics_regions_010 = create_empty_metrics_dict()
+
+                    metrics_015 = create_empty_metrics_dict()
+                    metrics_fire_015 = create_empty_metrics_dict()
+                    metrics_regions_015 = create_empty_metrics_dict()
+
                     metrics_020 = create_empty_metrics_dict()
                     metrics_fire_020 = create_empty_metrics_dict()
                     metrics_regions_020 = create_empty_metrics_dict()
@@ -381,6 +395,14 @@ def main(training_parameters={"batch_size": 10,
                         metrics = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, threshold_value, metrics)
                         metrics_regions = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value, metrics_regions)
                         metrics_fire = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, threshold_value, metrics_fire)
+
+                        metrics_010 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.10, metrics_020)
+                        metrics_regions_010 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.10, metrics_regions_010)
+                        metrics_fire_010 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.10, metrics_fire_010)
+
+                        metrics_015 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.15, metrics_015)
+                        metrics_regions_015 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.15, metrics_regions_015)
+                        metrics_fire_015 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.15, metrics_fire_015)
 
                         metrics_020 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.20, metrics_020)
                         metrics_regions_020 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.20, metrics_regions_020)
@@ -513,6 +535,8 @@ def main(training_parameters={"batch_size": 10,
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
 
                     tb_optimizer(writer=writer, losses_dict=metrics, step=batch_num)
+                    tb_optimizer(writer=writer_010, losses_dict=metrics_010, step=batch_num)
+                    tb_optimizer(writer=writer_015, losses_dict=metrics_015, step=batch_num)
                     tb_optimizer(writer=writer_020, losses_dict=metrics_020, step=batch_num)
                     tb_optimizer(writer=writer_030, losses_dict=metrics_030, step=batch_num)
                     tb_optimizer(writer=writer_035, losses_dict=metrics_035, step=batch_num)
@@ -526,6 +550,8 @@ def main(training_parameters={"batch_size": 10,
                     tb_optimizer(writer=writer_070, losses_dict=metrics_070, step=batch_num)
 
                     tb_optimizer(writer=writer_fire, losses_dict=metrics_fire, step=batch_num)
+                    tb_optimizer(writer=writer_fire_010, losses_dict=metrics_fire_010, step=batch_num)
+                    tb_optimizer(writer=writer_fire_015, losses_dict=metrics_fire_015, step=batch_num)
                     tb_optimizer(writer=writer_fire_020, losses_dict=metrics_fire_020, step=batch_num)
                     tb_optimizer(writer=writer_fire_030, losses_dict=metrics_fire_030, step=batch_num)
                     tb_optimizer(writer=writer_fire_035, losses_dict=metrics_fire_035, step=batch_num)
@@ -539,6 +565,8 @@ def main(training_parameters={"batch_size": 10,
                     tb_optimizer(writer=writer_fire_070, losses_dict=metrics_fire_070, step=batch_num)
 
                     tb_optimizer(writer=writer_region, losses_dict=metrics_regions, step=batch_num)
+                    tb_optimizer(writer=writer_region_010, losses_dict=metrics_regions_010, step=batch_num)
+                    tb_optimizer(writer=writer_region_015, losses_dict=metrics_regions_015, step=batch_num)
                     tb_optimizer(writer=writer_region_020, losses_dict=metrics_regions_020, step=batch_num)
                     tb_optimizer(writer=writer_region_030, losses_dict=metrics_regions_030, step=batch_num)
                     tb_optimizer(writer=writer_region_035, losses_dict=metrics_regions_035, step=batch_num)
