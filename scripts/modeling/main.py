@@ -11,6 +11,7 @@ import pandas as pd
 import torch
 import logging
 from typing import Dict
+import os
 
 from torch.utils.tensorboard.writer import SummaryWriter
 
@@ -111,12 +112,15 @@ def main(training_parameters={"batch_size": 30,
                               "experiment_name":"thresholding_experiments",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
-         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
          include_masks=True, # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
          mask_size=2,
-         threshold_value=0.515):
+         threshold_value=0.515,
+         generate_predictions=True,
+         from_checkpoint=True,
+         checkpoint_directory='/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/',):
     # load training parameters
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
@@ -208,7 +212,123 @@ def main(training_parameters={"batch_size": 30,
     logging.info("Model created successfully")
     samples_per_epoch = len(X_train) - (len(X_train) % batch_size)
 
-    # set flattened array size for one batch (training and validation separately)
+    if generate_predictions:
+        # create new dataframe for output data
+        predictions_df = pd.DataFrame()
+        predictions_df['date'] = rawdata_df['date'][8265060:8534272]
+        predictions_df['latitude'] = rawdata_df['latitude'][8265060:8534272]
+        predictions_df['longitude'] = rawdata_df['longitude'][8265060:8534272]
+
+        # iterate over all epochs with a saved checkpoint
+        for i in range(40):
+            chkpt_pth = f"{checkpoint_directory}model_epoch_{i}.pth"
+
+            # load checkpoint:
+            loaded_checkpoint = torch.load(chkpt_pth, map_location=torch.device('cpu'))
+            loaded_model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
+            loaded_model.load_state_dict(loaded_checkpoint)
+            loaded_model.eval()
+
+            # set epoch mets
+            epoch_acc = 0
+            epoch_prec = 0
+            epoch_rec = 0
+            epoch_f1 = 0
+
+            epoch_fire_acc = 0
+            epoch_fire_prec = 0
+            epoch_fire_rec = 0
+            epoch_fire_f1 = 0
+
+            epoch_region_acc = 0
+            epoch_region_prec = 0
+            epoch_region_rec = 0
+            epoch_region_f1 = 0
+
+            predictions_df[f"epoch_{i}_threshold_010"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_015"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_020"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_030"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_035"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_040"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_045"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_050"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_051"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_0515"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_053"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_055"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_060"] = np.zeros(1258 * 214)
+            predictions_df[f"epoch_{i}_threshold_070"] = np.zeros(1258 * 214)
+
+            with torch.no_grad():
+                h = 0
+                # generate predictions for each index in the test set
+                for j in X_test:
+                    # generate predictions
+                    label_batch_windows = batched_indexed_windows([j], data, labels, num_training_days, prediction_day, include_masks=True, masks_full=masks)
+                    test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
+                    test_predictions = model(test_inputs)
+                    test_predictions_np = test_predictions.detach().cpu().numpy()
+
+                    # update dataframe with new predictions
+                    predictions_df[f"epoch_{i}_threshold_010"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.10).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_015"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.15).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_020"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.20).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_030"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.30).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_035"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.35).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_040"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.40).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_045"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.45).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_050"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.50).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_051"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.51).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_0515"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.515).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_053"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.53).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_055"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.55).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_060"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.60).astype(int).reshape(1258)
+                    predictions_df[f"epoch_{i}_threshold_070"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.70).astype(int).reshape(1258)
+
+                    # generate sample metrics for 0.1 threshold
+                    temp_acc, temp_prec, temp_rec, temp_f1 = evaluate_individuals(test_predictions, test_targets, 1258, threshold_value=0.1)
+                    temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1 = evaluate_individuals(test_predictions * test_targets, test_targets, 1258, threshold_value=0.1)
+                    temp_region_acc, temp_region_prec, temp_region_rec, temp_region_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, 1258, threshold_value=0.1)
+
+                    epoch_acc += temp_acc
+                    epoch_prec += temp_prec
+                    epoch_rec += temp_rec
+                    epoch_f1 += temp_f1
+
+                    epoch_fire_acc += temp_fire_acc
+                    epoch_fire_prec += temp_fire_prec
+                    epoch_fire_rec += temp_fire_rec
+                    epoch_fire_f1 += temp_fire_f1
+
+                    epoch_region_acc += temp_region_acc
+                    epoch_region_prec += temp_region_prec
+                    epoch_region_rec += temp_region_rec
+                    epoch_region_f1 += temp_region_f1
+
+                    h += 1
+
+            epoch_acc /= 214
+            epoch_prec /= 214
+            epoch_rec /= 214
+            epoch_f1 /= 214
+
+            epoch_fire_acc /= 214
+            epoch_fire_prec /= 214
+            epoch_fire_rec /= 214
+            epoch_fire_f1 /= 214
+
+            epoch_region_acc /= 214
+            epoch_region_prec /= 214
+            epoch_region_rec /= 214
+            epoch_region_f1 /= 214
+
+            print(f"Epoch {i} metrics: Accuracy {epoch_acc}, Precision {epoch_prec}, Recall {epoch_rec}, F1 {epoch_f1}")
+            print(f"Epoch {i} fire metrics: Accuracy {epoch_fire_acc}, Precision {epoch_fire_prec}, Recall {epoch_fire_rec}, F1 {epoch_fire_f1}")
+            print(f"Epoch {i} region metrics: Accuracy {epoch_region_acc}, Precision {epoch_region_rec}, Recall {epoch_region_prec}, F1 {epoch_region_f1}")
+
+        predictions_df.to_csv('./predictions_0411.csv')
+
     # TODO fix so this is modular
     batch_flat_shape = 37740
     batch_flat_shape_val = 37740
