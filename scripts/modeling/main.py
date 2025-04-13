@@ -71,8 +71,8 @@ def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics
     metrics_dict['validation_precision'] += (val_precision / 19)
     metrics_dict['validation_recall'] += (val_recall / 19)
     metrics_dict['validation_f1'] += (val_f1 / 19)
-    metrics_dict['validation_min_pred'] += (val_min)
-    metrics_dict['validation_max_pred'] += (val_max)
+    metrics_dict['validation_avg_min_pred'] += (val_min / 19)
+    metrics_dict['validation_avg_max_pred'] += (val_max / 19)
     metrics_dict['validation_avg_pred'] += (val_avg / 19)
 
     return metrics_dict
@@ -80,21 +80,9 @@ def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics
 
 def create_empty_metrics_dict():
     metrics_dict = {'validation_accuracy': 0, 'validation_precision': 0, 'validation_recall': 0, 'validation_f1': 0,
-                    'validation_min_pred': 0, 'validation_max_pred': 0, 'validation_avg_pred': 0}
+                    'validation_avg_min_pred': 0, 'validation_avg_max_pred': 0, 'validation_avg_pred': 0}
 
     return metrics_dict
-
-
-# def avg_metrics(metrics_dict, total):
-#     metrics_dict['validation_accuracy'] /= total
-#     metrics_dict['validation_precision'] /= total
-#     metrics_dict['validation_recall'] /= total
-#     metrics_dict['validation_f1'] /= total
-#     metrics_dict['validation_min_pred'] /= total
-#     metrics_dict['validation_max_pred'] /= total
-#     metrics_dict['validation_avg_pred'] /= total
-#
-#     return metrics_dict
 
 
 # TODO create a training_parameters json or something similar to make tracking easier
@@ -157,13 +145,6 @@ def main(training_parameters={"batch_size": 30,
     num_features = len(features)
     logging.info(f"Selected features: {features}")
     logging.info(f"Target variable: {target_column}")
-    # empty_eval_metrics_dict = {"validation_accuracy": 0,
-    #                            "validation_precision": 0,
-    #                            "validation_recall": 0,
-    #                            "validation_f1": 0,
-    #                            "validation_min_pred": 0,
-    #                            "validation_max_pred": 0,
-    #                            "validation_avg_pred": 0}
 
     # get train and test set indices
     train_indices, test_indices = get_indices(rawdata_df, train_range, test_range) # set for fire season only unless changed
