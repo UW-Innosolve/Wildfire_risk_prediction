@@ -67,7 +67,7 @@ def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics
     val_max = predictions.max()
     val_avg = predictions.sum() / flat_shape
 
-    metrics_dict['validation_accuracy'] += (val_accuracy / 19)
+    metrics_dict['validation_accuracy'] += (val_accuracy / 19) # / by 19 for 19 validation batches
     metrics_dict['validation_precision'] += (val_precision / 19)
     metrics_dict['validation_recall'] += (val_recall / 19)
     metrics_dict['validation_f1'] += (val_f1 / 19)
@@ -109,7 +109,7 @@ def main(training_parameters={"batch_size": 30,
                               "num_training_days": 14,
                               "prediction_day":5,
                               "hidden_size": 64,
-                              "experiment_name":"thresholding_experiments",
+                              "experiment_name":"factcheck",
                               "test_range": (2024),
                               "train_range": (2006, 2023)},
          # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
@@ -117,7 +117,8 @@ def main(training_parameters={"batch_size": 30,
          device_set='cuda',
          include_masks=True, # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
          mask_size=2,
-         threshold_value=0.515,
+         default_threshold_value=0.515,
+         log_thresholding=True,
          generate_predictions=True,
          from_checkpoint=True,
          checkpoint_directory='/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/',):
@@ -148,7 +149,7 @@ def main(training_parameters={"batch_size": 30,
         logging.info(f"Device set to CPU")
 
     # load data from df
-    rawdata_df = pd.read_csv(rawdata_path) # [:1377510] #.to(device)
+    rawdata_df = pd.read_csv(rawdata_path) #[:1377510] #.to(device)
     logging.info(f"Dataset csv file loaded into dataframe successfully")
     # assert rawdata_df.isna().sum() == 0 # assert no nulls in dataframe
     features = rawdata_df.columns[3:].array
@@ -212,126 +213,126 @@ def main(training_parameters={"batch_size": 30,
     logging.info("Model created successfully")
     samples_per_epoch = len(X_train) - (len(X_train) % batch_size)
 
-    if generate_predictions:
-        # create new dataframe for output data
-        predictions_df = pd.DataFrame()
-        predictions_df['date'] = rawdata_df['date'][8265060:8534272]
-        predictions_df['latitude'] = rawdata_df['latitude'][8265060:8534272]
-        predictions_df['longitude'] = rawdata_df['longitude'][8265060:8534272]
-
-        # iterate over all epochs with a saved checkpoint
-        for i in range(40):
-            chkpt_pth = f"{checkpoint_directory}model_epoch_{i}.pth"
-
-            # load checkpoint:
-            loaded_checkpoint = torch.load(chkpt_pth, map_location=torch.device('cpu'))
-            loaded_model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
-            loaded_model.load_state_dict(loaded_checkpoint)
-            loaded_model.eval()
-
-            # set epoch mets
-            epoch_acc = 0
-            epoch_prec = 0
-            epoch_rec = 0
-            epoch_f1 = 0
-
-            epoch_fire_acc = 0
-            epoch_fire_prec = 0
-            epoch_fire_rec = 0
-            epoch_fire_f1 = 0
-
-            epoch_region_acc = 0
-            epoch_region_prec = 0
-            epoch_region_rec = 0
-            epoch_region_f1 = 0
-
-            predictions_df[f"epoch_{i}_threshold_010"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_015"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_020"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_030"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_035"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_040"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_045"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_050"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_051"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_0515"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_053"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_055"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_060"] = np.zeros(1258 * 214)
-            predictions_df[f"epoch_{i}_threshold_070"] = np.zeros(1258 * 214)
-
-            with torch.no_grad():
-                h = 0
-                # generate predictions for each index in the test set
-                for j in X_test:
-                    # generate predictions
-                    label_batch_windows = batched_indexed_windows([j], data, labels, num_training_days, prediction_day, include_masks=True, masks_full=masks)
-                    test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
-                    test_predictions = model(test_inputs)
-                    test_predictions_np = test_predictions.detach().cpu().numpy()
-
-                    # update dataframe with new predictions
-                    predictions_df[f"epoch_{i}_threshold_010"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.10).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_015"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.15).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_020"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.20).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_030"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.30).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_035"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.35).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_040"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.40).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_045"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.45).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_050"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.50).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_051"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.51).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_0515"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.515).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_053"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.53).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_055"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.55).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_060"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.60).astype(int).reshape(1258)
-                    predictions_df[f"epoch_{i}_threshold_070"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.70).astype(int).reshape(1258)
-
-                    # generate sample metrics for 0.1 threshold
-                    temp_acc, temp_prec, temp_rec, temp_f1 = evaluate_individuals(test_predictions, test_targets, 1258, threshold_value=0.1)
-                    temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1 = evaluate_individuals(test_predictions * test_targets, test_targets, 1258, threshold_value=0.1)
-                    temp_region_acc, temp_region_prec, temp_region_rec, temp_region_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, 1258, threshold_value=0.1)
-
-                    epoch_acc += temp_acc
-                    epoch_prec += temp_prec
-                    epoch_rec += temp_rec
-                    epoch_f1 += temp_f1
-
-                    epoch_fire_acc += temp_fire_acc
-                    epoch_fire_prec += temp_fire_prec
-                    epoch_fire_rec += temp_fire_rec
-                    epoch_fire_f1 += temp_fire_f1
-
-                    epoch_region_acc += temp_region_acc
-                    epoch_region_prec += temp_region_prec
-                    epoch_region_rec += temp_region_rec
-                    epoch_region_f1 += temp_region_f1
-
-                    h += 1
-
-            epoch_acc /= 214
-            epoch_prec /= 214
-            epoch_rec /= 214
-            epoch_f1 /= 214
-
-            epoch_fire_acc /= 214
-            epoch_fire_prec /= 214
-            epoch_fire_rec /= 214
-            epoch_fire_f1 /= 214
-
-            epoch_region_acc /= 214
-            epoch_region_prec /= 214
-            epoch_region_rec /= 214
-            epoch_region_f1 /= 214
-
-            print(f"Epoch {i} metrics: Accuracy {epoch_acc}, Precision {epoch_prec}, Recall {epoch_rec}, F1 {epoch_f1}")
-            print(f"Epoch {i} fire metrics: Accuracy {epoch_fire_acc}, Precision {epoch_fire_prec}, Recall {epoch_fire_rec}, F1 {epoch_fire_f1}")
-            print(f"Epoch {i} region metrics: Accuracy {epoch_region_acc}, Precision {epoch_region_rec}, Recall {epoch_region_prec}, F1 {epoch_region_f1}")
-
-        predictions_df.to_csv('./predictions_0411.csv')
+    # if generate_predictions:
+    #     # create new dataframe for output data
+    #     predictions_df = pd.DataFrame()
+    #     predictions_df['date'] = rawdata_df['date'][8265060:8534272]
+    #     predictions_df['latitude'] = rawdata_df['latitude'][8265060:8534272]
+    #     predictions_df['longitude'] = rawdata_df['longitude'][8265060:8534272]
+    #
+    #     # iterate over all epochs with a saved checkpoint
+    #     for i in range(13):
+    #         chkpt_pth = f"{checkpoint_directory}model_epoch_{i}.pth"
+    #
+    #         # load checkpoint:
+    #         loaded_checkpoint = torch.load(chkpt_pth, map_location=torch.device('cpu'))
+    #         loaded_model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
+    #         loaded_model.load_state_dict(loaded_checkpoint)
+    #         loaded_model.eval()
+    #
+    #         # set epoch mets
+    #         epoch_acc = 0
+    #         epoch_prec = 0
+    #         epoch_rec = 0
+    #         epoch_f1 = 0
+    #
+    #         epoch_fire_acc = 0
+    #         epoch_fire_prec = 0
+    #         epoch_fire_rec = 0
+    #         epoch_fire_f1 = 0
+    #
+    #         epoch_region_acc = 0
+    #         epoch_region_prec = 0
+    #         epoch_region_rec = 0
+    #         epoch_region_f1 = 0
+    #
+    #         predictions_df[f"epoch_{i}_threshold_010"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_015"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_020"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_030"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_035"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_040"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_045"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_050"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_051"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_0515"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_053"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_055"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_060"] = np.zeros(1258 * 214)
+    #         predictions_df[f"epoch_{i}_threshold_070"] = np.zeros(1258 * 214)
+    #
+    #         with torch.no_grad():
+    #             h = 0
+    #             # generate predictions for each index in the test set
+    #             for j in X_test:
+    #                 # generate predictions
+    #                 label_batch_windows = batched_indexed_windows([j], data, labels, num_training_days, prediction_day, include_masks=True, masks_full=masks)
+    #                 test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
+    #                 test_predictions = model(test_inputs)
+    #                 test_predictions_np = test_predictions.detach().cpu().numpy()
+    #
+    #                 # update dataframe with new predictions
+    #                 predictions_df[f"epoch_{i}_threshold_010"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.10).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_015"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.15).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_020"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.20).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_030"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.30).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_035"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.35).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_040"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.40).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_045"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.45).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_050"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.50).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_051"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.51).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_0515"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.515).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_053"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.53).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_055"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.55).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_060"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.60).astype(int).reshape(1258)
+    #                 predictions_df[f"epoch_{i}_threshold_070"][h*1258 : (h + 1)*1258] = (test_predictions_np > 0.70).astype(int).reshape(1258)
+    #
+    #                 # generate sample metrics for 0.1 threshold
+    #                 temp_acc, temp_prec, temp_rec, temp_f1 = evaluate_individuals(test_predictions, test_targets, 1258, threshold_value=0.1)
+    #                 temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1 = evaluate_individuals(test_predictions * test_targets, test_targets, 1258, threshold_value=0.1)
+    #                 temp_region_acc, temp_region_prec, temp_region_rec, temp_region_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, 1258, threshold_value=0.1)
+    #
+    #                 epoch_acc += temp_acc
+    #                 epoch_prec += temp_prec
+    #                 epoch_rec += temp_rec
+    #                 epoch_f1 += temp_f1
+    #
+    #                 epoch_fire_acc += temp_fire_acc
+    #                 epoch_fire_prec += temp_fire_prec
+    #                 epoch_fire_rec += temp_fire_rec
+    #                 epoch_fire_f1 += temp_fire_f1
+    #
+    #                 epoch_region_acc += temp_region_acc
+    #                 epoch_region_prec += temp_region_prec
+    #                 epoch_region_rec += temp_region_rec
+    #                 epoch_region_f1 += temp_region_f1
+    #
+    #                 h += 1
+    #
+    #         epoch_acc /= 214
+    #         epoch_prec /= 214
+    #         epoch_rec /= 214
+    #         epoch_f1 /= 214
+    #
+    #         epoch_fire_acc /= 214
+    #         epoch_fire_prec /= 214
+    #         epoch_fire_rec /= 214
+    #         epoch_fire_f1 /= 214
+    #
+    #         epoch_region_acc /= 214
+    #         epoch_region_prec /= 214
+    #         epoch_region_rec /= 214
+    #         epoch_region_f1 /= 214
+    #
+    #         print(f"Epoch {i} metrics: Accuracy {epoch_acc}, Precision {epoch_prec}, Recall {epoch_rec}, F1 {epoch_f1}")
+    #         print(f"Epoch {i} fire metrics: Accuracy {epoch_fire_acc}, Precision {epoch_fire_prec}, Recall {epoch_fire_rec}, F1 {epoch_fire_f1}")
+    #         print(f"Epoch {i} region metrics: Accuracy {epoch_region_acc}, Precision {epoch_region_rec}, Recall {epoch_region_prec}, F1 {epoch_region_f1}")
+    #
+    #     predictions_df.to_csv('./predictions_0411_upto_12.csv')
 
     # TODO fix so this is modular
-    batch_flat_shape = 37740
-    batch_flat_shape_val = 37740
+    batch_flat_shape = 1258 * batch_size
+    batch_flat_shape_val = 1258 * val_batch_size
 
     # set a list of possible threshold values to test
     # threshold_value_testlist = [0.45, 0.5, 0.51, 0.53, 0.55, 0.6, 0.7]
@@ -406,7 +407,7 @@ def main(training_parameters={"batch_size": 30,
             if (batch_num % 20) == 0:
                 with torch.no_grad():
                     # calculate training metrics for most recent batch
-                    train_metrics_dict = evaluate(outputs, targets, batch_flat_shape, threshold_value=threshold_value)
+                    train_metrics_dict = evaluate(outputs, targets, batch_flat_shape, threshold_value=default_threshold_value)
                     print(f"Accuracy: {train_metrics_dict['accuracy']}, Precision: {train_metrics_dict['precision']}, Recall: {train_metrics_dict['recall']}, F1: {train_metrics_dict['f1']}")
 
                     # set total validation losses and metrics to 0, we will average over the entire validation set later
@@ -451,57 +452,58 @@ def main(training_parameters={"batch_size": 30,
                     metrics_fire = create_empty_metrics_dict()
                     metrics_regions = create_empty_metrics_dict()
 
-                    metrics_010 = create_empty_metrics_dict()
-                    metrics_fire_010 = create_empty_metrics_dict()
-                    metrics_regions_010 = create_empty_metrics_dict()
+                    if log_thresholding:
+                        metrics_010 = create_empty_metrics_dict()
+                        metrics_fire_010 = create_empty_metrics_dict()
+                        metrics_regions_010 = create_empty_metrics_dict()
 
-                    metrics_015 = create_empty_metrics_dict()
-                    metrics_fire_015 = create_empty_metrics_dict()
-                    metrics_regions_015 = create_empty_metrics_dict()
+                        metrics_015 = create_empty_metrics_dict()
+                        metrics_fire_015 = create_empty_metrics_dict()
+                        metrics_regions_015 = create_empty_metrics_dict()
 
-                    metrics_020 = create_empty_metrics_dict()
-                    metrics_fire_020 = create_empty_metrics_dict()
-                    metrics_regions_020 = create_empty_metrics_dict()
+                        metrics_020 = create_empty_metrics_dict()
+                        metrics_fire_020 = create_empty_metrics_dict()
+                        metrics_regions_020 = create_empty_metrics_dict()
 
-                    metrics_030 = create_empty_metrics_dict()
-                    metrics_fire_030 = create_empty_metrics_dict()
-                    metrics_regions_030 = create_empty_metrics_dict()
+                        metrics_030 = create_empty_metrics_dict()
+                        metrics_fire_030 = create_empty_metrics_dict()
+                        metrics_regions_030 = create_empty_metrics_dict()
 
-                    metrics_035 = create_empty_metrics_dict()
-                    metrics_fire_035 = create_empty_metrics_dict()
-                    metrics_regions_035 = create_empty_metrics_dict()
+                        metrics_035 = create_empty_metrics_dict()
+                        metrics_fire_035 = create_empty_metrics_dict()
+                        metrics_regions_035 = create_empty_metrics_dict()
 
-                    metrics_040 = create_empty_metrics_dict()
-                    metrics_fire_040 = create_empty_metrics_dict()
-                    metrics_regions_040 = create_empty_metrics_dict()
+                        metrics_040 = create_empty_metrics_dict()
+                        metrics_fire_040 = create_empty_metrics_dict()
+                        metrics_regions_040 = create_empty_metrics_dict()
 
-                    metrics_045 = create_empty_metrics_dict()
-                    metrics_fire_045 = create_empty_metrics_dict()
-                    metrics_regions_045 = create_empty_metrics_dict()
+                        metrics_045 = create_empty_metrics_dict()
+                        metrics_fire_045 = create_empty_metrics_dict()
+                        metrics_regions_045 = create_empty_metrics_dict()
 
-                    metrics_050 = create_empty_metrics_dict()
-                    metrics_fire_050 = create_empty_metrics_dict()
-                    metrics_regions_050 = create_empty_metrics_dict()
+                        metrics_050 = create_empty_metrics_dict()
+                        metrics_fire_050 = create_empty_metrics_dict()
+                        metrics_regions_050 = create_empty_metrics_dict()
 
-                    metrics_051 = create_empty_metrics_dict()
-                    metrics_fire_051 = create_empty_metrics_dict()
-                    metrics_regions_051 = create_empty_metrics_dict()
+                        metrics_051 = create_empty_metrics_dict()
+                        metrics_fire_051 = create_empty_metrics_dict()
+                        metrics_regions_051 = create_empty_metrics_dict()
 
-                    metrics_053 = create_empty_metrics_dict()
-                    metrics_fire_053 = create_empty_metrics_dict()
-                    metrics_regions_053 = create_empty_metrics_dict()
+                        metrics_053 = create_empty_metrics_dict()
+                        metrics_fire_053 = create_empty_metrics_dict()
+                        metrics_regions_053 = create_empty_metrics_dict()
 
-                    metrics_055 = create_empty_metrics_dict()
-                    metrics_fire_055 = create_empty_metrics_dict()
-                    metrics_regions_055 = create_empty_metrics_dict()
+                        metrics_055 = create_empty_metrics_dict()
+                        metrics_fire_055 = create_empty_metrics_dict()
+                        metrics_regions_055 = create_empty_metrics_dict()
 
-                    metrics_060 = create_empty_metrics_dict()
-                    metrics_fire_060 = create_empty_metrics_dict()
-                    metrics_regions_060 = create_empty_metrics_dict()
+                        metrics_060 = create_empty_metrics_dict()
+                        metrics_fire_060 = create_empty_metrics_dict()
+                        metrics_regions_060 = create_empty_metrics_dict()
 
-                    metrics_070 = create_empty_metrics_dict()
-                    metrics_fire_070 = create_empty_metrics_dict()
-                    metrics_regions_070 = create_empty_metrics_dict()
+                        metrics_070 = create_empty_metrics_dict()
+                        metrics_fire_070 = create_empty_metrics_dict()
+                        metrics_regions_070 = create_empty_metrics_dict()
 
                     for i in range(0, val_batch_nums):
                         # get batched windows for inputs, targets, and fire region masks
@@ -512,61 +514,62 @@ def main(training_parameters={"batch_size": 30,
 
                         # TODO CONDENSE THIS (please, I cry)
                         # calculate all of the metrics (its a lot)
-                        metrics = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, threshold_value, metrics)
-                        metrics_regions = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value, metrics_regions)
-                        metrics_fire = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, threshold_value, metrics_fire)
+                        metrics = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, default_threshold_value, metrics)
+                        metrics_regions = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, default_threshold_value, metrics_regions)
+                        metrics_fire = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, default_threshold_value, metrics_fire)
 
-                        metrics_010 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.10, metrics_020)
-                        metrics_regions_010 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.10, metrics_regions_010)
-                        metrics_fire_010 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.10, metrics_fire_010)
+                        if log_thresholding:
+                            metrics_010 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.10, metrics_020)
+                            metrics_regions_010 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.10, metrics_regions_010)
+                            metrics_fire_010 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.10, metrics_fire_010)
 
-                        metrics_015 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.15, metrics_015)
-                        metrics_regions_015 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.15, metrics_regions_015)
-                        metrics_fire_015 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.15, metrics_fire_015)
+                            metrics_015 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.15, metrics_015)
+                            metrics_regions_015 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.15, metrics_regions_015)
+                            metrics_fire_015 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.15, metrics_fire_015)
 
-                        metrics_020 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.20, metrics_020)
-                        metrics_regions_020 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.20, metrics_regions_020)
-                        metrics_fire_020 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.20, metrics_fire_020)
+                            metrics_020 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.20, metrics_020)
+                            metrics_regions_020 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.20, metrics_regions_020)
+                            metrics_fire_020 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.20, metrics_fire_020)
 
-                        metrics_030 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.30, metrics_030)
-                        metrics_regions_030 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.30, metrics_regions_030)
-                        metrics_fire_030 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.30, metrics_fire_030)
+                            metrics_030 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.30, metrics_030)
+                            metrics_regions_030 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.30, metrics_regions_030)
+                            metrics_fire_030 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.30, metrics_fire_030)
 
-                        metrics_035 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.35, metrics_035)
-                        metrics_regions_035 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.35, metrics_regions_035)
-                        metrics_fire_035 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.35, metrics_fire_035)
+                            metrics_035 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.35, metrics_035)
+                            metrics_regions_035 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.35, metrics_regions_035)
+                            metrics_fire_035 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.35, metrics_fire_035)
 
-                        metrics_040 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.40, metrics_040)
-                        metrics_regions_040 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.40, metrics_regions_040)
-                        metrics_fire_040 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.40, metrics_fire_040)
+                            metrics_040 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.40, metrics_040)
+                            metrics_regions_040 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.40, metrics_regions_040)
+                            metrics_fire_040 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.40, metrics_fire_040)
 
-                        metrics_045 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.45, metrics_045)
-                        metrics_regions_045 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.45, metrics_regions_045)
-                        metrics_fire_045 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.45, metrics_fire_045)
+                            metrics_045 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.45, metrics_045)
+                            metrics_regions_045 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.45, metrics_regions_045)
+                            metrics_fire_045 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.45, metrics_fire_045)
 
-                        metrics_050 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.50, metrics_050)
-                        metrics_regions_050 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.50, metrics_regions_050)
-                        metrics_fire_050 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.50, metrics_fire_050)
+                            metrics_050 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.50, metrics_050)
+                            metrics_regions_050 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.50, metrics_regions_050)
+                            metrics_fire_050 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.50, metrics_fire_050)
 
-                        metrics_051 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.51, metrics_051)
-                        metrics_regions_051 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.51, metrics_regions_051)
-                        metrics_fire_051 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.51, metrics_fire_051)
+                            metrics_051 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.51, metrics_051)
+                            metrics_regions_051 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.51, metrics_regions_051)
+                            metrics_fire_051 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.51, metrics_fire_051)
 
-                        metrics_053 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.53, metrics_053)
-                        metrics_regions_053 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.53, metrics_regions_053)
-                        metrics_fire_053 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.53, metrics_fire_053)
+                            metrics_053 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.53, metrics_053)
+                            metrics_regions_053 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.53, metrics_regions_053)
+                            metrics_fire_053 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.53, metrics_fire_053)
 
-                        metrics_055 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.55, metrics_055)
-                        metrics_regions_055 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.55, metrics_regions_055)
-                        metrics_fire_055 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.55, metrics_fire_055)
+                            metrics_055 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.55, metrics_055)
+                            metrics_regions_055 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.55, metrics_regions_055)
+                            metrics_fire_055 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.55, metrics_fire_055)
 
-                        metrics_060 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.60, metrics_060)
-                        metrics_regions_060 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.60, metrics_regions_060)
-                        metrics_fire_060 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.60, metrics_fire_060)
+                            metrics_060 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.60, metrics_060)
+                            metrics_regions_060 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.60, metrics_regions_060)
+                            metrics_fire_060 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.60, metrics_fire_060)
 
-                        metrics_070 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.70, metrics_070)
-                        metrics_regions_070 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.70, metrics_regions_070)
-                        metrics_fire_070 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.70, metrics_fire_070)
+                            metrics_070 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.70, metrics_070)
+                            metrics_regions_070 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.70, metrics_regions_070)
+                            metrics_fire_070 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.70, metrics_fire_070)
 
                         # # calculate validation metrics for this batch
                         # batch_val_accuracy, batch_val_precision, batch_val_recall, batch_val_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
@@ -653,52 +656,53 @@ def main(training_parameters={"batch_size": 30,
 
                     # save metrics to tensorboard
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
-
                     tb_optimizer(writer=writer, losses_dict=metrics, step=batch_num)
-                    tb_optimizer(writer=writer_010, losses_dict=metrics_010, step=batch_num)
-                    tb_optimizer(writer=writer_015, losses_dict=metrics_015, step=batch_num)
-                    tb_optimizer(writer=writer_020, losses_dict=metrics_020, step=batch_num)
-                    tb_optimizer(writer=writer_030, losses_dict=metrics_030, step=batch_num)
-                    tb_optimizer(writer=writer_035, losses_dict=metrics_035, step=batch_num)
-                    tb_optimizer(writer=writer_040, losses_dict=metrics_040, step=batch_num)
-                    tb_optimizer(writer=writer_045, losses_dict=metrics_045, step=batch_num)
-                    tb_optimizer(writer=writer_050, losses_dict=metrics_050, step=batch_num)
-                    tb_optimizer(writer=writer_051, losses_dict=metrics_051, step=batch_num)
-                    tb_optimizer(writer=writer_053, losses_dict=metrics_053, step=batch_num)
-                    tb_optimizer(writer=writer_055, losses_dict=metrics_055, step=batch_num)
-                    tb_optimizer(writer=writer_060, losses_dict=metrics_060, step=batch_num)
-                    tb_optimizer(writer=writer_070, losses_dict=metrics_070, step=batch_num)
-
                     tb_optimizer(writer=writer_fire, losses_dict=metrics_fire, step=batch_num)
-                    tb_optimizer(writer=writer_fire_010, losses_dict=metrics_fire_010, step=batch_num)
-                    tb_optimizer(writer=writer_fire_015, losses_dict=metrics_fire_015, step=batch_num)
-                    tb_optimizer(writer=writer_fire_020, losses_dict=metrics_fire_020, step=batch_num)
-                    tb_optimizer(writer=writer_fire_030, losses_dict=metrics_fire_030, step=batch_num)
-                    tb_optimizer(writer=writer_fire_035, losses_dict=metrics_fire_035, step=batch_num)
-                    tb_optimizer(writer=writer_fire_040, losses_dict=metrics_fire_040, step=batch_num)
-                    tb_optimizer(writer=writer_fire_045, losses_dict=metrics_fire_045, step=batch_num)
-                    tb_optimizer(writer=writer_fire_050, losses_dict=metrics_fire_050, step=batch_num)
-                    tb_optimizer(writer=writer_fire_051, losses_dict=metrics_fire_051, step=batch_num)
-                    tb_optimizer(writer=writer_fire_053, losses_dict=metrics_fire_053, step=batch_num)
-                    tb_optimizer(writer=writer_fire_055, losses_dict=metrics_fire_055, step=batch_num)
-                    tb_optimizer(writer=writer_fire_060, losses_dict=metrics_fire_060, step=batch_num)
-                    tb_optimizer(writer=writer_fire_070, losses_dict=metrics_fire_070, step=batch_num)
-
                     tb_optimizer(writer=writer_region, losses_dict=metrics_regions, step=batch_num)
-                    tb_optimizer(writer=writer_region_010, losses_dict=metrics_regions_010, step=batch_num)
-                    tb_optimizer(writer=writer_region_015, losses_dict=metrics_regions_015, step=batch_num)
-                    tb_optimizer(writer=writer_region_020, losses_dict=metrics_regions_020, step=batch_num)
-                    tb_optimizer(writer=writer_region_030, losses_dict=metrics_regions_030, step=batch_num)
-                    tb_optimizer(writer=writer_region_035, losses_dict=metrics_regions_035, step=batch_num)
-                    tb_optimizer(writer=writer_region_040, losses_dict=metrics_regions_040, step=batch_num)
-                    tb_optimizer(writer=writer_region_045, losses_dict=metrics_regions_045, step=batch_num)
-                    tb_optimizer(writer=writer_region_050, losses_dict=metrics_regions_050, step=batch_num)
-                    tb_optimizer(writer=writer_region_051, losses_dict=metrics_regions_051, step=batch_num)
-                    tb_optimizer(writer=writer_region_053, losses_dict=metrics_regions_053, step=batch_num)
-                    tb_optimizer(writer=writer_region_055, losses_dict=metrics_regions_055, step=batch_num)
-                    tb_optimizer(writer=writer_region_060, losses_dict=metrics_regions_060, step=batch_num)
-                    tb_optimizer(writer=writer_region_070, losses_dict=metrics_regions_070, step=batch_num)
-                    # tb_optimizer(writer=writer, losses_dict=threshold_test_mets, step=batch_num)
+
+                    if log_thresholding:
+                        tb_optimizer(writer=writer_010, losses_dict=metrics_010, step=batch_num)
+                        tb_optimizer(writer=writer_015, losses_dict=metrics_015, step=batch_num)
+                        tb_optimizer(writer=writer_020, losses_dict=metrics_020, step=batch_num)
+                        tb_optimizer(writer=writer_030, losses_dict=metrics_030, step=batch_num)
+                        tb_optimizer(writer=writer_035, losses_dict=metrics_035, step=batch_num)
+                        tb_optimizer(writer=writer_040, losses_dict=metrics_040, step=batch_num)
+                        tb_optimizer(writer=writer_045, losses_dict=metrics_045, step=batch_num)
+                        tb_optimizer(writer=writer_050, losses_dict=metrics_050, step=batch_num)
+                        tb_optimizer(writer=writer_051, losses_dict=metrics_051, step=batch_num)
+                        tb_optimizer(writer=writer_053, losses_dict=metrics_053, step=batch_num)
+                        tb_optimizer(writer=writer_055, losses_dict=metrics_055, step=batch_num)
+                        tb_optimizer(writer=writer_060, losses_dict=metrics_060, step=batch_num)
+                        tb_optimizer(writer=writer_070, losses_dict=metrics_070, step=batch_num)
+
+                        tb_optimizer(writer=writer_fire_010, losses_dict=metrics_fire_010, step=batch_num)
+                        tb_optimizer(writer=writer_fire_015, losses_dict=metrics_fire_015, step=batch_num)
+                        tb_optimizer(writer=writer_fire_020, losses_dict=metrics_fire_020, step=batch_num)
+                        tb_optimizer(writer=writer_fire_030, losses_dict=metrics_fire_030, step=batch_num)
+                        tb_optimizer(writer=writer_fire_035, losses_dict=metrics_fire_035, step=batch_num)
+                        tb_optimizer(writer=writer_fire_040, losses_dict=metrics_fire_040, step=batch_num)
+                        tb_optimizer(writer=writer_fire_045, losses_dict=metrics_fire_045, step=batch_num)
+                        tb_optimizer(writer=writer_fire_050, losses_dict=metrics_fire_050, step=batch_num)
+                        tb_optimizer(writer=writer_fire_051, losses_dict=metrics_fire_051, step=batch_num)
+                        tb_optimizer(writer=writer_fire_053, losses_dict=metrics_fire_053, step=batch_num)
+                        tb_optimizer(writer=writer_fire_055, losses_dict=metrics_fire_055, step=batch_num)
+                        tb_optimizer(writer=writer_fire_060, losses_dict=metrics_fire_060, step=batch_num)
+                        tb_optimizer(writer=writer_fire_070, losses_dict=metrics_fire_070, step=batch_num)
+
+                        tb_optimizer(writer=writer_region_010, losses_dict=metrics_regions_010, step=batch_num)
+                        tb_optimizer(writer=writer_region_015, losses_dict=metrics_regions_015, step=batch_num)
+                        tb_optimizer(writer=writer_region_020, losses_dict=metrics_regions_020, step=batch_num)
+                        tb_optimizer(writer=writer_region_030, losses_dict=metrics_regions_030, step=batch_num)
+                        tb_optimizer(writer=writer_region_035, losses_dict=metrics_regions_035, step=batch_num)
+                        tb_optimizer(writer=writer_region_040, losses_dict=metrics_regions_040, step=batch_num)
+                        tb_optimizer(writer=writer_region_045, losses_dict=metrics_regions_045, step=batch_num)
+                        tb_optimizer(writer=writer_region_050, losses_dict=metrics_regions_050, step=batch_num)
+                        tb_optimizer(writer=writer_region_051, losses_dict=metrics_regions_051, step=batch_num)
+                        tb_optimizer(writer=writer_region_053, losses_dict=metrics_regions_053, step=batch_num)
+                        tb_optimizer(writer=writer_region_055, losses_dict=metrics_regions_055, step=batch_num)
+                        tb_optimizer(writer=writer_region_060, losses_dict=metrics_regions_060, step=batch_num)
+                        tb_optimizer(writer=writer_region_070, losses_dict=metrics_regions_070, step=batch_num)
+                        # tb_optimizer(writer=writer, losses_dict=threshold_test_mets, step=batch_num)
 
                     # save model checkpoint every 150 batches (1500 samples)
                     if (batch_num % 150) == 0:
