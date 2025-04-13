@@ -1,18 +1,18 @@
-import torch
+# import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-import numpy as np
-import pandas as pd
-import tensorboard as tb
-
-
-# input data has shape (16, )
-#       16 training samples
-#       10 days per sample
-#       31 parameters per day
-#       37x34 array per parameter
+# import torch.nn.functional as F
+# import torch.optim as optim
+#
+# import numpy as np
+# import pandas as pd
+# import tensorboard as tb
+#
+#
+# # input data has shape (16, )
+# #       16 training samples
+# #       10 days per sample
+# #       31 parameters per day
+# #       37x34 array per parameter
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
