@@ -13,3 +13,4 @@ tensorboard
 tqdm
 scikit-learn
 imbalanced-learn==0.12.4
+typer
