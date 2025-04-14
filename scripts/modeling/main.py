@@ -85,21 +85,44 @@ def create_empty_metrics_dict():
     return metrics_dict
 
 
+params_default = {"batch_size": 30,
+                  "num_epochs": 60,
+                  "learning_rate": 0.05,
+                  "num_training_days": 14,
+                  "prediction_day":5,
+                  "hidden_size": 64,
+                  "experiment_name":"factcheck",
+                  "test_range": (2024),
+                  "train_range": (2006, 2023)}
+
+params_day2_train14 = {"batch_size": 30,
+                       "num_epochs": 60,
+                       "learning_rate": 0.05,
+                       "num_training_days": 14,
+                       "prediction_day":5,
+                       "hidden_size": 64,
+                       "experiment_name":"day2_train14",
+                       "test_range": (2024),
+                       "train_range": (2006, 2023)}
+
+params_day5_train30 = {"batch_size": 30,
+                       "num_epochs": 60,
+                       "learning_rate": 0.05,
+                       "num_training_days": 30,
+                       "prediction_day":5,
+                       "hidden_size": 64,
+                       "experiment_name":"day5_train30",
+                       "test_range": (2024),
+                       "train_range": (2006, 2023)}
+
+
 # TODO create a training_parameters json or something similar to make tracking easier
 # TODO update parameters to pull from a json file
 # TODO check min max values of predictions at various stages
 # TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
 # TODO ask the model to predict classes AND probabilities
 # TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
-def main(training_parameters={"batch_size": 30,
-                              "num_epochs": 40,
-                              "learning_rate": 0.05,
-                              "num_training_days": 14,
-                              "prediction_day":5,
-                              "hidden_size": 64,
-                              "experiment_name":"factcheck",
-                              "test_range": (2024),
-                              "train_range": (2006, 2023)},
+def main(training_parameters=params_default,
          # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
