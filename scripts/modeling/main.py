@@ -151,6 +151,8 @@ def main(training_parameter_json='./training_params.json',
     train_range = (training_parameters['train_range_start'], training_parameters['train_range_end'])
     test_range = training_parameters['test_range']
     logging.info(f"Training parameters set successfully")
+    logging.info(f"Training Sample Length - {num_training_days}")
+    logging.info(f"Prediction day - {prediction_day}")
 
     # set device
     if device_set == 'cuda':
