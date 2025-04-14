@@ -123,7 +123,8 @@ def create_empty_metrics_dict():
 # TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
 # TODO ask the model to predict classes AND probabilities
 # TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
-def main(training_parameter_json='./training_params.json',
+def main(parameter_set_key,
+         training_parameter_json='./training_params.json',
          # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
@@ -136,7 +137,7 @@ def main(training_parameter_json='./training_params.json',
          checkpoint_directory='/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/',):
     # open training_parameters json file
     with open(training_parameter_json) as json_data:
-        training_parameters = json.load(json_data)
+        training_parameters = json.load(json_data)[parameter_set_key]
         json_data.close()
     # load training parameters
     batch_size = training_parameters['batch_size']
