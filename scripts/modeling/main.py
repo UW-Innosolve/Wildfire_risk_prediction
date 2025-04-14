@@ -13,6 +13,7 @@ import logging
 from typing import Dict
 import os
 import json
+import typer
 
 from torch.utils.tensorboard.writer import SummaryWriter
 
@@ -31,6 +32,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s')
 
+app = typer.Typer()
 
 def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25'):
     '''
@@ -123,6 +125,7 @@ def create_empty_metrics_dict():
 # TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
 # TODO ask the model to predict classes AND probabilities
 # TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
+@app.command()
 def main(parameter_set_key,
          training_parameter_json='./training_params.json',
          # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
