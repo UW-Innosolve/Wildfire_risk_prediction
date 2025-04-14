@@ -501,7 +501,7 @@ def main(training_parameters={"batch_size": 30,
                         metrics_fire = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, default_threshold_value, metrics_fire)
 
                         if log_thresholding:
-                            metrics_010 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.10, metrics_020)
+                            metrics_010 = calculate_metrics(test_predictions, test_targets, batch_flat_shape_val, 0.10, metrics_010)
                             metrics_regions_010 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.10, metrics_regions_010)
                             metrics_fire_010 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.10, metrics_fire_010)
 
