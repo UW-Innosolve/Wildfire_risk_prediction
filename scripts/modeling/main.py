@@ -285,8 +285,8 @@ def main(parameter_set_key:str='default',
     # logging.info("Model created successfully")
     # samples_per_epoch = len(X_train) - (len(X_train) % batch_size)
 
-    checkpoint_batch4200_path = '/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/checkpoint_epoch_38_batch_4200.pth'
-    checkpoint_batch2400_path = '/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/checkpoint_epoch_22_batch_2400.pth'
+    checkpoint_batch4200_path = './checkpoints/thresholding_experiments/checkpoint_epoch_38_batch_4200.pth'
+    checkpoint_batch2400_path = './checkpoints/thresholding_experiments/checkpoint_epoch_22_batch_2400.pth'
 
     loaded_checkpoint = torch.load(checkpoint_batch4200_path)
     loaded_model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
