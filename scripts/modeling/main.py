@@ -185,8 +185,8 @@ def create_empty_metrics_dict():
 @app.command()
 def main(parameter_set_key:str='default',
          training_parameter_json='./training_params.json',
-         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
          include_masks=True, # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
          mask_size=2,
