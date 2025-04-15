@@ -183,7 +183,7 @@ def create_empty_metrics_dict():
 # TODO ask the model to predict classes AND probabilities
 # TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
 @app.command()
-def main(parameter_set_key:str,
+def main(parameter_set_key:str='default',
          training_parameter_json='./training_params.json',
          # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
          rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
@@ -857,8 +857,8 @@ def main(parameter_set_key:str,
 #     #
 #     # loaded_model.eval()  # or loaded_model.train() depending on your usecase.
 #
-app()
+# app()
 #
-# ## COMMENTING OUT BECAUSE USING TYPER
-# # if __name__ == "__main__":
-# #     main()
+# COMMENTING OUT BECAUSE USING TYPER
+if __name__ == "__main__":
+    main()
