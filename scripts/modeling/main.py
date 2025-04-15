@@ -306,7 +306,7 @@ def main(parameter_set_key:str='default',
             # forward pass, generate prediction from model
             outputs = loaded_model(inputs)
 
-            plot_target_vs_predictions(batch, outputs, targets, pred_batch_size=1, batch_num=4200, cmap=cmap_default, norm=norm_default, save_images=True, root_dir='./outputs_4200/', prediction_day=prediction_day)
+            plot_target_vs_predictions(batch, outputs.detach().cpu().numpy(), targets.detach().cpu().numpy(), pred_batch_size=1, batch_num=4200, cmap=cmap_default, norm=norm_default, save_images=True, root_dir='./outputs_4200/', prediction_day=prediction_day)
 
 
     # if generate_predictions:
