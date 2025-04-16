@@ -103,6 +103,7 @@ def plot_target_vs_predictions(label_batch, predictions, targets, pred_batch_siz
         if save_images:
             plt.savefig(f'{image_dir}val index {label_batch[h]}.png', bbox_inches='tight')
 
+        plt.close()
         # plt.show()
 
 
