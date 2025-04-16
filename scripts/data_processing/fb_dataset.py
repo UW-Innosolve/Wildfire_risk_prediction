@@ -13,25 +13,51 @@ logger = logging.getLogger(__name__)
 
 
 class FbDataset(FeatEngineer, Preprocessor):
-  def __init__(self, raw_data_dir):
-    logger.info(f"Initializing FbDataset with data directory: {raw_data_dir}")
-    # Initialize the raw data directory and load the raw data.
-    logger.info("Loading data from CSV files...")
-    self.raw_data_dir = raw_data_dir
-    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
-    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
-    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
-    
-    self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
-    self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
-    self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+  def __init__(self, raw_data_dir, one_file_at_a_time=False):
+    if one_file_at_a_time == False:
+      logger.info(f"Initializing FbDataset with data directory: {raw_data_dir}")
+      # Initialize the raw data directory and load the raw data.
+      logger.info("Loading data from CSV files...")
+      self.raw_data_dir = raw_data_dir
+      self.raw_data = self._load_data(data_dir=self.raw_data_dir)
+      # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+      self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+      leap_days = ['2008-02-29', '2012-02-29', '2016-02-29', '2020-02-29', '2024-02-29']
+      for day in leap_days:
+        self.raw_data = self.raw_data.drop(self.raw_data[self.raw_data.date == day].index)
+      
+      self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
+      self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
+      self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+      
+      ##initialize training and testing data
+      self.X_train = pd.DataFrame()
+      self.X_test = pd.DataFrame()
+      self.y_train = pd.DataFrame()
+      self.y_test = pd.DataFrame()
+      
+    if one_file_at_a_time == True:
+      logger.info(f"Initializing FbDataset with single file: {raw_data_dir}")
+      # Initialize the raw data directory and load the raw data.
+      logger.info("Loading data from CSV files...")
+      self.raw_data_dir = 'NO DIRECTORY, GAVE CSV FILE'
+      self.raw_data = pd.read_csv(raw_data_dir)
+      # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+      self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+      leap_days = ['2008-02-29', '2012-02-29', '2016-02-29', '2020-02-29', '2024-02-29']
+      for day in leap_days:
+        self.raw_data = self.raw_data.drop(self.raw_data[self.raw_data.date == day].index)
+      
+      self.fb_model_features = self.raw_data[['date', 'latitude', 'longitude']].copy()  # Includes all features (raw and engineered)
+      self.fb_model_features_raw = pd.DataFrame() # Includes all features (from-raw and engineered) before processing
+      self.fb_processed_data = pd.DataFrame() # Includes all features (from-raw and engineered) after processing
+      
+      ##initialize training and testing data
+      self.X_train = pd.DataFrame()
+      self.X_test = pd.DataFrame()
+      self.y_train = pd.DataFrame()
+      self.y_test = pd.DataFrame()
 
-    # Initialize the raw data directory and load the raw data.
-    logger.info("Loading data from CSV files...")
-    self.raw_data_dir = raw_data_dir
-    self.raw_data = self._load_data(data_dir=self.raw_data_dir)
-    # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
-    self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
 
   def _load_data(self, data_dir):
     """
@@ -41,6 +67,12 @@ class FbDataset(FeatEngineer, Preprocessor):
     csv_files = glob.glob(os.path.join(data_dir, "*.csv"))
     
     logger.info((f"Found {len(csv_files)} CSV files in directory: {self.raw_data_dir}"))
+    
+    # If only one file is found, load it directly.
+    if len(csv_files) == 1:
+        data = pd.read_csv(csv_files[0])
+        return data
+
     dfs = []
     for file in csv_files:
         try:
@@ -51,7 +83,7 @@ class FbDataset(FeatEngineer, Preprocessor):
             logger.error(f"Error loading {file}: {e}")
     if dfs:
         data = pd.concat(dfs, ignore_index=True)
-        logger.info("Aggregated DataFrame shape:", data.shape)
+        logger.info(f"Aggregated DataFrame shape: {data.shape}")
     else:
         raise ValueError("No CSV files found in the specified directory.")
       
@@ -93,7 +125,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                             'tp', # Total precipitation
                             # 'sf', # Snowfall NOTE: Excluded for now, can be used in the definition of fire season (CWFDRS)
                             'is_fire_day', # NOTE: This is the target variable
-                            'lightning_count', 'absv_strength_sum',	'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
+                            'lightning_count', 'absv_strength_sum',	#'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
                             'railway_count',	'power_line_count',	'highway_count', # Railway, power line, highway count
                             'aeroway_count',	'waterway_count' # Aeroway, waterway count
                           ]
@@ -185,11 +217,11 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'ssr', 'ssrd', # surface solar radiation, surface solar radiation down
                                 'str', 'strd', # Surface thermal radiation, surface thermal radiation down
                                 'tp', 'sf', # Total precipitation, snowfall
-                                'lightning_count', 'absv_strength_sum', 'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
+                                'lightning_count', 'absv_strength_sum',# 'multiplicity_sum', # Lightning count, absolute strength sum, multiplicity sum
                                 'stl1', 'stl2', 'stl3', 'stl4', # Soil temperature levels (0-7cm, 7-28cm, 28-100cm, 100-289cm)
                                 # Fire weather indices unbounded
                                 'drought_code', 'duff_moisture_code', 'fine_fuel_moisture_code', 'initial_spread_index', 'build_up_index', 'fire_weather_index',
-                                'ltng_multiplicity_prod', 'ltng_strength_prod', # Lightning products
+                                 'ltng_strength_prod', #'ltng_multiplicity_prod', # Lightning products
                                 'relative_humidity', 'atmospheric_dryness', # Relative humidity, atmospheric dryness
                                 'rolling_precipitation', # Rolling precipitation
                                 'daily_water_sum', 'daily_temp_sum', # Daily water and temperature sum from the surface
@@ -204,7 +236,7 @@ class FbDataset(FeatEngineer, Preprocessor):
                                 'lsm', # Land-sea mask
                                 'src', # Skin reservoir content                                                                                                                                                                                                
                                 'railway_count', 'power_line_count', 'highway_count', 'aeroway_count', 'waterway_count', # Infrastructure not normally distributed
-                                'ltng_multiplicity_ratio', 'ltng_strength_ratio', # Lightning ratios
+                                 'ltng_strength_ratio', #'ltng_multiplicity_ratio', # Lightning ratios
                                 # Surface water-heat ratios
                                 'surface_water_heat_0', 'surface_water_heat_1', 'surface_water_heat_2', 'surface_water_heat_3', 'surface_water_heat_4',
                                 'surface_water_heat_5', 'surface_water_heat_6', 'surface_water_heat_7', 'surface_water_heat_8', 'surface_water_heat_9',
@@ -246,10 +278,21 @@ class FbDataset(FeatEngineer, Preprocessor):
     print(self.categorical_features)
     fb_model_feat_raw_onehot = self.fb_model_features_raw[self.categorical_features]
     fb_model_feat_processed_onehot = self.preprocessor.onehot_cat_features(fb_model_feat_raw_onehot)
+    
+    ## Check for nulls in the one-hot encoded features
+    if fb_model_feat_processed_onehot.isnull().values.any():
+      logger.error("One-hot encoded features contain null values.")
+      
+    if self.fb_processed_data.isnull().values.any():
+      logger.error("Before merging cats, processed data contains null values.")
+    
     self.fb_processed_data = pd.merge(self.fb_processed_data, fb_model_feat_processed_onehot,
                                       on=['date', 'latitude', 'longitude'], how='outer')
-    logger.info(f"Data shape after aggregation of one-hot encoded features: {self.fb_processed_data.shape}")
     
+    if self.fb_processed_data.isnull().values.any():
+      logger.error("After merging cats, processed data contains null values.")
+    
+    logger.info(f"Data shape after aggregation of one-hot encoded features: {self.fb_processed_data.shape}")
     logger.info("Data processing complete.")
     logger.info(f"Final processed data shape: {self.fb_processed_data.shape}")
     
@@ -318,6 +361,19 @@ class FbDataset(FeatEngineer, Preprocessor):
   
   def get_split_data(self):
     return self.X_train, self.X_test, self.y_train, self.y_test
+  
+  def destroy(self):
+    del self.fb_model_features
+    del self.fb_model_features_raw
+    del self.fb_processed_data
+    del self.raw_data
+    del self.preprocessor
+    del self.feat_engineer
+    del self.X_train
+    del self.X_test
+    del self.y_train
+    del self.y_test
+    logger.info("FbDataset object destroyed.")
 
 
 

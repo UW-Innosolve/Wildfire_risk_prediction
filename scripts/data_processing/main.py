@@ -7,14 +7,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
 
 def main():
-  data_dir = "scripts/data_processing/raw_data_dir"
-  
-  # Features added class by class tp start
-  eng_feats =            [ # CWFDRS Fire weather indices
+    data_dir = "scripts/data_processing/raw_data_dir"
+    output_folder = "scripts/data_processing/processed_data_dir"
+
+    # Features added class by class tp start
+    eng_feats =            [ # CWFDRS Fire weather indices
                           # 'drought_code', 'duff_moisture_code',
                           # 'fine_fuel_moisture_code', 'initial_spread_index',
                           # 'build_up_index', 'fire_weather_index',
-                          
+
                           # Weather features
                           #  - Lightning
                           'lightning_products', 'lightning_ratios',
@@ -22,7 +23,7 @@ def main():
                           'rolling_precipitation',
                           #  - Atmospheric
                           'relative_humidity', 'atmospheric_dryness',
-                          
+
                           # Surface features
                           #  - Fuel (From vegetation)
                           'fuel_low', 'fuel_high',
@@ -33,31 +34,33 @@ def main():
                           #  - Topography
                           'elevation',
                           'slope',
-                          
+
                           # Temporal features
                           # - Seasonal
                           'season', 'fire_season',
-                          
+
                           # Spatial features
                           'clusters_12', 'clusters_30'
                         ]
-  
-  ## Initialize  the dataset
-  dataset = FbDataset(raw_data_dir=data_dir)
-  dataset.config_features(eng_feats=eng_feats) # Can use 'DISABLE' to disable a feature set
-  dataset.process() # Load and process data
-  processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
-  X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
-  logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
 
-  # Save model-ready data to model_data_dir
-  model_data_dir = "scripts/modeling/model_data_dir"
-  X_train.to_csv(f"{model_data_dir}/X_train.csv", index=False)
-  X_test.to_csv(f"{model_data_dir}/X_test.csv", index=False)
-  y_train.to_csv(f"{model_data_dir}/y_train.csv", index=False)
-  y_test.to_csv(f"{model_data_dir}/y_test.csv", index=False)
-  logging.info(f"Model-ready data saved to: {model_data_dir}")
 
+    ## Initialize  the dataset
+    dataset = FbDataset(raw_data_dir=data_dir)
+    dataset.config_features(eng_feats=eng_feats) # Can use 'DISABLE' to disable a feature set
+    dataset.process() # Load and process data
+    processed_data = dataset.get_processed_data() # Get processed data (variable not used because it's stored in the dataset object)
+    logger.info(f"Processed data shape: {processed_data.shape}")
+    processed_data.to_csv(f"{output_folder}/processed_data.csv", index=False)
+    # X_train, X_test, y_train, y_test = dataset.split() # Split data into training and testing sets
+    # logging.info(f"Training set size: {X_train.shape}, Test set size: {X_test.shape}")
+
+    # # Save model-ready data to model_data_dir
+    # model_data_dir = "scripts/modeling/model_data_dir"
+    # X_train.to_csv(f"{model_data_dir}/X_train.csv", index=False)
+    # X_test.to_csv(f"{model_data_dir}/X_test.csv", index=False)
+    # y_train.to_csv(f"{model_data_dir}/y_train.csv", index=False)
+    # y_test.to_csv(f"{model_data_dir}/y_test.csv", index=False)
+    # logger.info("Model-ready data saved to model_data_dir")
 
 if __name__ == "__main__":
     main()

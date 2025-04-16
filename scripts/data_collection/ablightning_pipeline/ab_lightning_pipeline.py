@@ -35,6 +35,8 @@ class AbLightningPipeline:
                       try:
                           df = pd.read_csv(file_path)
                           logger.info(f"Successfully read: {file_path} ({len(df)} rows)")
+                          # if file.name == '2024.csv':
+                          #   self.df_2024 = df
                           self.raw_dfs_from_csv.append(df)
                       except Exception as e:
                           logger.error(f"Failed to read {file_path}: {e}")
