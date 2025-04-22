@@ -5,6 +5,30 @@ import matplotlib as mpl
 import os
 
 
+def set_colour_scheme(bounds = [0.05, 0.15, 0.25, 0.35, 0.45, 0.6]):
+    """
+    Description: sets a discrete 6-colour scheme for visualization according to given bounds
+    Used for visualizing distribution of predicted values (see section FILL IN LATER)
+    Colour Scheme: Blue, Green, Yellow, Orange, Red, Magenta
+    Colours are in order of lowest to highest prediction value categories
+
+    Parameters:
+        bounds: list of ints
+            specify boundaries for each colour
+
+    Returns:
+        cmap, norm
+            colourmap and boundary norms to use
+
+    Notes: mostly modular for the sake of having multiple possible colour schemes
+    """
+    colors = ['blue', 'green', 'yellow', 'orange', 'red', 'magenta']
+    cmap = mpl.colors.ListedColormap(colors)
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    return cmap, norm
+
+
+
 def plot_target_vs_predictions(label_batch, predictions, targets, pred_batch_size, batch_num, cmap=cmap_default, norm=norm_default, save_images=True, root_dir='./', prediction_day=5):
     """
     Description: plot (in separate figures) each pair of predictions vs targets in the batch
