@@ -191,6 +191,7 @@ def main(parameter_set_key:str='default',
          generate_predictions=True,
          from_checkpoint=True,
          checkpoint_directory='/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/',):
+
     # open training_parameters json file
     with open(training_parameter_json) as json_data:
         training_parameters = json.load(json_data)[parameter_set_key]
@@ -199,7 +200,6 @@ def main(parameter_set_key:str='default',
     batch_size = training_parameters['batch_size']
     num_epochs = training_parameters['num_epochs']
     learning_rate = training_parameters['learning_rate']
-    # num_features = training_parameters['features'] # now obtained from dataframe
     num_training_days = training_parameters['num_training_days']
     prediction_day = training_parameters['prediction_day']
     hidden_size = training_parameters['hidden_size']
@@ -240,7 +240,6 @@ def main(parameter_set_key:str='default',
     # reshape data into 2-D
     # TODO update reshaping to be done using dates and not indices
     reshaped_data, reshaped_labels, reshaped_masks = reshape_data(rawdata_df, features, target_column, device_set, include_masks=include_masks, tolerance=mask_size)
-    # logging
     logging.info(f"Successfully reshaped all features")
 
     # remove after converting reshape function to torch
@@ -302,7 +301,6 @@ def main(parameter_set_key:str='default',
     #         outputs = loaded_model(inputs)
     #
     #         plot_target_vs_predictions(batch, outputs.detach().cpu().numpy(), targets.detach().cpu().numpy(), pred_batch_size=1, batch_num=4200, cmap=cmap_default, norm=norm_default, save_images=True, root_dir='./outputs_4200/', prediction_day=prediction_day)
-
 
     # if generate_predictions:
     #     # create new dataframe for output data
@@ -508,34 +506,6 @@ def main(parameter_set_key:str='default',
                     val_fire_loss = 0
                     val_fire_region_loss = 0
 
-                    # val_accuracy = 0
-                    # val_precision = 0
-                    # val_recall = 0
-                    # val_f1 = 0
-                    # val_min = 1
-                    # val_max = 0
-                    #
-                    # val_region_accuracy = 0
-                    # val_region_precision = 0
-                    # val_region_recall = 0
-                    # val_region_f1 = 0
-                    # val_region_min = 0
-                    # val_region_max = 0
-                    #
-                    # val_fire_accuracy = 0
-                    # val_fire_precision = 0
-                    # val_fire_recall = 0
-                    # val_fire_f1 = 0
-                    # val_fire_min = 0
-                    # val_fire_max = 0
-                    #
-                    # # validation metrics for TESTING THRESHOLDS (won't be here forever)
-                    # # TODO figure out a more elegant way to not hardcode this
-                    # # update length of list of 0 depending on number of test thresholds
-                    # val_mets = np.zeros((4, len(threshold_value_testlist)))
-                    # val_region_mets = np.zeros((4, len(threshold_value_testlist)))
-                    # val_fire_mets = np.zeros((4, len(threshold_value_testlist)))
-
                     # random shuffle the order of the validation set
                     # TODO: does this matter since we aren't learning anyways?
                     np.random.shuffle(X_val)
@@ -663,28 +633,6 @@ def main(parameter_set_key:str='default',
                             metrics_regions_070 = calculate_metrics(test_predictions * test_regions, test_targets, batch_flat_shape_val, 0.70, metrics_regions_070)
                             metrics_fire_070 = calculate_metrics(test_predictions * test_targets, test_targets, batch_flat_shape_val, 0.70, metrics_fire_070)
 
-                        # # calculate validation metrics for this batch
-                        # batch_val_accuracy, batch_val_precision, batch_val_recall, batch_val_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
-                        # batch_val_region_accuracy, batch_val_region_precision, batch_val_region_recall, batch_val_region_f1 = evaluate_individuals(test_region_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
-                        # batch_val_fire_accuracy, batch_val_fire_precision, batch_val_fire_recall, batch_val_fire_f1 = evaluate_individuals(test_fire_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value)
-                        # batch_max, batch_min = test_predictions.max(), test_predictions.min()
-                        # if batch_max > val_max:
-                        #     val_max = batch_max
-                        # if batch_min < val_min:
-                        #     val_min = batch_min
-                        #
-                        # # calculate validation metrics for test threshold values
-                        # # TODO: un-hardcode this :), hard-coded for 5 different threshold values
-                        # # THIS SUCKS BUT I NEED IT (sorry)
-                        # for j in range(len(threshold_value_testlist)):
-                        #     temp_acc, temp_prec, temp_rec, temp_f1 = evaluate_individuals(test_predictions, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
-                        #     temp_reg_acc, temp_reg_prec, temp_reg_rec, temp_reg_f1 = evaluate_individuals(test_predictions * test_regions, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
-                        #     temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1 = evaluate_individuals(test_predictions * test_targets, test_targets, batch_flat_shape_val, threshold_value=threshold_value_testlist[j])
-                        #
-                        #     val_mets[:, j] += temp_acc, temp_prec, temp_rec, temp_f1
-                        #     val_region_mets[:, j] += temp_reg_acc, temp_reg_prec, temp_reg_rec, temp_reg_f1
-                        #     val_fire_mets[:, j] += temp_fire_acc, temp_fire_prec, temp_fire_rec, temp_fire_f1
-
                         # calculate losses
                         full_test_loss = bce_loss(test_predictions, test_targets)
                         fire_test_loss = bce_loss(test_predictions * test_targets, test_targets)
@@ -696,7 +644,6 @@ def main(parameter_set_key:str='default',
                         val_fire_region_loss += fire_test_region_loss
                         val_fire_loss += fire_test_loss
                         val_full_loss += full_test_loss
-
 
                     # print validation metrics for full set
                     print(f"Validation Batch Loss: Batch Num {batch_num}, Loss: {val_scaled_loss}")
@@ -714,37 +661,7 @@ def main(parameter_set_key:str='default',
                                     "train_accuracy_0515": train_metrics_dict["accuracy"],
                                     "train_precision_0515": train_metrics_dict["precision"],
                                     "train_recall_0515": train_metrics_dict["recall"],
-                                    "train_f1_0515": train_metrics_dict["f1"]}#,
-                                    # "validation_accuracy": metrics['validation_accuracy'],
-                                    # "validation_precision": metrics['validation_precision'],
-                                    # "validation_recall": metrics['validation_recall'],
-                                    # "validation_f1": metrics['validation_f1'],
-                                    # "validation_fire_region_accuracy": metrics_regions['validation_accuracy'],
-                                    # "validation_fire_region_precision": metrics_regions['validation_precision'],
-                                    # "validation_fire_region_recall": metrics_regions['validation_recall'],
-                                    # "validation_fire_region_f1": metrics_regions['validation_f1'],
-                                    # "validation_fire_accuracy": metrics_fire['validation_accuracy'],
-                                    # "validation_fire_precision": metrics_fire['validation_precision'],
-                                    # "validation_fire_recall": metrics_fire['validation_recall'],
-                                    # "validation_fire_f1": metrics_fire['validation_f1']}
-
-                    # threshold_test_mets = {}
-                    # for i in threshold_value_testlist:
-                    #     for j in range(len(threshold_value_testlist)):
-                    #         threshold_test_mets[f"validation_accuracy_threshold_{i}"] = val_mets[0, j]
-                    #         threshold_test_mets[f"validation_precision_threshold_{i}"] = val_mets[1, j]
-                    #         threshold_test_mets[f"validation_recall_threshold_{i}"] = val_mets[2, j]
-                    #         threshold_test_mets[f"validation_f1_threshold_{i}"] = val_mets[3, j]
-                    #
-                    #         threshold_test_mets[f"validation_region_accuracy_threshold_{i}"] = val_region_mets[0, j]
-                    #         threshold_test_mets[f"validation_region_precision_threshold_{i}"] = val_region_mets[1, j]
-                    #         threshold_test_mets[f"validation_region_recall_threshold_{i}"] = val_region_mets[2, j]
-                    #         threshold_test_mets[f"validation_region_f1_threshold_{i}"] = val_region_mets[3, j]
-                    #
-                    #         threshold_test_mets[f"validation_fire_accuracy_threshold_{i}"] = val_fire_mets[0, j]
-                    #         threshold_test_mets[f"validation_fire_precision_threshold_{i}"] = val_fire_mets[1, j]
-                    #         threshold_test_mets[f"validation_fire_recall_threshold_{i}"] = val_fire_mets[2, j]
-                    #         threshold_test_mets[f"validation_fire_f1_threshold_{i}"] = val_fire_mets[3, j]
+                                    "train_f1_0515": train_metrics_dict["f1"]}
 
                     # save metrics to tensorboard
                     tb_optimizer(writer=writer, losses_dict=metrics_dict, step=batch_num)
@@ -810,47 +727,19 @@ def main(parameter_set_key:str='default',
             batch_num += 1
 
             optimizer.step()
+
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
 
-    # Option 1: Save the model's state_dict (recommended)
+        # save model state dictionary
         torch.save(model.state_dict(), f'{checkpoint_dir}/model_epoch_{epoch}.pth')
         logging.info(f"Model state dictionary for epoch {epoch} saved to: {checkpoint_dir}/model_epoch_{epoch}.pth")
 
-    # Option 2: Save the entire model (not recommended for production)
-    # This saves the model's architecture and weights.
-    # It can be problematic if the model class changes.
-    # torch.save(model, 'model_full.pth')
-
-    # Option 3: Save a checkpoint containing model and optimizer state.
-    # This is useful for resuming training.
-        checkpoint = {
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),  # If you have an optimizer
-            # Add other relevant information like epoch, loss, etc.
-        }
+        # save entire model (not recommended for prod)
+        checkpoint = {'model_state_dict': model.state_dict(),
+                      'optimizer_state_dict': optimizer.state_dict()}
         torch.save(checkpoint, f'{checkpoint_dir}/checkpoint_epoch_{epoch}.pth')
         logging.info(f"Model checkpoint for epoch {epoch} saved to: {checkpoint_dir}/checkpoint_epoch_{epoch}.pth")
 
-    # # Example of loading the model's state_dict:
-    # loaded_model = YourModelClass(*args, **kwargs)  # Instantiate your model
-    # loaded_model.load_state_dict(torch.load('model.pth'))
-    # loaded_model.eval()  # Important: set to evaluation mode if you're doing inference
-    #
-    # # Example of loading a full model (not recommended)
-    # # loaded_full_model = torch.load('model_full.pth')
-    # # loaded_full_model.eval()
-    #
-    # # Example of loading a checkpoint:
-    # loaded_checkpoint = torch.load('checkpoint.pth')
-    # loaded_model = YourModelClass(*args, **kwargs)  # Instantiate your model
-    # loaded_model.load_state_dict(loaded_checkpoint['model_state_dict'])
-    # optimizer = torch.optim.Adam(loaded_model.parameters())  # or your optimizer
-    # optimizer.load_state_dict(loaded_checkpoint['optimizer_state_dict'])
-    # # Access other saved information:
-    # # epoch = loaded_checkpoint['epoch']
-    # # loss = loaded_checkpoint['loss']
-    #
-    # loaded_model.eval()  # or loaded_model.train() depending on your usecase.
 
 app()
 #
