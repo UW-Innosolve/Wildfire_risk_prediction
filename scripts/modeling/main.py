@@ -123,6 +123,7 @@ logging.basicConfig(
 
 app = typer.Typer()
 
+
 def get_indices(data_df, train_range, test_range, start_day='02-24', end_day='09-25'):
     '''
     Because we use the day we predict from (not the day we are predicting) as the index, we must subtract 5 days from March 1 and 5 days from Sept 31
@@ -177,12 +178,6 @@ def create_empty_metrics_dict():
     return metrics_dict
 
 
-# TODO create a training_parameters json or something similar to make tracking easier
-# TODO update parameters to pull from a json file
-# TODO check min max values of predictions at various stages
-# TODO check min max values of just fire locations, and also get a loss for just those locations (see how well its actually doing)
-# TODO ask the model to predict classes AND probabilities
-# TODO create a threshold function for predictions, current threshold set to 0.515 (could be way off idk)
 @app.command()
 def main(parameter_set_key:str='default',
          training_parameter_json='./training_params.json',
@@ -243,7 +238,6 @@ def main(parameter_set_key:str='default',
     logging.info(f"Indexing completed, train_indices and test_indices sets created successfully")
 
     # reshape data into 2-D
-    # TODO update reshaping so that its done in torch
     # TODO update reshaping to be done using dates and not indices
     reshaped_data, reshaped_labels, reshaped_masks = reshape_data(rawdata_df, features, target_column, device_set, include_masks=include_masks, tolerance=mask_size)
     # logging
