@@ -28,6 +28,9 @@ def set_colour_scheme(bounds = [0.05, 0.15, 0.25, 0.35, 0.45, 0.6]):
     return cmap, norm
 
 
+# set default colourmap and boundary norms
+cmap_default, norm_default = set_colour_scheme()
+
 
 def plot_target_vs_predictions(label_batch, predictions, targets, pred_batch_size, batch_num, cmap=cmap_default, norm=norm_default, save_images=True, root_dir='./', prediction_day=5):
     """
@@ -85,156 +88,8 @@ def plot_target_vs_predictions(label_batch, predictions, targets, pred_batch_siz
         if save_images:
             plt.savefig(f'{image_dir}val index {label_batch[h]}.png', bbox_inches='tight')
 
-        plt.show()
-
-# predictions_df_path = '/Users/teodoravujovic/Desktop/code/firebird/lstm_training_updated/Wildfire_risk_prediction/scripts/modeling/predictions_0411_epoch20.csv'
-# predictions_df = pd.read_csv(predictions_df_path)
-#
-# longitude = 34
-# latitude = 37
-#
-# day1_targets = np.asarray(predictions_df['is_fire_day'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t10 = np.asarray(predictions_df['epoch_10_threshold_010'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t15 = np.asarray(predictions_df['epoch_10_threshold_015'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t20 = np.asarray(predictions_df['epoch_10_threshold_020'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t30 = np.asarray(predictions_df['epoch_10_threshold_030'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t40 = np.asarray(predictions_df['epoch_10_threshold_040'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t50 = np.asarray(predictions_df['epoch_10_threshold_050'][:1258]).reshape(latitude, longitude)
-# day1_pred_e10_t70 = np.asarray(predictions_df['epoch_10_threshold_070'][:1258]).reshape(latitude, longitude)
-#
-# targets_ones = np.where(day1_targets == 1)
-# targets_positions = np.column_stack((targets_ones[1], targets_ones[0]))
-# e10_t10_ones = np.where(day1_pred_e10_t10 == 1)
-# e10_t10_positions = np.column_stack((e10_t10_ones[1], e10_t10_ones[0]))
-# e10_t20_ones = np.where(day1_pred_e10_t20 == 1)
-# e10_t20_positions = np.column_stack((e10_t20_ones[1], e10_t20_ones[0]))
-# e10_t15_ones = np.where(day1_pred_e10_t15 == 1)
-# e10_t15_positions = np.column_stack((e10_t15_ones[1], e10_t15_ones[0]))
-# e10_t30_ones = np.where(day1_pred_e10_t30 == 1)
-# e10_t30_positions = np.column_stack((e10_t30_ones[1], e10_t30_ones[0]))
-# e10_t40_ones = np.where(day1_pred_e10_t40 == 1)
-# e10_t40_positions = np.column_stack((e10_t40_ones[1], e10_t40_ones[0]))
-# e10_t50_ones = np.where(day1_pred_e10_t50 == 1)
-# e10_t50_positions = np.column_stack((e10_t50_ones[1], e10_t50_ones[0]))
-# e10_t70_ones = np.where(day1_pred_e10_t70 == 1)
-# e10_t70_positions = np.column_stack((e10_t70_ones[1], e10_t70_ones[0]))
-#
-# x, y = np.meshgrid(latitude, longitude)
-#
-# fig, ax = plt.subplots(2, 4)
-# ax[0][0].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[0][1].imshow(day1_pred_e10_t10)
-# ax[0][1].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[0][2].imshow(day1_pred_e10_t15)
-# ax[0][2].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[0][3].imshow(day1_pred_e10_t20)
-# ax[0][3].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[1][0].imshow(day1_pred_e10_t30)
-# ax[1][0].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[1][1].imshow(day1_pred_e10_t40)
-# ax[1][1].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[1][2].imshow(day1_pred_e10_t50)
-# ax[1][2].scatter(targets_positions[0], targets_positions[1])
-#
-# ax[1][3].imshow(day1_pred_e10_t70)
-# ax[1][3].scatter(targets_positions[0], targets_positions[1])
-#
-# fig, ax = plt.subplots(2, 1)
-# ax[0].scatter(targets_positions[:,0], targets_positions[:,1])
-# ax[1].imshow(day1_pred_e10_t30)
-# ax[1].scatter(targets_positions[:,0], targets_positions[:,1])
-# fig.set_size_inches(10, 10)
-#
-# plt.show()
-#
-# fig, ax = plt.subplots(2, 4)
-#
-# ax[0][1].imshow(day1_pred_e10_t10)
-#
-#
-# ax[0][2].imshow(day1_pred_e10_t15)
-#
-#
-# ax[0][3].imshow(day1_pred_e10_t20)
-#
-#
-# ax[1][0].imshow(day1_pred_e10_t30)
-#
-#
-# ax[1][1].imshow(day1_pred_e10_t40)
-#
-#
-# ax[1][2].imshow(day1_pred_e10_t50)
-#
-#
-# ax[1][3].imshow(day1_pred_e10_t70)
-#
-#
-# plt.show()
-
-
-
-
-def set_colour_scheme(bounds = [0.05, 0.15, 0.25, 0.35, 0.45, 0.6]):
-    colors = ['blue', 'green', 'yellow', 'orange', 'red', 'magenta']
-    cmap = mpl.colors.ListedColormap(colors)
-    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    return norm, cmap
-
-
-# load a sample
-pred = test_predictions[7].detach().numpy()
-targ = test_targets[7].detach().numpy()
-reg = test_regions[7].detach().numpy()
-inpts = test_inputs[7][:,53,:,:].detach().numpy()
-msk = np.zeros((37, 34))
-
-# create mask of fires in previous training days
-for h in range(14):
-    msk = (msk <= inpts[h]).astype(int)
-
-# sample plot
-fig, ax = plt.subplots(1,3)
-fig.set_size_inches(10, 10)
-ax[0].imshow(targets10[4], origin='lower')
-ax[0].set_title('target')
-ax[1].imshow((pred10[4] > 0.2).astype(int), origin='lower')
-ax[1].set_title('prediction thresh=0.2')
-ax[2].imshow(masktest, origin='lower')
-ax[2].set_title('prev 14days fires')
-plt.show()
-
-
-def plot_target_vs_predictions(label_batch, test_predictions, test_targets, val_batch_size, batch_num, save_images=True, root_dir='./', prediction_day=5):
-    # show the target vs risk prediction values and save plots if required
-    if save_images:
-        image_dir = f'{root_dir}batch{batch_num}/'
-        os.makedirs(image_dir, exist_ok=True)
-    for h in range(val_batch_size):
-        fig, ax = plt.subplots(1, 2)
-        ax[0].imshow(test_targets[h], interpolation='none', cmap=cmap, norm=norm, origin="lower")
-        ax[0].set_title(f'target day {label_batch[h] + prediction_day}')
-        ax[1].imshow(test_predictions[h], interpolation='none', cmap=cmap, norm=norm, origin="lower")
-        ax[1].set_title(f'prediction day {label_batch[h] + prediction_day}')
-        if save_images:
-            plt.savefig(f'{image_dir}val index {label_batch[h]}.png', bbox_inches='tight')
-        plt.show()
-
-
-# gather all training days, prediction day, intermediate days, and subsequent days
-# plot all for comparison
-# plot all predictions
-test_index = 5724
-test_batch = [test_index, test_index+14]
-test_batch_windows = batched_indexed_windows(test_batch, data, labels, num_training_days, prediction_day,  include_masks=True, masks_full=masks)
-inpts, targs, regs = test_batch_windows[0], test_batch_windows[1], test_batch_windows[2]
-test_predictions = model(inpts)
+        plt.close()
+        # plt.show()
 
 
 def plot_surrounding_days(indx, data, batch_num, save_images=True, root_dir='./', category='groundtruth'):
@@ -301,26 +156,58 @@ def plot_month(indx, data, batch_num, save_images=True, root_dir='./', category=
     plt.show()
 
 
-# plot predicted vs target
-fig, ax = plt.subplots(1,2)
-ax[0].imshow(targs[0], interpolation='none', cmap=cmap, norm=norm, origin="lower")
-ax[0].set_title(f'target day 5729')
-ax[1].imshow(test_predictions[0], interpolation='none', cmap=cmap, norm=norm, origin="lower")
-ax[1].set_title(f'prediction day 5729')
-
-
-## predict and plot all of the 2024 fires
-test_threshold = 0.515
-## march 2024
-##   march 1 is day 60 of the year
-# generate predictions
-test_batch = range(6630, 6631)
-label_batch_windows = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day, include_masks=True, masks_full=masks)
-test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
-test_predictions = model(test_inputs)
-# calculate metrics
-test_acc, test_prec, test_rec, test_f1 = evaluate_individuals(test_predictions, test_targets, 31 * 1258, threshold_value=test_threshold)
-# plot monthly
-plot_surrounding_days(indx, data)
-
-print(f'March 2024 Metrics: Accuracy - {test_acc}, Precision - {test_prec}, Recall - {test_rec}, F1 - {test_f1}')
+# # plot predicted vs target
+# fig, ax = plt.subplots(1,2)
+# ax[0].imshow(targs[0], interpolation='none', cmap=cmap, norm=norm, origin="lower")
+# ax[0].set_title(f'target day 5729')
+# ax[1].imshow(test_predictions[0], interpolation='none', cmap=cmap, norm=norm, origin="lower")
+# ax[1].set_title(f'prediction day 5729')
+#
+#
+# ## predict and plot all of the 2024 fires
+# test_threshold = 0.515
+# ## march 2024
+# ##   march 1 is day 60 of the year
+# # generate predictions
+# test_batch = range(6630, 6631)
+# label_batch_windows = batched_indexed_windows(label_batch, data, labels, num_training_days, prediction_day, include_masks=True, masks_full=masks)
+# test_inputs, test_targets, test_regions = label_batch_windows[0], label_batch_windows[1], label_batch_windows[2]
+# test_predictions = model(test_inputs)
+# # calculate metrics
+# test_acc, test_prec, test_rec, test_f1 = evaluate_individuals(test_predictions, test_targets, 31 * 1258, threshold_value=test_threshold)
+# # plot monthly
+# plot_surrounding_days(indx, data)
+#
+# print(f'March 2024 Metrics: Accuracy - {test_acc}, Precision - {test_prec}, Recall - {test_rec}, F1 - {test_f1}')
+#
+#
+# # load a sample
+# pred = test_predictions[7].detach().numpy()
+# targ = test_targets[7].detach().numpy()
+# reg = test_regions[7].detach().numpy()
+# inpts = test_inputs[7][:,53,:,:].detach().numpy()
+# msk = np.zeros((37, 34))
+#
+# # create mask of fires in previous training days
+# for h in range(14):
+#     msk = (msk <= inpts[h]).astype(int)
+#
+# # sample plot
+# fig, ax = plt.subplots(1,3)
+# fig.set_size_inches(10, 10)
+# ax[0].imshow(targets10[4], origin='lower')
+# ax[0].set_title('target')
+# ax[1].imshow((pred10[4] > 0.2).astype(int), origin='lower')
+# ax[1].set_title('prediction thresh=0.2')
+# ax[2].imshow(masktest, origin='lower')
+# ax[2].set_title('prev 14days fires')
+# plt.show()
+#
+# # gather all training days, prediction day, intermediate days, and subsequent days
+# # plot all for comparison
+# # plot all predictions
+# test_index = 5724
+# test_batch = [test_index, test_index+14]
+# test_batch_windows = batched_indexed_windows(test_batch, data, labels, num_training_days, prediction_day,  include_masks=True, masks_full=masks)
+# inpts, targs, regs = test_batch_windows[0], test_batch_windows[1], test_batch_windows[2]
+# test_predictions = model(inpts)
