@@ -1,5 +1,28 @@
-import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score, roc_auc_score
+
+
+def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics_dict):
+    val_accuracy, val_precision, val_recall, val_f1 = evaluate_individuals(predictions, targets, flat_shape, threshold_value=threshold_value)
+    val_min = predictions.min()
+    val_max = predictions.max()
+    val_avg = predictions.sum() / flat_shape
+
+    metrics_dict['validation_accuracy'] += (val_accuracy / 19) # / by 19 for 19 validation batches
+    metrics_dict['validation_precision'] += (val_precision / 19)
+    metrics_dict['validation_recall'] += (val_recall / 19)
+    metrics_dict['validation_f1'] += (val_f1 / 19)
+    metrics_dict['validation_avg_min_pred'] += (val_min / 19)
+    metrics_dict['validation_avg_max_pred'] += (val_max / 19)
+    metrics_dict['validation_avg_pred'] += (val_avg / 19)
+
+    return metrics_dict
+
+
+def create_empty_metrics_dict():
+    metrics_dict = {'validation_accuracy': 0, 'validation_precision': 0, 'validation_recall': 0, 'validation_f1': 0,
+                    'validation_avg_min_pred': 0, 'validation_avg_max_pred': 0, 'validation_avg_pred': 0}
+
+    return metrics_dict
 
 
 # TODO: troubleshoot roc_auc_score

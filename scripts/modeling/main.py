@@ -1,8 +1,9 @@
 from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bce_loss
 from model_classes.lstm import LSTM_3D
 from data_preprocessing.windowing import batched_indexed_windows, reshape_data
-from model_evaluation.nn_model_metrics import evaluate, evaluate_individuals
+from model_evaluation.nn_model_metrics import evaluate, calculate_metrics, create_empty_metrics_dict
 from visualize import set_colour_scheme, plot_target_vs_predictions
+from common import get_indices
 
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
@@ -39,30 +40,6 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = typer.Typer()
-
-
-def calculate_metrics(predictions, targets, flat_shape, threshold_value, metrics_dict):
-    val_accuracy, val_precision, val_recall, val_f1 = evaluate_individuals(predictions, targets, flat_shape, threshold_value=threshold_value)
-    val_min = predictions.min()
-    val_max = predictions.max()
-    val_avg = predictions.sum() / flat_shape
-
-    metrics_dict['validation_accuracy'] += (val_accuracy / 19) # / by 19 for 19 validation batches
-    metrics_dict['validation_precision'] += (val_precision / 19)
-    metrics_dict['validation_recall'] += (val_recall / 19)
-    metrics_dict['validation_f1'] += (val_f1 / 19)
-    metrics_dict['validation_avg_min_pred'] += (val_min / 19)
-    metrics_dict['validation_avg_max_pred'] += (val_max / 19)
-    metrics_dict['validation_avg_pred'] += (val_avg / 19)
-
-    return metrics_dict
-
-
-def create_empty_metrics_dict():
-    metrics_dict = {'validation_accuracy': 0, 'validation_precision': 0, 'validation_recall': 0, 'validation_f1': 0,
-                    'validation_avg_min_pred': 0, 'validation_avg_max_pred': 0, 'validation_avg_pred': 0}
-
-    return metrics_dict
 
 
 @app.command()
