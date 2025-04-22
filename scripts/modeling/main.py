@@ -41,8 +41,8 @@ app = typer.Typer()
 @app.command()
 def main(parameter_set_key: str = 'default',
          training_parameter_json='./training_params.json',
-         rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
-         # rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
+         # rawdata_path='/home/tvujovic/scratch/firebird/processed_data.csv',
+         rawdata_path='/Users/teodoravujovic/Desktop/code/firebird/processed_data.csv',
          device_set='cuda',
          include_masks=True,
          # TODO make sure this is included everywhere for modularity, make sure it doesnt slow things down too much
@@ -555,7 +555,7 @@ def main(parameter_set_key: str = 'default',
                 # plot output risk scores and save figure
                 plot_target_vs_predictions(batch, outputs.detach().cpu().numpy(), targets.detach().cpu().numpy(),
                                            pred_batch_size=1, batch_num=batch_num, cmap=cmap_default, norm=norm_default,
-                                           save_images=True, root_dir=f'./test_outputs_epoch_{epoch}/',
+                                           save_images=True, root_dir=f'{checkpoint_dir}test_outputs_epoch_{epoch}/',
                                            prediction_day=prediction_day)
 
                 # make df for this sample
@@ -565,7 +565,7 @@ def main(parameter_set_key: str = 'default',
                 # concatenate with complete output df
                 output_df = pd.concat([output_df, i_df], ignore_index=True)
 
-        output_df.to_csv(f'./test_outputs_epoch{epoch}.csv', index=False)
+        output_df.to_csv(f'{checkpoint_dir}test_outputs_epoch{epoch}/test_outputs_epoch{epoch}.csv', index=False)
 
 
 app()
