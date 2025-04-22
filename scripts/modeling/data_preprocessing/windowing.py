@@ -27,10 +27,27 @@ logging.basicConfig(
 
 
 def create_fire_region_masks(targets, tolerance):
+    """
+    Description: creates a mask of any areas specified as class 1 (fire) in targets and include all regions within the tolerance value.
+    For each grid point of value of 1 in the target array, all horizontal and vertical grid points in the mask array +/- tolerance will also be set to 1.
+
+    Parameters:
+        targets: np.ndarray
+            Groundtruth target array
+        tolerance: int
+            How much padding to include around fire regions.
+            Applied to both horizontal and vertical directions.
+
+    Returns:
+        mask: np.ndarray
+            Masked 'fire region' including tolerance
+    """
+    # generate blank grid for output mask
     grid = targets.shape
     mask = torch.zeros(grid)
 
-    for i in range(tolerance - 1, grid[0] - tolerance):
+    # generate output mask according to specifications
+    for i in range(tolerance - 1, grid[0] - tolerance): # ensure we don't go past the edges
         for j in range(tolerance - 1, grid[1] - tolerance):
             if targets[i, j] == 1:
                 mask[i - tolerance:i + tolerance, j - tolerance:i + tolerance] = 1
@@ -43,90 +60,84 @@ def create_fire_region_masks(targets, tolerance):
 
 def reshape_data(df, features, target_column, device, include_masks=False, tolerance=2):
     """
-    Reshapes all features into a 2-dimensional latitude x longitude grid
-    Returned parameter array will have shape [number of days x number of features x latitude x longitude]
-    Returned label array will have shape [number of days x latitude x longitude]
+    Description: Reshapes all features into a 2-dimensional latitude x longitude grid. Returns a 3 sequential arrays of reshaped parameters, labels, and masks (if applicable) for each day.
 
-    Args:
+    Parameters:
         df: pandas dataframe
         features: list of strings
+            Column names of features to reshape in df
         target_column: string
+            Name of target column in df (used as labels)
         device: torch.device
+            Device to
+            Not used in this iteration as GPU implementation is left out
         include_masks: bool
+            Specify whether to include masks created from corresponding labels
         tolerance: int
+            Specify how much to pad fire areas in the generated masks, if applicable
 
     Returns:
-        np.array, np.array
+        np.array, np.array, np.array
+            Returned parameter array will have shape [number of days x number of features x latitude x longitude]
+            Returned label array will have shape [number of days x latitude x longitude]
+            Returned mask array will have shape [number of days x latitude x longitude]
 
     Notes:
-        - uses numpy instead of torch implementation as torch ran extremely slowly (even on GPU)
-        - uses row indices (rows per day) instead of dates for speed improvements (especially relevant for local execution)
-        - assumes that data is complete and not missing any rows (correct for processed dataset as of March 28, 2025)
+        - Uses numpy instead of torch implementation as torch ran extremely slowly (even on GPU)
+        - Uses row indices (rows per day) instead of dates for speed improvements (especially relevant for local execution)
+        - Assumes that data is complete and not missing any rows (correct for processed dataset as of March 28, 2025)
+        - Assumes all days have the same number of lat/long values
     """
     # count number of lines latitude and longitude (used to reshape data)
-    # TODO assumes that all days have same number of lat/long values
-    # TODO update to only BUT KEEP INDEX
     latitude_count = df['latitude'].unique().size
     longitude_count = df['longitude'].unique().size
     rows_perday = latitude_count * longitude_count
 
-    # get list of days in this file
+    # get list of days in the dataframe
     dates = df['date'].unique()
     print(f"Number of unique dates in dataset is {len(dates)}")
 
-    # create parameters and labels arrays
+    # create empty list of parameters, labels, and masks arrays
     parameters = []
     labels = []
     masks = []
 
-    # create corresponding labels for each day
+    # pull complete list of labels from dataframe
     label_full = df[target_column]
 
     for day in range(len(dates) - 1):
+        # get label values for specified day
         labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
+        # reshape to 2D grid according to latitude and longitude
         labels_ondate_reshaped = np.asarray(labels_ondate).reshape(latitude_count, longitude_count)
+        # add to complete list of labels
         labels.append(labels_ondate_reshaped)
 
+        # create blank sequence of parameters for day
         parameter_sequence = []
+        # generate reshaped 2D grid data for each parameter and append to complete list
         for parametername in features:
             # print(parametername)
+            # pull complete array of
+            # not optimized!
             parameter_full = df[parametername]
-
-            parameter_ondate = parameter_full[
-                               rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
-            parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count,
-                                                                             longitude_count)  # reshape array to an 'image' according to lat/long
+            # get parameter values for specified day
+            parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day+1)]
+            # reshape to 2D grid according to latitude and longitude
+            parameter_ondate_reshaped = np.asarray(parameter_ondate).reshape(latitude_count, longitude_count)
+            # add to list of parameters on day
             parameter_sequence.append(parameter_ondate_reshaped)
 
+        # add parameters on day to the complete list of parameters
         parameters.append(parameter_sequence)
 
-    # construct full set of masks
-    # TODO determine if reshaping can be using the 1-D label_full array and if it is faster that way (I don't think so because of the lack of delineation between various latitude values, you can't mark where one starts and ends so you'll have wraparound issues)
+    # construct full set of masks if specified
     if include_masks:
         for i in range(len(labels)):
             mask = create_fire_region_masks(labels[i], tolerance=tolerance)
             masks.append(mask)
 
-    # # create corresponding labels for each day
-    # label_full = torch.tensor(df[target_column].array)#, device=device)
-    #
-    # for day in range(len(dates) - 1):
-    #     labels_ondate = label_full[rows_perday * day: rows_perday * (day + 1)]
-    #     labels_ondate_reshaped = labels_ondate.reshape(latitude_count, longitude_count)
-    #     labels.append(labels_ondate_reshaped)
-    #
-    #     parameter_sequence = []
-    #     for parametername in features:
-    #         print(parametername)
-    #         parameter_full = torch.tensor(df[parametername].array)#, device=device)
-    #
-    #         parameter_ondate = parameter_full[rows_perday * day: rows_perday * (day + 1)]  # get parameter values on that day
-    #         parameter_ondate_reshaped = parameter_ondate.reshape(latitude_count,longitude_count)  # reshape array to an 'image' according to lat/long
-    #         parameter_sequence.append(parameter_ondate_reshaped)
-    #
-    #     parameters.append(parameter_sequence)
-
-    # return torch.tensor(parameters, device=device), torch.tensor(labels, device=device)
+    # return lists as np arrays
     return np.asarray(parameters), np.asarray(labels), np.asarray(masks)
 
 
@@ -162,47 +173,70 @@ def reshape_and_window_indexed(indexed_day, raw_dataframe, labels, training_days
 def batched_indexed_windows(batch_indices, parameters_full, labels_full, training_days, prediction_day, device='cpu',
                             include_masks=False, masks_full=None):
     """
-    Given a set of indices, creates a window of length training_days their and corresponding label for each index
+    Description: Given a set of indices, creates a window of length training_days and their corresponding label for each index
     Returns array of windowed data with shape [batch_size x training_days x num_features x latitude x longitude] and corresponding array of labels
-    Also includes windowed array of masks if specified
+    Also includes windowed array of masks for each index if specified
 
-    Args:
+    Parameters:
         batch_indices: list of ints
+            indices of each sample in the batch
+            each index corresponds to a particular day in the dataset
         parameters_full: torch.Tensor
+            complete list of reshaped parameters for entire dataset
         labels_full: torch.Tensor
+            complete list of reshaped labels for entire dataset
         training_days: int
+            set how many sequential days to pull for each sample as input data
+            training days for each index in batch_indices will include from day index - training_days through day index - 1
         prediction_day: int
+            set prediction horizon
+            predicted days will be day index + prediction_day for each index in batch_indices
         device: torch.device
+            Default: 'cpu'
+            specify which device is being used for computation
+            unused for now as everything is already assigned a device
         include_masks: bool
+            Default: False
+            specify whether to include masks
         masks_full: None or torch.Tensor
+            Default: None
+            complete list of reshaped masks for entire dataset (if applicable)
 
     Returns:
-        torch.Tensor, torch.Tensor
+        [torch.Tensor, torch.Tensor, torch.Tensor]
+            tensors for batch of input parameters, labels, and masks corresponding to the indices in batch_indices
 
     Notes:
         - Each day is assigned an index from 1 through 6570 corresponding to the date between Jan 1, 2006 and Dec 31, 2024
         - Uses indices (not dates directly) to determine window start / end points in data
         - February 29th in leap years is skipped!! (due to a pandas datetime problem)
-        TODO: fix leap year issue
-
     """
-    with torch.no_grad():
+    with torch.no_grad(): # ensure gradients of tensors are not affected
+        # create initial tensors for all arrays using the first index in the batch
         batch_data_windows = parameters_full[batch_indices[0] - training_days:batch_indices[0], :, :].unsqueeze(0)
         batch_label_windows = labels_full[batch_indices[0] + prediction_day, :, :].unsqueeze(0)
         if include_masks:
             batch_mask_windows = masks_full[batch_indices[0] + prediction_day, :, :].unsqueeze(0)
 
+        # generate array of corresponding input parameters and labels for each index in batch and append to each batch array
         for indx in batch_indices[1:]:
+            # get window of input parameters for index according to training_days
             windowed_data = parameters_full[indx - training_days:indx, :, :].unsqueeze(0)
+            # add to batch array of input parameters
             batch_data_windows = torch.cat((batch_data_windows, windowed_data), dim=0)
+            # get corresponding label day for index according to prediction_day
             windowed_label = labels_full[indx + prediction_day, :, :].unsqueeze(0)
+            # add to batch array of labels
             batch_label_windows = torch.cat((batch_label_windows, windowed_label), dim=0)
+        # generate array of corresponding masks for each index (if applicable)
         if include_masks:
             for indx in batch_indices[1:]:
                 windowed_mask = masks_full[indx + prediction_day, :, :].unsqueeze(0)
                 batch_mask_windows = torch.cat((batch_mask_windows, windowed_mask), dim=0)
 
+    # return as list so code doesn't break if masks are not requested
     return [batch_data_windows, batch_label_windows, batch_mask_windows]
+
 
 ## initial parameters loading
 # load data (path local to Teo's machine for now)
