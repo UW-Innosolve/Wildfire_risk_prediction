@@ -12,11 +12,8 @@ import pandas as pd
 import torch
 import logging
 from typing import Dict
-import os
 import json
 import typer
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 from torch.utils.tensorboard.writer import SummaryWriter
 
@@ -54,7 +51,8 @@ def main(parameter_set_key: str = 'default',
          log_thresholding=True,
          generate_predictions=True,
          from_checkpoint=True,
-         checkpoint_directory='/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/', ):
+         checkpoint_path='/Users/teodoravujovic/Desktop/data/firebird/thresholding_experiments/checkpoint_batch4200.pth'):
+
     # open training_parameters json file
     with open(training_parameter_json) as json_data:
         training_parameters = json.load(json_data)[parameter_set_key]
@@ -113,6 +111,12 @@ def main(parameter_set_key: str = 'default',
     labels = torch.Tensor(reshaped_labels).to(device)
     masks = torch.Tensor(reshaped_masks).to(device)
 
+    # delete numpy versions from memory
+    del reshaped_data, reshaped_labels, reshaped_masks
+    # delete raw dataframe if not generating test predicictons
+    if not generate_predictions:
+        del rawdata_df
+
     # TODO: make it modular which subdirectories to create
     # set tensorboard writer directory and subdirectories
     writer = SummaryWriter(log_dir=f"{checkpoint_dir}threshold_0515")
@@ -141,7 +145,15 @@ def main(parameter_set_key: str = 'default',
 
     # create model
     model = LSTM_3D(input_channels=num_features, hidden_size=hidden_size, dropout_rate=0.02).to(device)
+    if from_checkpoint:
+        # load model state dict
+        loaded_checkpoint = torch.load(checkpoint_path)
+        model.load_state_dict(loaded_checkpoint['model_state_dict'])
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    if from_checkpoint:
+        # load optimizer state dict
+        optimizer.load_state_dict(loaded_checkpoint['optimizer_state_dict'])
+
     batch_num = 0
     logging.info("Model created successfully")
     samples_per_epoch = len(X_train) - (len(X_train) % batch_size)
