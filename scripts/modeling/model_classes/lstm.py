@@ -2,17 +2,7 @@
 import torch.nn as nn
 # import torch.nn.functional as F
 # import torch.optim as optim
-#
-# import numpy as np
-# import pandas as pd
-# import tensorboard as tb
-#
-#
-# # input data has shape (16, )
-# #       16 training samples
-# #       10 days per sample
-# #       31 parameters per day
-# #       37x34 array per parameter
+
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
@@ -170,26 +160,4 @@ class LSTM_3D_3layers(BaseModel):
 
         return out
 
-
-
-# # Example usage:
-# batch_size = 14
-# time_steps = 10
-# depth = 42
-# height = 37
-# width = 34
-# hidden_size = 64
-# dropout_rate = 0.2
-#
-# # Create a dummy input tensor
-# input_tensor = torch.randn(batch_size, time_steps, depth, height, width)
-#
-# # Create the model
-# model = LSTM_3D(input_channels=depth, hidden_size=hidden_size, dropout_rate=dropout_rate)
-#
-# # Forward pass
-# output = model(input_tensor)
-#
-# # Print the output shape
-# print(output.shape)  # Should be [2, 37, 34]
 

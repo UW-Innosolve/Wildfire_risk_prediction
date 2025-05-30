@@ -3,6 +3,7 @@ import torch.nn as nn
 
 def binary_cross_entropy_loss(output, target):
     """
+
     Description: Calculates and returns the binary cross-entropy loss.
 
     Parameters:
@@ -22,3 +23,4 @@ def binary_cross_entropy_loss(output, target):
     bceloss = criterion(output, target)
 
     return bceloss
+

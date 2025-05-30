@@ -44,12 +44,13 @@ class FbSurfaceFeatures():
         
       
     
-    
+  # NOTE: soil using map()
   def soil(self):
     """
     Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
     """
     bins = {
+        0: "Non-soil",
         1: "Coarse",
         2: "Coarse",
         3: "Medium",
@@ -59,78 +60,185 @@ class FbSurfaceFeatures():
         7: "Organic"
     }
     
-    self.surface_features['soil'] = self.raw_data["slt"].map(bins)
+    slt = self.raw_data["slt"].copy()
+    self.surface_features['soil'] = slt.map(bins)
+  
+  ## NOTE: soil using pd.Categorical
+  # def soil(self):
+  #   """
+  #   Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
+  #   """
+  #   # Define categories and map to numeric values
+  #   category_map = {
+  #       0: "Non-soil",
+  #       1: "Coarse",
+  #       2: "Coarse",
+  #       3: "Medium",
+  #       4: "Medium",
+  #       5: "Medium",
+  #       6: "Organic",
+  #       7: "Organic"
+  #   }
+
+  #   # Convert to Categorical for faster mapping
+  #   slt_values = self.raw_data['slt'].astype('category')
     
-    
-    ## NOTE: take only sum of temperature volumes in final feature set
+  #   # Use .cat.set_categories() for consistent mapping
+  #   self.surface_features['soil'] = pd.Categorical(
+  #       slt_values.map(category_map), 
+  #       categories=["Non-soil", "Coarse", "Medium", "Organic"]
+  #   )
+
+  #   logger.info(f"Unique soil categories: {self.surface_features['soil'].unique()}")
+  
+  # ## NOTE: soil using np.select() - fastest?
+  # def soil(self):
+  #   """
+  #   Categorizes soil types 'slt' into three bins: 'Coarse', 'Medium', and 'Organic'.
+  #   """
+  #   slt = self.raw_data['slt'].to_numpy()
+
+  #   # Define conditions and choices
+  #   conditions = [
+  #       np.isin(slt, [1, 2]),
+  #       np.isin(slt, [3, 4, 5]),
+  #       np.isin(slt, [6, 7])
+  #   ]
+  #   choices = ["Coarse", "Medium", "Organic"]
+
+  #   # Apply vectorized condition assignment
+  #   self.surface_features['soil'] = np.select(conditions, choices, default='non_soil')
+  #   num_soil_errors = np.isin(self.surface_features['soil'], 'non_soil').sum()
+  #   logger.info(f"Number of soil errors: {num_soil_errors}")
+
+  #   logger.info(f"Unique soil categories: {np.unique(self.surface_features['soil'])}")
+
   def surface_depth_waterheat(self):
-    '''
-    layer 1: 0 - 7cm
-    layer 2: 7 - 28cm
-    layer 3: 28 - 100cm
-    layer 4: 100 - 289cm
-    '''
-  def surface_depth_waterheat(self):
-    '''
+    """
     Compute surface water-heat ratio from soil water volume and soil temperature.
-    Uses depth-specific values and interpolates them to a uniform grid.
+    Interpolates directly to target depths to reduce memory usage.
 
     Soil layers:
     - Layer 1: 0 - 7cm
     - Layer 2: 7 - 28cm
     - Layer 3: 28 - 100cm
     - Layer 4: 100 - 289cm
-    '''
-    
+    """
+
     depths = np.array([7, 28, 100, 289])  # Given soil depths
     resampled_depths = np.linspace(0, 289, 10)  # Target depths
-    continuous_x = np.linspace(0, 289, 1000)  # Fine-grained interpolation
 
     # Convert DataFrame columns to NumPy arrays (shape: [samples, 4])
-    swvl = np.stack([self.raw_data['swvl1'], self.raw_data['swvl2'], 
+    swvl = np.stack([self.raw_data['swvl1'], self.raw_data['swvl2'],
                      self.raw_data['swvl3'], self.raw_data['swvl4']], axis=1)
-    
-    stl = np.stack([self.raw_data['stl1'], self.raw_data['stl2'], 
+
+    stl = np.stack([self.raw_data['stl1'], self.raw_data['stl2'],
                     self.raw_data['stl3'], self.raw_data['stl4']], axis=1)
 
-    # Interpolate for each row (i.e., each sample)
-    def interpolate_row(row):
-        return np.interp(continuous_x, depths, row)
+    # Directly interpolate to 10 target depths (fewer points = less memory)
+    def direct_resample(row):
+        return np.interp(resampled_depths, depths, row)
 
-    continuous_curve_water = np.apply_along_axis(interpolate_row, 1, swvl)
-    continuous_curve_temp = np.apply_along_axis(interpolate_row, 1, stl)
+    # Vectorized interpolation using np.apply_along_axis
+    resampled_swvl = np.apply_along_axis(direct_resample, 1, swvl)  # Shape: (num_samples, 10)
+    resampled_stl = np.apply_along_axis(direct_resample, 1, stl)  # Shape: (num_samples, 10)
+    
+    # Convert to float32 to save memory
+    resampled_swvl = resampled_swvl.astype(np.float32)
+    resampled_stl = resampled_stl.astype(np.float32)
 
-    # Resample at evenly spaced intervals for each row
-    def resample_row(row):
-        return np.interp(resampled_depths, continuous_x, row)
-
-    resampled_swvl = np.apply_along_axis(resample_row, 1, continuous_curve_water)
-    resampled_stl = np.apply_along_axis(resample_row, 1, continuous_curve_temp)
 
     logger.info(f"Resampled SWVL shape: {resampled_swvl.shape}, Resampled STL shape: {resampled_stl.shape}")
 
-    # Compute daily sums (across resampled depths, axis=1)
+    # Compute daily sums (reduce memory to 1D arrays)
     daily_swvl_sum = resampled_swvl.sum(axis=1)  # Shape: (num_samples,)
     daily_stl_sum = resampled_stl.sum(axis=1)  # Shape: (num_samples,)
 
-    # Log their shape before adding to the feature set
+    # Log shapes for verification
     logger.info(f"daily_swvl_sum shape: {daily_swvl_sum.shape}, daily_stl_sum shape: {daily_stl_sum.shape}")
 
     # Store in instance variables
     self.surface_water_sum = daily_swvl_sum
     self.surface_heat_sum = daily_stl_sum
 
-    # Ensure proper Pandas Series assignment
+    # Assign sums to feature set with correct index
     self.surface_features['daily_water_sum'] = pd.Series(daily_swvl_sum, index=self.raw_data.index)
     self.surface_features['daily_temp_sum'] = pd.Series(daily_stl_sum, index=self.raw_data.index)
 
+    # Compute water-heat ratio (avoid division by zero)
+    self.surface_waterheat = np.divide(resampled_swvl, resampled_stl, 
+                                       out=np.zeros_like(resampled_swvl), 
+                                       where=resampled_stl != 0)
 
-    # Compute water-heat ratio
-    self.surface_waterheat = np.divide(resampled_swvl, resampled_stl)
-
-    # Store 10 new features in the dataset
+    # Store 10 new features with ratios
     for i in range(10):
-        self.surface_features[f'surface_water_heat_{i}'] = self.surface_waterheat[:, i]
+        self.surface_features[f'surface_water_heat_{i}'] = pd.Series(self.surface_waterheat[:, i], 
+                                                                     index=self.raw_data.index)
+
+    
+    
+  # ## NOTE: take only sum of temperature volumes in final feature set
+  # def surface_depth_waterheat(self):
+  #   '''
+  #   Compute surface water-heat ratio from soil water volume and soil temperature.
+  #   Uses depth-specific values and interpolates them to a uniform grid.
+
+  #   Soil layers:
+  #   - Layer 1: 0 - 7cm
+  #   - Layer 2: 7 - 28cm
+  #   - Layer 3: 28 - 100cm
+  #   - Layer 4: 100 - 289cm
+  #   '''
+    
+  #   depths = np.array([7, 28, 100, 289])  # Given soil depths
+  #   resampled_depths = np.linspace(0, 289, 10)  # Target depths
+  #   continuous_x = np.linspace(0, 289, 1000)  # Fine-grained interpolation
+
+  #   # Convert DataFrame columns to NumPy arrays (shape: [samples, 4])
+  #   swvl = np.stack([self.raw_data['swvl1'], self.raw_data['swvl2'], 
+  #                    self.raw_data['swvl3'], self.raw_data['swvl4']], axis=1)
+    
+  #   stl = np.stack([self.raw_data['stl1'], self.raw_data['stl2'], 
+  #                   self.raw_data['stl3'], self.raw_data['stl4']], axis=1)
+
+  #   # Interpolate for each row (i.e., each sample)
+  #   def interpolate_row(row):
+  #       return np.interp(continuous_x, depths, row)
+
+  #   continuous_curve_water = np.apply_along_axis(interpolate_row, 1, swvl)
+  #   continuous_curve_temp = np.apply_along_axis(interpolate_row, 1, stl)
+
+  #   # Resample at evenly spaced intervals for each row
+  #   def resample_row(row):
+  #       return np.interp(resampled_depths, continuous_x, row)
+
+  #   resampled_swvl = np.apply_along_axis(resample_row, 1, continuous_curve_water)
+  #   resampled_stl = np.apply_along_axis(resample_row, 1, continuous_curve_temp)
+
+  #   logger.info(f"Resampled SWVL shape: {resampled_swvl.shape}, Resampled STL shape: {resampled_stl.shape}")
+
+  #   # Compute daily sums (across resampled depths, axis=1)
+  #   daily_swvl_sum = resampled_swvl.sum(axis=1)  # Shape: (num_samples,)
+  #   daily_stl_sum = resampled_stl.sum(axis=1)  # Shape: (num_samples,)
+
+  #   # Log their shape before adding to the feature set
+  #   logger.info(f"daily_swvl_sum shape: {daily_swvl_sum.shape}, daily_stl_sum shape: {daily_stl_sum.shape}")
+
+  #   # Store in instance variables
+  #   self.surface_water_sum = daily_swvl_sum
+  #   self.surface_heat_sum = daily_stl_sum
+
+  #   # Ensure proper Pandas Series assignment
+  #   self.surface_features['daily_water_sum'] = pd.Series(daily_swvl_sum, index=self.raw_data.index)
+  #   self.surface_features['daily_temp_sum'] = pd.Series(daily_stl_sum, index=self.raw_data.index)
+
+
+  #   # Compute water-heat ratio
+  #   self.surface_waterheat = np.divide(resampled_swvl, resampled_stl)
+
+  #   # Store 10 new features in the dataset
+  #   for i in range(10):
+  #       self.surface_features[f'surface_water_heat_{i}'] = self.surface_waterheat[:, i]
     
     
   def topography(self):

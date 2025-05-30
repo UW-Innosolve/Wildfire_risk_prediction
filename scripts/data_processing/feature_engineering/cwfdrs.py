@@ -43,8 +43,8 @@ class FbCwfdrsFeatures():
       Compute relative humidity from temperature and dew point temperature.
       Returns an xarray DataArray instead of a Dataset.
       """
-      temp = temp.pint.dequantify()
-      dew = dew.pint.dequantify()
+      # temp = temp.pint.dequantify()
+      # dew = dew.pint.dequantify()
       e_t = np.exp((17.625 * temp) / (243.04 + temp))
       e_d = np.exp((17.625 * dew) / (243.04 + dew))
       rel_humidity = 100 * (e_d / e_t)
@@ -57,6 +57,8 @@ class FbCwfdrsFeatures():
     u = u.pint.dequantify()
     v = v.pint.dequantify()
     wind_speed = np.sqrt(u ** 2 + v ** 2)
+    # Convert to km/h
+    wind_speed = wind_speed * 3.6
     return xr.DataArray(wind_speed, dims=u.dims, coords=u.coords, attrs={"units": "m s-1"})
 
 
@@ -72,35 +74,39 @@ class FbCwfdrsFeatures():
     df['long'] = self.raw_data['longitude']
     df['10u'] = self.raw_data['10u']
     df['10v'] = self.raw_data['10v']
-    df['tp'] = self.raw_data['tp'] / 1000 # Convert to mm
-    df['tas'] = self.raw_data['2t'] - 273.15 # Convert to Celsius
-    df['tdps'] = self.raw_data['2d'] - 273.15 # Convert to Celsius
+    df['pr'] = self.raw_data['tp'] * 1000 # Convert to mm
+    df['tas'] = (self.raw_data['2t'] - 273.15) + 20 # Convert to Celsius
+    df['tdps'] = (self.raw_data['2d'] - 273.15) + 20 # Convert to Celsius
     
-    # Convert to xarray Dataset
-    ds = df.set_index(['time', 'lat', 'long']).to_xarray()
-    
-    # Sort the dataset by date to ensure the index is monotonic
-    ds = ds.sortby('time')
-
     # Compute relative humidity from dew point temperature
-    hurs_rel_humidity = convert_units_to(self._rel_humidity(temp=ds.tas, dew=ds.tdps), "percent")
-    
+    hurs_rel_humidity = convert_units_to(self._rel_humidity(temp=df["tas"].to_xarray(), dew=df["tdps"].to_xarray()), "percent")
+    df['hurs'] = hurs_rel_humidity
     # Compute wind speed from U and V components
-    sfcWind_speed = self._wind_speed_from_components(u=ds['10u'], v=ds['10v'])
+    sfcWind_speed = self._wind_speed_from_components(u=df['10u'].to_xarray(), v=df['10v'].to_xarray())
+    df['sfcWind'] = sfcWind_speed
+    df = df.sort_values(by=['time', 'lat', 'long'])
+    
+    # Save the df to a CSV file for verification
+    df[['time', 'lat', 'long', '10u', '10v', 'pr', 'tas', 'tdps', 'hurs', 'sfcWind']].to_csv("cwfdrs_input.csv", index=False)
+    
+    # Convert the DataFrame to an xarray Dataset
+    ds = df.set_index(["time", "lat", "long"]).to_xarray()
+
+    # # Sort the dataset by date to ensure the index is monotonic
+    ds = ds.sortby(['time', 'lat', 'long'])
 
     # Assign the computed variables to the dataset
     ds = ds.assign(
-        hurs=hurs_rel_humidity,
+        hurs=ds.hurs,  # Already in percent
         tas=ds.tas,  # Already in Celsius
         tdps=ds.tdps,  # Already in Celsius
-        pr=ds.tp, # Already in mm/day
-        sfcWind=sfcWind_speed,
+        pr=ds.pr, # Already in mm/day
+        sfcWind=ds.sfcWind, # Already in km/h
         lat=ds.lat,
         long=ds.long
     )
-    
     # Assign all units
-    ds["sfcWind"].attrs["units"] = "m s-1"
+    ds["sfcWind"].attrs["units"] = "km h-1"
     ds["hurs"].attrs["units"] = "%"
     ds["tas"].attrs["units"] = "degC"
     ds["tdps"].attrs["units"] = "degC"
@@ -109,7 +115,7 @@ class FbCwfdrsFeatures():
     ds["long"].attrs["units"] = "degrees_east"
     
     print("Units: ", ds.tas.pint.units, ds.tdps.pint.units, ds.pr.pint.units, ds.hurs.pint.units, ds.sfcWind.pint.units)
-    print("Data: ", ds)
+    print("cffdrs features input data as xarray: ", ds)
 
     # Compute fire season mask
     season_mask = fire_season(
@@ -120,8 +126,6 @@ class FbCwfdrsFeatures():
         temp_end_thresh="5 degC",
         temp_condition_days=3,
     )
-    
-    print(season_mask.dims)
 
     # Compute Fire Weather Index system indices
     out_fwi = cffwis_indices(
@@ -131,7 +135,7 @@ class FbCwfdrsFeatures():
         sfcWind=ds.sfcWind,
         lat=ds.lat,
         season_mask=season_mask,
-        overwintering=True,
+        overwintering=False,
         dry_start="CFS",
         prec_thresh="1.5 mm/d",
         dmc_dry_factor=1.2,
@@ -141,116 +145,30 @@ class FbCwfdrsFeatures():
         dmc_start=6,
         ffmc_start=85,
     )
-
-    # # self.cwfdrs_inputs["sfcWind"] = xci.uas_vas_2_sfcwind(
-    # # uas=self.raw_data["10u"].to_xarray(), 
-    # # vas=self.raw_data["10v"].to_xarray()
-    # # )
-
-    # # Attach units to the wind components
-    # units = "m s-1"  # Assuming 10m wind components are in meters per second
-    # u = self.raw_data["10u"].to_xarray().pint.quantify(units)
-    # v = self.raw_data["10v"].to_xarray().pint.quantify(units)
-    # # Compute wind speed
-    # self.cwfdrs_inputs["sfcWind"] = xci.uas_vas_2_sfcwind(uas=u, vas=v)
     
-    # # Compute wind speed from U/V vector components
-    # # wind_vector = xr.Dataset({
-    # #     "u": self.raw_data["10u"],
-    # #     "v": self.raw_data["10v"]
-    # # })
-    # # self.cwfdrs_inputs["sfcWind"] = wind_vector
-
-    # # Assign precipitation
-    # self.cwfdrs_inputs["pr"] = self.raw_data["tp"]  # Precipitation in mm/day
-
-    # # Extract latitude (assumed to be constant across dataset)
-    # self.cwfdrs_inputs["lat"] = self.raw_data["latitude"]
-
-    # # Compute Fire Weather Indices
-    # fire_indices = cwfdrs.cffwis_indices(
-    #     tas=self.cwfdrs_inputs["tas"],
-    #     pr=self.cwfdrs_inputs["pr"],
-    #     hurs=self.cwfdrs_inputs["hurs"],
-    #     sfcWind=self.cwfdrs_inputs["sfcWind"],
-    #     lat=self.cwfdrs_inputs["lat"],
-    #     overwintering=True,
-    #     dry_start="CFS"
-    # )
-
     # Convert back to Pandas DataFrame
-    print(out_fwi)
-    print(type(out_fwi))
-    self.cwfdrs_features = out_fwi.to_dataframe().reset_index()
+    print('------------------------------------------------------------------------------------------------------------')
+    # print(out_fwi)
+    self.dc = out_fwi[0].to_dataframe(name="drought_code").reset_index().sort_values(by=["time", "lat", "long"])
+    self.dmc = out_fwi[1].to_dataframe(name="duff_moisture_code").reset_index().sort_values(by=["time", "lat", "long"])
+    self.ffmc = out_fwi[2].to_dataframe(name="fine_fuel_moisture_code").reset_index().sort_values(by=["time", "lat", "long"])
+    self.isi = out_fwi[3].to_dataframe(name="initial_spread_index").reset_index().sort_values(by=["time", "lat", "long"])
+    self.bup = out_fwi[4].to_dataframe(name="build_up_index").reset_index().sort_values(by=["time", "lat", "long"])
+    self.fwi = out_fwi[5].to_dataframe(name="fire_weather_index").reset_index().sort_values(by=["time", "lat", "long"])
+    
+    self.dc.to_csv("dc.csv", index=False)
+    self.dmc.to_csv("dmc.csv", index=False)
+    self.ffmc.to_csv("ffmc.csv", index=False)
+    self.isi.to_csv("isi.csv", index=False)
+    self.bup.to_csv("bup.csv", index=False)
+    self.fwi.to_csv("fwi.csv", index=False)
+    
+    print('------------------------------------------------------------------------------------------------------------')
+
+    # self.cwfdrs_features = out_fwi.to_dataframe().reset_index()
+    # self.cwfdrs_features.to_csv("cwfdrs_features.csv", index=False)
+      
       
   def get_features(self):
     """Return the computed CWFDRS features."""
     return self.cwfdrs_features
-
-# from xclim.indices import cwfdrs
-# import xarray as xr
-# import numpy as np
-# import pandas as pd
-
-# class FbCwfdrsFeatures():
-#   def __init__(self, raw_data_df):
-#     self.raw_data = raw_data_df
-#     self.cwfdrs_inputs = xr.Dataset()
-#     self.cwfdrs_features = pd.DataFrame()
-    
-#   def config_features(self):
-#     self.cwfdrs_features = ['drought_code',
-#                             'duff_moisture_code',
-#                             'fine_fuel_moisture_code',
-#                             'initial_spread_index',
-#                             'build_up_index',
-#                             'fire_weather_index',
-#                             'seasonal_drought_index']
-    
-#   def cwfdrs(self):
-#     """
-#     Calculate the Canadian Fire Weather Danger Rating System (CWFDRS) indices.
-#     """
-#     # Convert temperature to Celsius
-#     self.cwfdrs_inputs['c_temp'] = self.raw_data["2t"] - 273.15
-#     self.cwfdrs_inputs['relative_humidity'] = cwfdrs.relative_humidity(
-#       tas=self.cwfdrs_inputs['c_temp'],
-#       tdps=self.raw_data["2d"] - 273.15
-#     )
-#     self.cwfdrs_inputs['wind_speed'] = cwfdrs.wind_speed(
-#       u=self.raw_data["10u"],
-#       v=self.raw_data["10v"]
-#     )
-#     self.cwfdrs_inputs['precipitation'] = self.raw_data["sf"]
-#     self.cwfdrs_inputs['latitude'] = self.raw_data["latitude"]
-#     self.cwfdrs_inputs['longitude'] = self.raw_data["longitude"]
-    
-    
-
-
-# from xclim.indices import cwfdrs
-# import xarray as xr
-# import numpy as np
-# import pandas as pd
-
-# class FbCwfdrsFeatures():
-#   def __init__(self, raw_data_df):
-#     self.raw_data = raw_data_df
-#     self.cwfdrs_features = pd.DataFrame()
-    
-#   def config_features(self):
-#     self.cwfdrs_features = ['drought_code',
-#                             'duff_moisture_code',
-#                             'fine_fuel_moisture_code',
-#                             'initial_spread_index',
-#                             'build_up_index',
-#                             'fire_weather_index',
-#                             'seasonal_drought_index']
-    
-#   def cwfdrs(self):
-#     """
-#     Calculate the Canadian Fire Weather Danger Rating System (CWFDRS) indices.
-#     """
-#     # Convert temperature to Celsius
-#     self.cwfdrs_features['c_temp'] = self.raw_data["2t"] - 273.15
-#     pass

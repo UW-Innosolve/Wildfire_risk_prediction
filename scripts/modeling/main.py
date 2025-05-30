@@ -1,6 +1,7 @@
 from model_evaluation.model_lossfunctions import binary_cross_entropy_loss as bce_loss
 from model_classes.lstm import LSTM_3D
 from data_preprocessing.windowing import batched_indexed_windows, reshape_data
+
 from model_evaluation.nn_model_metrics import evaluate, calculate_metrics, create_empty_metrics_dict
 from visualize import set_colour_scheme, plot_target_vs_predictions
 from common import get_indices
@@ -34,6 +35,7 @@ def tb_optimizer(
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 app = typer.Typer()
 
