@@ -1,0 +1,16 @@
+### instructions to use!
+## load the python module using -> module load python/3.12
+## create the virtual environment (example name ENV_NAME) using -> virtualenv --no-download ENV_NAME
+##      this will create the venv in whatever directory you're located in
+##      preferably do this in scratch :), and name it nicely especially if you have multiple environments
+## activate the environment using -> source ENV_NAME/bin/activate
+## navigate to the repo using cd, and install all training requirements using -> pip install -r cedar_requirements.txt
+
+pandas
+numpy
+torch
+tensorboard
+tqdm
+scikit-learn
+imbalanced-learn==0.12.4
+typer

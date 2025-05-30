@@ -45,7 +45,7 @@ class AlbertaWildfireIncidenceLoader:
 
 
     ## pull_additional_attr_from_raw
-    ##      - add other attributes to the dataset, after the data has been temporally resampled (i.e., by wildfire_incidence_data_resample)
+    ##      - add other attributes to the parameters, after the data has been temporally resampled (i.e., by wildfire_incidence_data_resample)
     def pull_additional_attr_from_raw(self):
         ## TODO: Implement this method. Additional attributes must come from the resampled data temporally and locationally.
         pass

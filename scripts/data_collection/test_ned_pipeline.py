@@ -79,7 +79,7 @@ if os.path.exists("scripts/data_collection/static_datasets/earthdata.csv"):
 
 # # ned_pipeline.earthdata_save_to_h5(ab_terrain, "scripts/data_collection/static_datasets")
 # # param_list = ['d_lat', 'd_lon', 'd_UTCTime_40']
-# dataset = ned.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
+# parameters = ned.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
 #                                     csv=True, # Save as CSV is turned on
 #                                     output_dir=static_data_path
 #                                     )
@@ -119,15 +119,15 @@ if os.path.exists("scripts/data_collection/static_datasets/earthdata.csv"):
 
 # # ned_pipeline.earthdata_save_to_h5(ab_terrain, "scripts/data_collection/static_datasets")
 # # param_list = ['d_lat', 'd_lon', 'd_UTCTime_40']
-# dataset = ned_pipeline.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
+# parameters = ned_pipeline.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
 #                                     csv=True,
 #                                     output_dir=static_data_path
 #                                     )
 
-# logger.debug(f"min_lat: {dataset['Latitude'].min()}")
-# logger.debug(f"max_lat: {dataset['Latitude'].max()}")
-# logger.debug(f"min_lon: {dataset['Longitude'].min()}")
-# logger.debug(f"max_lon: {dataset['Longitude'].max()}")
+# logger.debug(f"min_lat: {parameters['Latitude'].min()}")
+# logger.debug(f"max_lat: {parameters['Latitude'].max()}")
+# logger.debug(f"min_lon: {parameters['Longitude'].min()}")
+# logger.debug(f"max_lon: {parameters['Longitude'].max()}")
 
 # # ned_pipeline.earthdata_save_to_h5(ab_terrain, static_data_path)
 #         # lat_range=[49, 60], 
@@ -172,7 +172,7 @@ if os.path.exists("scripts/data_collection/static_datasets/earthdata.csv"):
 
 # # ned_pipeline.earthdata_save_to_h5(ab_terrain, "scripts/data_collection/static_datasets")
 # # param_list = ['d_lat', 'd_lon', 'd_UTCTime_40']
-# dataset = ned.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
+# parameters = ned.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
 #                                     csv=True, # Save as CSV is turned on
 #                                     output_dir=static_data_path
 #                                     )
@@ -212,15 +212,15 @@ if os.path.exists("scripts/data_collection/static_datasets/earthdata.csv"):
 
 # # # ned_pipeline.earthdata_save_to_h5(ab_terrain, "scripts/data_collection/static_datasets")
 # # # param_list = ['d_lat', 'd_lon', 'd_UTCTime_40']
-# # dataset = ned_pipeline.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
+# # parameters = ned_pipeline.earthdata_slice(h5_file="scripts/data_collection/static_datasets/GLAH06_634_2115_001_1284_4_01_0001.H5",
 # #                                     csv=True,
 # #                                     output_dir=static_data_path
 # #                                     )
 
-# # logger.debug(f"min_lat: {dataset['Latitude'].min()}")
-# # logger.debug(f"max_lat: {dataset['Latitude'].max()}")
-# # logger.debug(f"min_lon: {dataset['Longitude'].min()}")
-# # logger.debug(f"max_lon: {dataset['Longitude'].max()}")
+# # logger.debug(f"min_lat: {parameters['Latitude'].min()}")
+# # logger.debug(f"max_lat: {parameters['Latitude'].max()}")
+# # logger.debug(f"min_lon: {parameters['Longitude'].min()}")
+# # logger.debug(f"max_lon: {parameters['Longitude'].max()}")
 
 # # # ned_pipeline.earthdata_save_to_h5(ab_terrain, static_data_path)
 # #         # lat_range=[49, 60], 

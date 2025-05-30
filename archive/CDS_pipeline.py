@@ -91,7 +91,7 @@ class CdsPipeline:
             logger.info("Successfully opened GRIB file: %s", file_path)
             
             return ds
-            # Process the dataset
+            # Process the parameters
         except Exception as e:
             logger.error("Failed to open GRIB file: %s", file_path, exc_info=True)
 

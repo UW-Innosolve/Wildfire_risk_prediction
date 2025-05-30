@@ -3,18 +3,24 @@ import torch.nn as nn
 
 def binary_cross_entropy_loss(output, target):
     """
-    Calculates the binary cross-entropy loss.
 
-    Args:
-        output (torch.Tensor): Output tensor of probabilities (after sigmoid), shape [batch_size, ...].
-        target (torch.Tensor): Target tensor of binary values, shape [batch_size, ...].
+    Description: Calculates and returns the binary cross-entropy loss.
+
+    Parameters:
+        output (torch.Tensor):
+            Tensor of predicted probabilities output from the model
+            Has shape [batch_size, 37, 34] (using default latitude and longitude counts)
+        target (torch.Tensor):
+            Groundtruth target tensor of binary values
+            Has shape [batch_size, 37, 34] (using default latitude and longitude counts)
 
     Returns:
-        torch.Tensor: The binary cross-entropy loss.
+        torch.Tensor
+            Binary cross entropy loss for batch
     """
+    # calculate loss
+    criterion = nn.BCELoss()
+    bceloss = criterion(output, target)
 
-    criterion = nn.BCELoss()  # Use BCELoss
+    return bceloss
 
-    loss = criterion(output, target)
-
-    return loss

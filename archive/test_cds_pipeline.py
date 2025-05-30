@@ -100,7 +100,7 @@ def main():
     invar_data = cds_pipeline.get_invariant_data()
     
 
-    ## Assemble the dataset
+    ## Assemble the parameters
     raw_data_assembly_instance.assemble_dataset(pipelines)
 
 

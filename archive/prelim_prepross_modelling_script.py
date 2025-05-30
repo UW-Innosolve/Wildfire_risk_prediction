@@ -206,7 +206,7 @@ def load_or_preprocess_data():
             X, y, test_size=0.2, random_state=42, stratify=y
         )
  
-        # Handle imbalance in the dataset using SMOTEENN
+        # Handle imbalance in the parameters using SMOTEENN
         logging.info("Handling data imbalance using SMOTEENN...")
         smote_enn = SMOTEENN(random_state=42)
         X_train_balanced, y_train_balanced = smote_enn.fit_resample(X_train, y_train)

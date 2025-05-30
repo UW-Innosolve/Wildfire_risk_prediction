@@ -59,6 +59,13 @@ class FbDataset(FeatEngineer, Preprocessor):
       self.y_test = pd.DataFrame()
 
 
+    # # Initialize the raw data directory and load the raw data.
+    # logger.info("Loading data from CSV files...")
+    # self.raw_data_dir = raw_data_dir
+    # self.raw_data = self._load_data(data_dir=self.raw_data_dir)
+    # # Ensure the 'date' column is of type datetime64[ns] in both DataFrames
+    # self.raw_data['date'] = pd.to_datetime(self.raw_data['date'])
+
   def _load_data(self, data_dir):
     """
     Aggregate all CSV files from the specified directory into a single DataFrame.
